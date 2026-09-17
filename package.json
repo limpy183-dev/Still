@@ -1,0 +1,32 @@
+{
+  "name": "still-focus",
+  "version": "1.0.0",
+  "description": "A quieter space for your attention. Windows app blocking and intentional focus.",
+  "main": "app/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "demo": "electron . --demo",
+    "build:native": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-native.ps1",
+    "build": "npm run build:native && electron-builder --win portable --x64",
+    "test": "node --test tests/*.test.cjs",
+    "test:policy": "powershell -NoProfile -ExecutionPolicy Bypass -File tests/policy.ps1",
+    "test:csp": "powershell -NoProfile -ExecutionPolicy Bypass -File tests/csp-policy.ps1",
+    "test:packaged": "node tests/packaged.cjs",
+    "test:ui": "node tests/ui.cjs",
+    "test:todos": "node tests/todos.cjs"
+  },
+  "keywords": [],
+  "author": "Still",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": { "electron": "44.2.0", "electron-builder": "26.15.3", "playwright": "1.58.2" },
+  "build": {
+    "appId": "app.still.focus",
+    "productName": "Still",
+    "directories": { "output": "release" },
+    "files": ["app/**/*", "assets/**/*", "package.json", "native/discover.ps1"],
+    "extraResources": [{ "from": "native/bin/Still.Guard.exe", "to": "guard/Still.Guard.exe" }, { "from": "native/policy.ps1", "to": "guard/policy.ps1" }, { "from": "native/discover.ps1", "to": "guard/discover.ps1" }],
+    "win": { "target": "portable", "icon": "assets/still.ico", "signExecutable": false },
+    "portable": { "artifactName": "Still-${version}-Windows.exe", "useZip": true }
+  }
+}
