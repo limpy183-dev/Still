@@ -21,6 +21,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Iterator;
 
 /**
@@ -122,6 +125,11 @@ final class Store {
     }
 
     static String time(Context c, long at) { return DateFormat.getTimeFormat(c).format(at); }
+
+    /** An "HH:mm" setting shown in the phone's own time format. */
+    static String clockText(Context c, String time) {
+        return time(c, LocalDate.now().atTime(LocalTime.parse(time)).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+    }
 
     private static void notice(Context c, int id, String channel, int importance, Notification.Builder builder) {
         NotificationManager manager = c.getSystemService(NotificationManager.class);

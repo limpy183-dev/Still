@@ -2,7 +2,7 @@
 
 [← Back to the overview](../README.md) · [User guide](user-guide.md) · [Development](development.md)
 
-A native Android version of Still's focus sessions, in [`android/`](../android). So far: sessions, app and website blocking, a release delay, strict protection and the managed-phone check. Daily website limits and bedtime, custom block screens, to-dos, alerts and a history screen come later. There is no release build yet.
+A native Android version of Still's focus sessions, in [`android/`](../android). So far: sessions, app and website blocking, a release delay, strict protection, the managed-phone check, and daily website limits with bedtime. Custom block screens, to-dos, alerts and a history screen come later. There is no release build yet.
 
 Android 11 or newer. It is written in plain Java against the Android framework, with no libraries, so the release APK is about 57 KB.
 
@@ -29,6 +29,12 @@ During a session with websites, Still reads the address bar of **Chrome** (and B
 
 Why not a VPN or DNS filter? A local VPN would route every name lookup on the phone through Still, so any fault would break the whole internet. It would also take the phone's only VPN slot and could be skipped by Private DNS. Reading the address bar uses the service Still already runs, needs no new permission and fails open. The trade-off is that websites inside other apps' built-in web views aren't covered; block those apps instead. The Windows companion has the same scope: Chrome and Edge, not other apps.
 
+## Daily limits and bedtime
+
+Open **Time limits** from the main screen, during a session or not. They follow the Windows rules. Give any website a daily allowance of 0–1,440 minutes (0 means no daily limit) and choose whether it rests at bedtime. One bedtime window applies to every website with bedtime on. The default is 22:30–07:00 and it may cross midnight. YouTube, Instagram, TikTok, Reddit and X are offered as suggestions. The settings are saved in the same JSON shape as `websiteLimits` in the Windows preferences.
+
+Time counts only while a limited website is the page in the browser window you're using, with the screen on. When the allowance is used up, or bedtime starts, the site is stepped back from and covered, like a session website: *"Today's time on youtube.com is used up. It's back after midnight."* or *"youtube.com is resting for bedtime until 7:00 AM."* Counts reset at local midnight. Bedtime and the daily count follow the phone's clock, so changing the date starts a new day, as on Windows. Limits work outside focus sessions and can be changed at any time, so they aren't protected by strict mode, matching Windows.
+
 ## Set up
 
 1. Install the APK and open **Still Focus**.
@@ -47,8 +53,9 @@ Why not a VPN or DNS filter? A local VPN would route every name lookup on the ph
 
 ## Resource use
 
-- **No session:** the accessibility service asks Android for no events at all, so it does no work. The process measured about 22 MB PSS and 0% CPU on a Pixel emulator.
-- **During a session:** it receives only window changes (opening or switching apps), never content changes. It checks each change once, after an 80 ms settle. It re-checks every 0.7 s only while a supported browser is on screen during a website session (one address-bar lookup, measured at about 0.3% of one core), or while a Settings screen is open in a strict session (at most 400 items read). With no browser or Settings screen open, a session measured 0 CPU ticks over 10 s.
+- **No session and no limits:** the accessibility service asks Android for no events at all, so it does no work. The process measured about 22 MB PSS and 0% CPU on a Pixel emulator.
+- **During a session:** it receives only window changes (opening or switching apps), never content changes. It checks each change once, after an 80 ms settle. It re-checks every 0.7 s only while a supported browser is on screen during a website session (one address-bar lookup, measured at about 0.3% of one core), or while a Settings screen is open in a strict session (at most 400 items read). With no browser or Settings screen open, a session measured 0 CPU ticks over 10 s. With limits set and no session, a supported browser is checked once a second. Nothing is checked or counted while the screen is off.
+- Limit usage is kept in memory and saved at most every 30 seconds, and when you leave the site or the screen turns off, so counting adds no disk work to each check.
 - The countdown in the notification is drawn by the system, so Still does no per-second work. There is one inexact alarm at the end time and no exact-alarm permission. Blocking checks the clock itself, so a late alarm never delays release.
 
 ## Limits
@@ -62,12 +69,13 @@ cd android
 ./gradlew testDebugUnitTest assembleDebug
 ```
 
-Gradle needs a JDK and the Android SDK (`ANDROID_HOME`). Android Studio's bundled JDK works (`JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"`). The rules in `Session.java` and `Websites.java` are plain Java and are unit-tested on the JVM (`src/test`).
+Gradle needs a JDK and the Android SDK (`ANDROID_HOME`). Android Studio's bundled JDK works (`JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"`). The rules in `Session.java`, `Websites.java` and `Limits.java` are plain Java and are unit-tested on the JVM (`src/test`).
 
 | File | What it does |
 | --- | --- |
 | `Session.java` | Session rules and deadlines (mirrors `native/Session.cs`) |
 | `Websites.java` | Domain validation and matching (mirrors `app/websites.js`) and reading a host from an address bar |
+| `Limits.java`, `LimitStore.java`, `LimitsActivity.java` | Limit and bedtime rules (mirrors `limits`/`inBedtime`/`limitBlocks`), their storage and today's usage, and the Time limits screen |
 | `Store.java` | Atomic state, history (500 entries), the end alarm and notifications |
 | `BlockService.java` | The accessibility service that blocks apps and websites and protects Still in strict sessions |
 | `Device.java` | Protected apps, supported browsers, the managed-phone check, whether blocking is switched on |

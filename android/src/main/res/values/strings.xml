@@ -49,6 +49,30 @@
     <string name="cover_title">Still is on</string>
     <string name="cover_text">%1$s is blocked until %2$s.</string>
     <string name="cover_guard">Still\'s settings are locked until %1$s.</string>
+    <string name="cover_limit">Today\'s time on %1$s is used up. It\'s back after midnight.</string>
+    <string name="cover_bedtime">%1$s is resting for bedtime until %2$s.</string>
+
+    <string name="limits_title">Time limits</string>
+    <string name="limits_open">Time limits</string>
+    <string name="limits_explain">Give websites a daily allowance, or rest them at bedtime. Time counts while a site is the page you\'re using in a supported browser with the screen on, and resets at midnight. Limits work outside focus sessions and can be changed at any time.</string>
+    <string name="limits_need_blocking">Turn on app blocking on Still\'s main screen first. Limits use the same service.</string>
+    <string name="bedtime">Bedtime</string>
+    <string name="bedtime_dash">–</string>
+    <string name="limit_row">%1$s\n%2$s</string>
+    <string name="suggest_add">+ %1$s</string>
+    <string name="bedtime_hint">Websites with bedtime on rest between these times.</string>
+    <string name="limits_sites">Websites</string>
+    <string name="limits_none">No limits yet.</string>
+    <string name="limits_suggestions">Suggestions</string>
+    <string name="limit_summary_minutes">%1$d min a day · %2$d min used today</string>
+    <string name="limit_summary_none">No daily limit</string>
+    <string name="limit_summary_bedtime">%1$s · bedtime</string>
+    <string name="limit_minutes">Minutes a day (0 for no daily limit)</string>
+    <string name="limit_bedtime">Rest at bedtime</string>
+    <string name="save">Save</string>
+    <string name="remove">Remove</string>
+    <string name="cancel">Cancel</string>
+
     <string name="go_home">Go home</string>
     <string name="go_back">Go back</string>
 

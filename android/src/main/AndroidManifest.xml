@@ -57,6 +57,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".LimitsActivity"
+            android:exported="false"
+            android:label="@string/limits_title"
+            android:windowSoftInputMode="adjustResize" />
+
         <service
             android:name=".BlockService"
             android:exported="true"

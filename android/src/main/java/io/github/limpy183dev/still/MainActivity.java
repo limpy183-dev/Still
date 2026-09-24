@@ -102,6 +102,9 @@ public final class MainActivity extends Activity {
         };
         findViewById(R.id.choose_apps).setOnClickListener(v -> chooseApps());
         findViewById(R.id.add_site).setOnClickListener(v -> addSite());
+        View.OnClickListener openLimits = v -> startActivity(new Intent(this, LimitsActivity.class));
+        findViewById(R.id.open_limits).setOnClickListener(openLimits);
+        findViewById(R.id.open_limits_active).setOnClickListener(openLimits);
         siteInput.setOnEditorActionListener((view, action, event) -> { addSite(); return true; });
         renderSites();
         findViewById(R.id.enable_blocking).setOnClickListener(v ->
