@@ -178,6 +178,7 @@ final class Store {
         JSONObject apps = new JSONObject();
         for (java.util.Map.Entry<String, String> app : s.apps.entrySet()) apps.put(app.getKey(), app.getValue());
         JSONObject o = new JSONObject().put("id", s.id).put("intention", s.intention).put("apps", apps)
+                .put("websites", new JSONArray(s.websites))
                 .put("startedAt", s.startedAt).put("endsAt", s.endsAt).put("durationMinutes", s.durationMinutes)
                 .put("unlockDelayMinutes", s.unlockDelayMinutes).put("unlockAt", s.unlockAt).put("strict", s.strict)
                 .put("boot", s.boot).put("endsElapsed", s.endsElapsed).put("unlockElapsed", s.unlockElapsed);
@@ -203,8 +204,10 @@ final class Store {
             String pkg = keys.next();
             s.apps.put(pkg, apps.getString(pkg));
         }
+        JSONArray sites = o.optJSONArray("websites"); // Absent in stage-one files.
+        if (sites != null) for (int i = 0; i < sites.length(); i++) s.websites.add(Websites.domain(sites.getString(i)));
         // Stored limits are re-checked: a hand-edited file cannot create an over-long or empty session.
-        Session.validate(s.durationMinutes, s.unlockDelayMinutes, s.apps.size());
+        Session.validate(s.durationMinutes, s.unlockDelayMinutes, s.apps.size() + s.websites.size());
         return s;
     }
 }

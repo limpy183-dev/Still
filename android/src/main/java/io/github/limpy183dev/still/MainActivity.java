@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Chronometer;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,12 +47,15 @@ public final class MainActivity extends Activity {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable render = this::render;
     private final Set<String> selected = new HashSet<>();
+    private final List<String> sites = new ArrayList<>();
     private SharedPreferences prefs;
     private ArrayAdapter<App> apps;
     private View blockingCard;
     private EditText intentionInput, durationInput, delayInput;
     private CheckBox delayEnabled, strict;
     private TextView appsLabel;
+    private EditText siteInput;
+    private LinearLayout siteList;
     private boolean appsLoading;
 
     @Override
@@ -60,6 +64,7 @@ public final class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         prefs = getSharedPreferences("prefs", MODE_PRIVATE);
         selected.addAll(prefs.getStringSet("selected", new HashSet<>()));
+        for (String site : prefs.getString("websites", "").split("\n")) if (!site.isEmpty()) sites.add(site);
 
         blockingCard = findViewById(R.id.blocking_card);
         intentionInput = findViewById(R.id.intention_input);
@@ -68,6 +73,8 @@ public final class MainActivity extends Activity {
         delayEnabled = findViewById(R.id.delay_enabled);
         strict = findViewById(R.id.strict);
         appsLabel = findViewById(R.id.apps_label);
+        siteInput = findViewById(R.id.site_input);
+        siteList = findViewById(R.id.site_list);
 
         intentionInput.setText(prefs.getString("intention", ""));
         durationInput.setText(String.valueOf(prefs.getInt("duration", 50)));
@@ -94,6 +101,9 @@ public final class MainActivity extends Activity {
             }
         };
         findViewById(R.id.choose_apps).setOnClickListener(v -> chooseApps());
+        findViewById(R.id.add_site).setOnClickListener(v -> addSite());
+        siteInput.setOnEditorActionListener((view, action, event) -> { addSite(); return true; });
+        renderSites();
         findViewById(R.id.enable_blocking).setOnClickListener(v ->
                 startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
         findViewById(R.id.app_info).setOnClickListener(v -> startActivity(
@@ -187,13 +197,48 @@ public final class MainActivity extends Activity {
                 .show();
     }
 
+    private void addSite() {
+        String text = siteInput.getText().toString().trim();
+        if (text.isEmpty()) return;
+        try {
+            String site = Websites.domain(text);
+            if (!sites.contains(site)) {
+                if (sites.size() + selected.size() >= Session.MAX_APPS) throw new IllegalArgumentException(getString(R.string.too_many));
+                sites.add(site);
+            }
+            siteInput.setText("");
+            renderSites();
+            updateSetup();
+        } catch (IllegalArgumentException e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void renderSites() {
+        siteList.removeAllViews();
+        int pad = Math.round(12 * getResources().getDisplayMetrics().density);
+        for (String site : sites) {
+            TextView row = new TextView(this, null, 0, R.style.Body);
+            row.setText(site);
+            row.setPadding(0, pad, 0, pad);
+            row.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, android.R.drawable.ic_menu_close_clear_cancel, 0);
+            row.setContentDescription(getString(R.string.remove_site, site));
+            row.setOnClickListener(v -> {
+                sites.remove(site);
+                renderSites();
+                updateSetup();
+            });
+            siteList.addView(row);
+        }
+    }
+
     private void updateSetup() {
         if (!appsLoading) {
             List<String> names = new ArrayList<>();
             for (int i = 0; i < apps.getCount(); i++) if (selected.contains(apps.getItem(i).pkg)) names.add(apps.getItem(i).label);
             appsLabel.setText(names.isEmpty() ? getString(R.string.apps_none) : String.join(", ", names));
         }
-        findViewById(R.id.start).setEnabled(!selected.isEmpty() && !appsLoading);
+        findViewById(R.id.start).setEnabled((!selected.isEmpty() || !sites.isEmpty()) && !appsLoading);
         findViewById(R.id.choose_apps).setEnabled(!appsLoading);
     }
 
@@ -210,8 +255,11 @@ public final class MainActivity extends Activity {
                 App app = apps.getItem(i);
                 if (selected.contains(app.pkg)) chosen.put(app.pkg, app.label);
             }
+            // Browsers whose address bar Still can't read would let blocked websites through, so they wait too.
+            if (!sites.isEmpty()) for (Map.Entry<String, String> browser : Device.otherBrowsers(this).entrySet())
+                chosen.putIfAbsent(browser.getKey(), browser.getValue());
             Session s = Session.start(UUID.randomUUID().toString(), intentionInput.getText().toString(), minutes, delay,
-                    strict.isChecked(), chosen, Store.clock(this));
+                    strict.isChecked(), chosen, sites, Store.clock(this));
             savePrefs();
             Store.start(this, s);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
@@ -246,7 +294,9 @@ public final class MainActivity extends Activity {
         countdown.setBase(SystemClock.elapsedRealtime() + left);
         countdown.start();
         ((TextView) findViewById(R.id.until)).setText(getString(R.string.until, Store.time(this, now.wall + left)));
-        ((TextView) findViewById(R.id.blocking)).setText(getString(R.string.blocking_list, String.join(", ", s.apps.values())));
+        List<String> targets = new ArrayList<>(s.apps.values());
+        targets.addAll(s.websites);
+        ((TextView) findViewById(R.id.blocking)).setText(getString(R.string.blocking_list, String.join(", ", targets)));
 
         TextView release = findViewById(R.id.release);
         Button request = findViewById(R.id.request);
@@ -293,6 +343,7 @@ public final class MainActivity extends Activity {
     private void savePrefs() {
         SharedPreferences.Editor edit = prefs.edit().putStringSet("selected", new HashSet<>(selected))
                 .putString("intention", intentionInput.getText().toString())
+                .putString("websites", String.join("\n", sites))
                 .putBoolean("delayEnabled", delayEnabled.isChecked())
                 .putBoolean("strict", strict.isChecked());
         int minutes = number(durationInput), delay = number(delayInput);

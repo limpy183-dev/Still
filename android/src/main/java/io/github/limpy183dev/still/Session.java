@@ -1,7 +1,10 @@
 package io.github.limpy183dev.still;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A focus session, mirroring native/Session.cs. Pure Java so it is unit-tested on the JVM.
@@ -27,16 +30,21 @@ final class Session {
     boolean strict;
     /** Package name to label, in selection order. */
     final Map<String, String> apps = new LinkedHashMap<>();
+    /** Blocked website domains (normalised, unique). */
+    final Set<String> websites = new LinkedHashSet<>();
 
-    static void validate(int minutes, int delay, int appCount) {
+    /** {@code targetCount} is apps plus websites, like on Windows. Website-only sessions are allowed. */
+    static void validate(int minutes, int delay, int targetCount) {
         if (minutes < 1 || minutes > MAX_MINUTES) throw new IllegalArgumentException("Choose a focus duration from 1 to 1,440 minutes.");
         if (delay < 0 || delay > MAX_DELAY) throw new IllegalArgumentException("Choose a release delay from 0 to 120 minutes.");
-        if (appCount < 1 || appCount > MAX_APPS) throw new IllegalArgumentException("Select between 1 and 100 apps.");
+        if (targetCount < 1 || targetCount > MAX_APPS) throw new IllegalArgumentException("Select between 1 and 100 apps or websites.");
     }
 
-    static Session start(String id, String intention, int minutes, int delay, boolean strict, Map<String, String> apps, Clock now) {
-        validate(minutes, delay, apps.size());
+    static Session start(String id, String intention, int minutes, int delay, boolean strict, Map<String, String> apps,
+                         Collection<String> websites, Clock now) {
         Session s = new Session();
+        for (String site : websites) s.websites.add(Websites.domain(site));
+        validate(minutes, delay, apps.size() + s.websites.size());
         s.id = id;
         String text = intention == null ? "" : intention.trim();
         s.intention = text.isEmpty() ? "Time to focus" : text.substring(0, Math.min(MAX_INTENTION, text.length()));

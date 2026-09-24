@@ -2,10 +2,10 @@
 <resources>
     <!-- Strict mode finds Still's own screens by this name, so keep it distinctive. -->
     <string name="app_name">Still Focus</string>
-    <string name="service_description">Still uses this to see which app is on screen during a focus session and to send the apps you chose to block back to the home screen. It reads nothing else, stores nothing about what you do, and does nothing when no session is running. During a strict session it also covers the Settings pages that could switch Still off.</string>
+    <string name="service_description">Still uses this during a focus session to see which app is on screen, send the apps you chose to block back to the home screen, and read the address bar of supported browsers to step back from websites you chose to block. It stores nothing about what you do and does nothing when no session is running. During a strict session it also covers the Settings pages that could switch Still off.</string>
 
     <string name="setup_title">Focus space</string>
-    <string name="blocking_explain">To block apps, Still needs its accessibility service. It only checks which app is open, and only while a session runs.</string>
+    <string name="blocking_explain">To block apps and websites, Still needs its accessibility service. It only checks what is open, and only while a session runs.</string>
     <string name="enable_blocking">Turn on app blocking</string>
     <string name="restricted_hint">If Android says the setting is restricted, open App info, tap ⋮ and choose Allow restricted settings, then try again.</string>
     <string name="app_info">Open App info</string>
@@ -17,6 +17,12 @@
     <string name="strict_hint">Settings and uninstall screens that mention Still Focus are closed until the session ends, so Still can\'t be switched off early.</string>
     <string name="apps_loading">Finding apps…</string>
     <string name="apps_title">Apps to block</string>
+    <string name="sites_title">Websites to block</string>
+    <string name="site_hint">youtube.com or a pasted link</string>
+    <string name="add_site">Add</string>
+    <string name="sites_note">Blocked in Chrome, Edge, Brave, Vivaldi, Firefox, Samsung Internet and DuckDuckGo, including links opened from other apps. Other browsers are blocked completely during sessions with websites.</string>
+    <string name="remove_site">Remove %1$s</string>
+    <string name="too_many">Select between 1 and 100 apps or websites.</string>
     <string name="apps_none">None selected yet.</string>
     <string name="choose_apps">Choose apps</string>
     <string name="done">Done</string>
@@ -44,13 +50,14 @@
     <string name="cover_text">%1$s is blocked until %2$s.</string>
     <string name="cover_guard">Still\'s settings are locked until %1$s.</string>
     <string name="go_home">Go home</string>
+    <string name="go_back">Go back</string>
 
     <string name="managed_profile">Still doesn\'t run in a work profile, so it never interferes with your organisation\'s device policy.</string>
     <string name="managed_device">This phone is managed by an organisation. Still doesn\'t run on managed phones, so it never interferes with their device policy.</string>
 
     <string name="channel_session">Focus session</string>
     <string name="channel_done">Session finished</string>
-    <string name="notice_until">Blocking apps until %1$s</string>
+    <string name="notice_until">Blocking distractions until %1$s</string>
     <string name="done_title">Focus session complete</string>
     <string name="done_text">Your apps are available again.</string>
 </resources>

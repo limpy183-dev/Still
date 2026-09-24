@@ -7,6 +7,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -18,7 +20,7 @@ public class SessionTest {
     private static Session session(int minutes, int delay) {
         Map<String, String> apps = new LinkedHashMap<>();
         apps.put("com.example.video", "Video");
-        return Session.start("id", "  Write  ", minutes, delay, true, apps, at(WALL, 1000, 5));
+        return Session.start("id", "  Write  ", minutes, delay, true, apps, Collections.emptyList(), at(WALL, 1000, 5));
     }
 
     @Test public void expiresAfterItsDuration() {
@@ -84,9 +86,21 @@ public class SessionTest {
     @Test public void unknownBootCountUsesTheWallClock() {
         Map<String, String> apps = new LinkedHashMap<>();
         apps.put("a", "A");
-        Session s = Session.start("id", "", 30, 0, false, apps, at(WALL, 1000, -1));
+        Session s = Session.start("id", "", 30, 0, false, apps, Collections.emptyList(), at(WALL, 1000, -1));
         assertEquals("Time to focus", s.intention);
         assertEquals(20 * MIN, s.remaining(at(WALL + 10 * MIN, 1000, -1)));
+    }
+
+    @Test public void websitesCountTowardsTheLimitAndCanStandAlone() {
+        Session s = Session.start("id", "", 30, 0, false, new LinkedHashMap<>(),
+                Arrays.asList("https://www.YouTube.com/watch?v=1", "youtube.com", "reddit.com"), at(WALL, 1000, 5));
+        assertEquals(Arrays.asList("youtube.com", "reddit.com"), new java.util.ArrayList<>(s.websites));
+        Map<String, String> apps = new LinkedHashMap<>();
+        for (int i = 0; i < 100; i++) apps.put("app" + i, "App");
+        assertThrows(IllegalArgumentException.class,
+                () -> Session.start("id", "", 30, 0, false, apps, Arrays.asList("reddit.com"), at(WALL, 1000, 5)));
+        assertThrows(IllegalArgumentException.class, () -> Session.start("id", "", 30, 0, false, new LinkedHashMap<>(),
+                Arrays.asList("not a site"), at(WALL, 1000, 5)));
     }
 
     @Test public void validatesLimits() {

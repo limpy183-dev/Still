@@ -29,14 +29,18 @@ import java.util.Set;
  * Blocks the session's apps. Android has no AppLocker, so this watches which app windows are on screen
  * and sends a blocked app to the background, covering it until it is gone.
  *
+ * Websites: the address bar of supported browsers (Device.ADDRESS_BARS) is read, and a blocked site is
+ * stepped back from and covered. Other browsers are in the session's app list, so they are blocked outright.
+ *
  * Resource use: with no session the service asks for no events at all, so it is idle. During a session
- * it only receives window changes (not content changes), coalesced and checked once each.
+ * it only receives window changes (not content changes), coalesced and checked once each. It polls only
+ * while a supported browser (website session) or a Settings screen (strict session) is on screen.
  *
  * Safety: any error removes the cover (fail open). Protected apps (home screen, phone, Settings, keyboards)
  * are never blocked. The cover only covers blocked windows and always has a Go home button.
  */
 public final class BlockService extends AccessibilityService {
-    private static final long SETTLE_MS = 80, GUARD_RECHECK_MS = 1000, TOAST_GAP_MS = 3000;
+    private static final long SETTLE_MS = 80, RECHECK_MS = 700, BACK_GAP_MS = 1500, TOAST_GAP_MS = 3000;
     private static final int MAX_NODES = 400;
     private static BlockService instance;
 
@@ -48,7 +52,9 @@ public final class BlockService extends AccessibilityService {
     private LinearLayout cover;
     private TextView coverText;
     private final Rect coverBounds = new Rect();
-    private long lastToast;
+    private long lastToast, lastBack;
+    private Button coverButton;
+    private boolean coverBack;
 
     /** Re-evaluates the screen after the session changed. Posted, so it never runs re-entrantly. */
     static void refresh() {
@@ -118,44 +124,64 @@ public final class BlockService extends AccessibilityService {
         }
         Rect area = null;
         String what = null; // Null means one of Still's own settings screens.
-        boolean sendHome = false, guardOpen = false;
+        boolean sendHome = false, sendBack = false, poll = false;
         for (AccessibilityWindowInfo window : getWindows()) {
             if (window.getType() != AccessibilityWindowInfo.TYPE_APPLICATION) continue;
             AccessibilityNodeInfo root = window.getRoot();
             if (root == null || root.getPackageName() == null) continue;
             String pkg = root.getPackageName().toString();
-            boolean hit = blocked.contains(pkg);
+            boolean hit = blocked.contains(pkg), site = false;
+            if (hit && s.apps.containsKey(pkg)) what = s.apps.get(pkg);
+            String bar = s.websites.isEmpty() ? null : Device.ADDRESS_BARS.get(pkg);
+            if (!hit && bar != null) {
+                // The address bar changes without a window event, so keep looking while a browser is open.
+                poll = true;
+                String domain = Websites.blockedBy(Websites.hostOf(addressBar(root, bar)), s.websites);
+                if (domain != null) { hit = site = true; what = domain; }
+            }
             if (!hit && s.strict && guard.contains(pkg)) {
                 // Settings or the uninstaller showing Still: the screens that could switch it off or remove it.
-                guardOpen = true;
+                // Their content loads after the window appears, so keep looking while one is open.
+                poll = true;
                 hit = mentionsStill(root);
             }
             if (!hit) continue;
             Rect bounds = new Rect();
             window.getBoundsInScreen(bounds);
             if (area == null) area = bounds; else area.union(bounds);
-            if (s.apps.containsKey(pkg)) what = s.apps.get(pkg);
-            // Home does not close picture-in-picture; that window just stays covered.
-            if (!window.isInPictureInPictureMode()) sendHome = true;
+            // Home and Back do not close picture-in-picture; that window just stays covered.
+            if (window.isInPictureInPictureMode()) continue;
+            if (site) sendBack = true; else sendHome = true;
         }
+        if (poll) handler.postDelayed(check, RECHECK_MS);
         if (area == null) {
             hideCover();
-            // Settings content loads after its window appears, so look again while it stays open.
-            if (guardOpen) handler.postDelayed(check, GUARD_RECHECK_MS);
             return;
         }
         Session.Clock now = Store.clock(this);
         String until = Store.time(this, now.wall + s.remaining(now));
         String message = what == null ? getString(R.string.cover_guard, until) : getString(R.string.cover_text, what, until);
-        showCover(area, message);
+        // A blocked website steps back a page (leaving the browser usable); apps and Still's settings go home.
+        showCover(area, message, !sendHome && sendBack);
+        long t = SystemClock.elapsedRealtime();
         if (sendHome) {
             performGlobalAction(GLOBAL_ACTION_HOME);
-            long t = SystemClock.elapsedRealtime();
-            if (t - lastToast > TOAST_GAP_MS) {
-                lastToast = t;
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-            }
+        } else if (sendBack && t - lastBack > BACK_GAP_MS) {
+            lastBack = t;
+            performGlobalAction(GLOBAL_ACTION_BACK);
         }
+        if ((sendHome || sendBack) && t - lastToast > TOAST_GAP_MS) {
+            lastToast = t;
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /** The page address shown in a browser's bar, or null while the user is typing in it. */
+    private static String addressBar(AccessibilityNodeInfo root, String viewId) {
+        for (AccessibilityNodeInfo node : root.findAccessibilityNodeInfosByViewId(viewId)) {
+            if (!node.isFocused() && node.getText() != null) return node.getText().toString();
+        }
+        return null;
     }
 
     private boolean mentionsStill(AccessibilityNodeInfo root) {
@@ -190,7 +216,7 @@ public final class BlockService extends AccessibilityService {
         listening = on;
     }
 
-    private void showCover(Rect bounds, String text) {
+    private void showCover(Rect bounds, String text, boolean back) {
         WindowManager windows = getSystemService(WindowManager.class);
         boolean moved = !bounds.equals(coverBounds);
         coverBounds.set(bounds);
@@ -211,17 +237,18 @@ public final class BlockService extends AccessibilityService {
             coverText.setTextSize(16);
             coverText.setGravity(Gravity.CENTER);
             coverText.setPadding(0, pad / 2, 0, pad);
-            Button home = new Button(this);
-            home.setText(R.string.go_home);
-            home.setOnClickListener(v -> performGlobalAction(GLOBAL_ACTION_HOME));
+            coverButton = new Button(this);
+            coverButton.setOnClickListener(v -> performGlobalAction(coverBack ? GLOBAL_ACTION_BACK : GLOBAL_ACTION_HOME));
             cover.addView(title);
             cover.addView(coverText);
-            cover.addView(home);
+            cover.addView(coverButton);
             windows.addView(cover, layout(bounds));
         } else if (moved) {
             windows.updateViewLayout(cover, layout(bounds));
         }
         coverText.setText(text);
+        coverBack = back;
+        coverButton.setText(back ? R.string.go_back : R.string.go_home);
     }
 
     private static WindowManager.LayoutParams layout(Rect bounds) {
@@ -244,6 +271,7 @@ public final class BlockService extends AccessibilityService {
         } catch (RuntimeException ignored) { }
         cover = null;
         coverText = null;
+        coverButton = null;
         coverBounds.setEmpty();
     }
 }

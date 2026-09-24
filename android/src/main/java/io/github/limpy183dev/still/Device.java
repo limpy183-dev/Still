@@ -13,8 +13,11 @@ import android.telecom.TelecomManager;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /** Device checks that keep Still safe, mirroring the protected-component and managed-PC rules on Windows. */
@@ -77,6 +80,34 @@ final class Device {
             if (policy.isDeviceOwnerApp(pkg) || policy.isProfileOwnerApp(pkg)) return c.getString(R.string.managed_device);
         }
         return null;
+    }
+
+    /**
+     * Browsers whose address bar Still can read, with that bar's view id. Custom tabs opened from other
+     * apps run in these packages too. Other browsers are blocked outright during website sessions.
+     */
+    static final Map<String, String> ADDRESS_BARS = new HashMap<>();
+    static {
+        for (String chromium : new String[] { "com.android.chrome", "com.chrome.beta", "com.chrome.dev", "com.chrome.canary",
+                "com.microsoft.emmx", "com.brave.browser", "com.vivaldi.browser", "org.chromium.chrome" })
+            ADDRESS_BARS.put(chromium, chromium + ":id/url_bar");
+        ADDRESS_BARS.put("org.mozilla.firefox", "org.mozilla.firefox:id/mozac_browser_toolbar_url_view");
+        ADDRESS_BARS.put("org.mozilla.firefox_beta", "org.mozilla.firefox_beta:id/mozac_browser_toolbar_url_view");
+        ADDRESS_BARS.put("com.sec.android.app.sbrowser", "com.sec.android.app.sbrowser:id/location_bar_edit_text");
+        ADDRESS_BARS.put("com.duckduckgo.mobile.android", "com.duckduckgo.mobile.android:id/omnibarTextInput");
+    }
+
+    /** Installed apps that open any web link (browsers) but whose address bar Still can't read. */
+    static Map<String, String> otherBrowsers(Context c) {
+        PackageManager pm = c.getPackageManager();
+        Set<String> skip = protectedPackages(c);
+        Map<String, String> out = new LinkedHashMap<>();
+        Intent web = new Intent(Intent.ACTION_VIEW, Uri.parse("https://example.com/")).addCategory(Intent.CATEGORY_BROWSABLE);
+        for (ResolveInfo info : pm.queryIntentActivities(web, PackageManager.MATCH_ALL)) {
+            String pkg = info.activityInfo.packageName;
+            if (!ADDRESS_BARS.containsKey(pkg) && !skip.contains(pkg)) out.put(pkg, String.valueOf(info.loadLabel(pm)));
+        }
+        return out;
     }
 
     /** Whether the user has switched on Still's accessibility service. */
