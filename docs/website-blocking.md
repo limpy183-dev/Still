@@ -1,5 +1,7 @@
 # Website blocking: Chrome and Edge
 
+[← Back to the overview](../README.md) · [User guide](user-guide.md) · [Development](development.md)
+
 Website selections work everywhere application selections do: Focus space, the library, saved groups, alert-specific selections, current-selection alerts, and session history. Paste a URL or enter a domain in **Add website**. Paths are normalized to the domain; the whole domain and its subdomains are blocked. Up to 100 apps and websites may be selected together, including website-only sessions.
 
 In **Settings → Website block screens**, choose Quiet garden, Evening calm, or A clean page; create a screen with your own headline, text, and JPG/PNG/WebP; or redirect blocked navigation to an HTTPS page. Images are resized once and kept below 180 KB encoded. Redirect destinations cannot be within a selected blocked domain. The chosen screen is copied into each session and cannot be changed during that session.
@@ -11,11 +13,11 @@ In **Settings → Website block screens**, choose Quiet garden, Evening calm, or
 3. Open the Still extension's Details and enable **Allow in incognito** / **Allow in InPrivate**. The guard requires this capability before accepting the companion's readiness acknowledgement.
 4. Repeat in every browser profile you use, then restart those browsers. The extension's tooltip should report connected and ready. Keep at least one connected browser open when starting a website session, including scheduled alerts.
 
-The local build uses an unpacked companion. A store-published, managed extension would be needed for a stronger installation/removal boundary; this build does not claim that protection. Existing companions should be reloaded from the extensions page after updating Still's companion files.
+The local build uses an unpacked companion. A store-published, managed extension would be needed for a stronger installation/removal boundary; this build does not claim that protection. Still refreshes an existing companion's files when the app starts after an update, and the companion reloads itself within a minute while keeping its blocking rules. If it does not reconnect, reload it from the browser's extensions page.
 
 ## Daily limits and bedtime
 
-In **Time limits** (in the sidebar under Your workspace), add any website (or one of five recommended: YouTube, Instagram, TikTok, Reddit, X), choose how long it gets each day, and switch bedtime on or off per website. One bedtime window (default 22:30–07:00) applies to every website with bedtime on. Limits live in Still's preferences; the companion's native host forwards them when they change, and the companion counts time while a limited website is the active tab of a focused browser window (30-second steps). When the time is used up, or bedtime starts, open tabs are sent to a block page and new visits are redirected until midnight or the end of bedtime. Limits work outside focus sessions and do not use the SYSTEM guard; they can be changed in Still at any time. Reload the companion after updating Still.
+In **Time limits** (in the sidebar under Your workspace), add any website (or one of five recommended: YouTube, Instagram, TikTok, Reddit, X), choose how long it gets each day, and switch bedtime on or off per website. One bedtime window (default 22:30–07:00) applies to every website with bedtime on. Limits live in Still's preferences; the companion's native host forwards them when they change, and the companion counts time while a limited website is the active tab of a focused browser window (30-second steps). When the time is used up, or bedtime starts, open tabs are sent to a block page and new visits are redirected until midnight or the end of bedtime. Limits work outside focus sessions and do not use the SYSTEM guard; they can be changed in Still at any time.
 
 ## Enforcement and recovery
 
