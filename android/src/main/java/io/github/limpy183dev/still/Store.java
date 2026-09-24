@@ -35,6 +35,8 @@ import java.util.Iterator;
  */
 final class Store {
     private static final int HISTORY_LIMIT = 500, NOTICE_SESSION = 1, NOTICE_DONE = 2;
+    /** The running session's copy of a custom block-screen image. */
+    static final String SESSION_IMAGE = "session-screen.webp";
     private static boolean loaded;
     private static Session session;
     private static JSONArray history = new JSONArray();
@@ -76,6 +78,9 @@ final class Store {
         session = null;
         s.outcome = outcome;
         s.finishedAt = System.currentTimeMillis();
+        // Artwork belongs to the running session, not every history record (as on Windows).
+        s.screen = BlockScreen.DEFAULT;
+        new File(c.getFilesDir(), SESSION_IMAGE).delete();
         try {
             JSONArray next = new JSONArray().put(toJson(s));
             for (int i = 0; i < history.length() && next.length() < HISTORY_LIMIT; i++) next.put(history.get(i));
@@ -187,6 +192,8 @@ final class Store {
         for (java.util.Map.Entry<String, String> app : s.apps.entrySet()) apps.put(app.getKey(), app.getValue());
         JSONObject o = new JSONObject().put("id", s.id).put("intention", s.intention).put("apps", apps)
                 .put("websites", new JSONArray(s.websites))
+                .put("screen", new JSONObject().put("mode", s.screen.mode).put("title", s.screen.title)
+                        .put("text", s.screen.text).put("redirect", s.screen.redirect).put("image", s.screen.image))
                 .put("startedAt", s.startedAt).put("endsAt", s.endsAt).put("durationMinutes", s.durationMinutes)
                 .put("unlockDelayMinutes", s.unlockDelayMinutes).put("unlockAt", s.unlockAt).put("strict", s.strict)
                 .put("boot", s.boot).put("endsElapsed", s.endsElapsed).put("unlockElapsed", s.unlockElapsed);
@@ -216,6 +223,13 @@ final class Store {
         if (sites != null) for (int i = 0; i < sites.length(); i++) s.websites.add(Websites.domain(sites.getString(i)));
         // Stored limits are re-checked: a hand-edited file cannot create an over-long or empty session.
         Session.validate(s.durationMinutes, s.unlockDelayMinutes, s.apps.size() + s.websites.size());
+        JSONObject screen = o.optJSONObject("screen"); // Absent in older files: Quiet garden.
+        if (screen != null) try {
+            s.screen = BlockScreen.of(screen.optString("mode"), screen.optString("title"), screen.optString("text"),
+                    screen.optString("redirect"), screen.optBoolean("image"), s.websites);
+        } catch (IllegalArgumentException damaged) {
+            s.screen = BlockScreen.DEFAULT; // Only the look is lost; blocking is unaffected.
+        }
         return s;
     }
 }

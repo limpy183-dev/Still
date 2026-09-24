@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
@@ -18,11 +19,9 @@ import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
-import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import java.io.File;
 import java.time.LocalTime;
 import java.util.ArrayDeque;
 import java.util.Collections;
@@ -50,7 +49,7 @@ import java.util.Set;
  */
 public final class BlockService extends AccessibilityService {
     private static final long SETTLE_MS = 80, RECHECK_MS = 700, LIMIT_RECHECK_MS = 1000, MAX_COUNT_STEP_MS = 2000,
-            BACK_GAP_MS = 1500, TOAST_GAP_MS = 3000;
+            BACK_GAP_MS = 1500;
     private static final int MAX_NODES = 400;
     private static BlockService instance;
 
@@ -59,12 +58,11 @@ public final class BlockService extends AccessibilityService {
     private Set<String> blocked = Collections.emptySet(), guard = Collections.emptySet();
     private String sessionId;
     private Boolean listening;
-    private LinearLayout cover;
-    private TextView coverText;
+    private TextView cover;
+    private View screenView;
+    private String screenKey;
     private final Rect coverBounds = new Rect();
-    private long lastToast, lastBack;
-    private Button coverButton;
-    private boolean coverBack;
+    private long lastBack;
     private String countingDomain;
     private long countedAt;
     private PowerManager power;
@@ -121,6 +119,7 @@ public final class BlockService extends AccessibilityService {
         try { unregisterReceiver(screen); } catch (IllegalArgumentException notRegistered) { }
         stopCounting();
         hideCover();
+        hideScreen();
     }
 
     private void check() {
@@ -128,6 +127,7 @@ public final class BlockService extends AccessibilityService {
             enforce();
         } catch (RuntimeException e) {
             hideCover(); // Fail open: an error must never leave a cover stuck on screen.
+            hideScreen();
         }
     }
 
@@ -149,22 +149,26 @@ public final class BlockService extends AccessibilityService {
             // Nothing to enforce, or the screen is off: stop counting and polling until something changes.
             stopCounting();
             hideCover();
+            hideScreen();
             return;
         }
         LocalTime clock = LocalTime.now();
         int minute = clock.getHour() * 60 + clock.getMinute();
-        Rect area = null;
-        String message = null, counting = null;
+        Rect pip = null;
+        String pipText = null, counting = null, redirectTo = null, redirectIn = null;
+        Shown shown = null;
         boolean sendHome = false, sendBack = false, poll = false;
         for (AccessibilityWindowInfo window : getWindows()) {
             if (window.getType() != AccessibilityWindowInfo.TYPE_APPLICATION) continue;
             AccessibilityNodeInfo root = window.getRoot();
             if (root == null || root.getPackageName() == null) continue;
             String pkg = root.getPackageName().toString();
-            boolean hit = s != null && blocked.contains(pkg), site = false;
-            if (hit) message = getString(R.string.cover_text, s.apps.containsKey(pkg) ? s.apps.get(pkg) : pkg, until(s));
+            Shown hit = null;
+            boolean site = false;
+            if (s != null && blocked.contains(pkg))
+                hit = session(s, getString(R.string.cover_text, s.apps.containsKey(pkg) ? s.apps.get(pkg) : pkg, until(s)));
             String bar = Device.ADDRESS_BARS.get(pkg);
-            if (!hit && bar != null && (limited || !s.websites.isEmpty())) {
+            if (hit == null && bar != null && (limited || !s.websites.isEmpty())) {
                 // The address bar changes without a window event, so keep looking while a browser is open.
                 poll = true;
                 String host = Websites.hostOf(addressBar(root, bar));
@@ -172,50 +176,82 @@ public final class BlockService extends AccessibilityService {
                 Limits.Site limit = domain == null && limited ? limits.find(host) : null;
                 String reason = limit == null ? null : limits.blocked(limit, LimitStore.secondsUsed(this, limit.domain), minute);
                 if (domain != null) {
-                    hit = site = true;
-                    message = getString(R.string.cover_text, domain, until(s));
+                    site = true;
+                    hit = session(s, getString(R.string.cover_text, domain, until(s)));
+                    if (BlockScreen.REDIRECT.equals(s.screen.mode)) { redirectTo = s.screen.redirect; redirectIn = pkg; }
                 } else if (reason != null) {
-                    hit = site = true;
-                    message = Limits.BEDTIME.equals(reason) ? getString(R.string.cover_bedtime, limit.domain, Store.clockText(this, limits.to))
-                            : getString(R.string.cover_limit, limit.domain);
+                    site = true;
+                    hit = Limits.BEDTIME.equals(reason) ? limitScreen(BlockScreen.DUSK, R.string.bedtime_title,
+                            getString(R.string.bedtime_text, limit.domain, Store.clockText(this, limits.to)))
+                            : limitScreen(BlockScreen.GARDEN, R.string.limit_title,
+                            getResources().getQuantityString(R.plurals.limit_text, limit.minutes, limit.minutes, limit.domain));
                 } else if (limit != null && limit.minutes > 0 && window.isActive()) {
                     counting = limit.domain; // Time counts only for the page in the window being used.
                 }
             }
-            if (!hit && s != null && s.strict && guard.contains(pkg)) {
+            if (hit == null && s != null && s.strict && guard.contains(pkg)) {
                 // Settings or the uninstaller showing Still: the screens that could switch it off or remove it.
                 // Their content loads after the window appears, so keep looking while one is open.
                 poll = true;
-                hit = mentionsStill(root);
-                if (hit) message = getString(R.string.cover_guard, until(s));
+                if (mentionsStill(root)) hit = session(s, getString(R.string.cover_guard, until(s)));
             }
-            if (!hit) continue;
-            Rect bounds = new Rect();
-            window.getBoundsInScreen(bounds);
-            if (area == null) area = bounds; else area.union(bounds);
-            // Home and Back do not close picture-in-picture; that window just stays covered.
-            if (window.isInPictureInPictureMode()) continue;
+            if (hit == null) continue;
+            if (window.isInPictureInPictureMode()) {
+                // Home and Back do not close picture-in-picture, so that window is covered where it is.
+                Rect bounds = new Rect();
+                window.getBoundsInScreen(bounds);
+                if (pip == null) pip = bounds; else pip.union(bounds);
+                pipText = hit.status;
+                continue;
+            }
+            shown = hit;
             if (site) sendBack = true; else sendHome = true;
         }
         long t = SystemClock.elapsedRealtime();
         countTime(counting, t);
         if (poll) handler.postDelayed(check, s != null ? RECHECK_MS : LIMIT_RECHECK_MS);
-        if (area == null) {
-            hideCover();
-            return;
-        }
-        // A blocked website steps back a page (leaving the browser usable); apps and Still's settings go home.
-        showCover(area, message, !sendHome && sendBack);
+        if (pip != null) showCover(pip, pipText); else hideCover();
         if (sendHome) {
             performGlobalAction(GLOBAL_ACTION_HOME);
         } else if (sendBack && t - lastBack > BACK_GAP_MS) {
+            // A blocked website steps back a page, leaving the browser usable for everything else.
             lastBack = t;
             performGlobalAction(GLOBAL_ACTION_BACK);
+            if (redirectTo != null && !sendHome) {
+                openRedirect(redirectTo, redirectIn);
+                return; // Like Windows, a redirect screen shows the destination instead of a block screen.
+            }
         }
-        if ((sendHome || sendBack) && t - lastToast > TOAST_GAP_MS) {
-            lastToast = t;
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        // Stays up until closed, so it's clear why the app or page went away. It never has the blocked
+        // app or page behind it: Home or Back has already been pressed.
+        if (shown != null && redirectTo == null) showScreen(shown);
+    }
+
+    /** What a full block screen says. */
+    private static final class Shown {
+        final String style, title, text, status, footnote;
+        final File image;
+        Shown(String style, String title, String text, String status, String footnote, File image) {
+            this.style = style; this.title = title; this.text = text; this.status = status; this.footnote = footnote; this.image = image;
         }
+        String key() { return style + title + text + status; }
+    }
+
+    private Shown session(Session s, String status) {
+        BlockScreen screen = s.screen;
+        return new Shown(screen.style(), screen.headline(), screen.body(), status, getString(R.string.screen_footnote),
+                screen.image ? new File(getFilesDir(), Store.SESSION_IMAGE) : null);
+    }
+
+    /** Limits and bedtime use the Windows limit page's wording and looks. */
+    private Shown limitScreen(String style, int title, String text) {
+        return new Shown(style, getString(title), text, getString(R.string.limit_status), null, null);
+    }
+
+    private void openRedirect(String url, String browser) {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)).setPackage(browser).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        } catch (RuntimeException unavailable) { } // Back has already left the blocked page.
     }
 
     private String until(Session s) {
@@ -277,39 +313,23 @@ public final class BlockService extends AccessibilityService {
         listening = on;
     }
 
-    private void showCover(Rect bounds, String text, boolean back) {
+    /** A plain cover over picture-in-picture windows, which Home and Back cannot close. */
+    private void showCover(Rect bounds, String text) {
         WindowManager windows = getSystemService(WindowManager.class);
         boolean moved = !bounds.equals(coverBounds);
         coverBounds.set(bounds);
         if (cover == null) {
-            cover = new LinearLayout(this);
-            cover.setOrientation(LinearLayout.VERTICAL);
+            cover = new TextView(this);
             cover.setGravity(Gravity.CENTER);
             cover.setBackgroundColor(getColor(R.color.cover_bg));
-            int pad = Math.round(24 * getResources().getDisplayMetrics().density);
+            cover.setTextColor(getColor(R.color.cover_text));
+            int pad = Math.round(8 * getResources().getDisplayMetrics().density);
             cover.setPadding(pad, pad, pad, pad);
-            TextView title = new TextView(this);
-            title.setText(R.string.cover_title);
-            title.setTextColor(getColor(R.color.lime));
-            title.setTextSize(22);
-            title.setGravity(Gravity.CENTER);
-            coverText = new TextView(this);
-            coverText.setTextColor(getColor(R.color.cover_text));
-            coverText.setTextSize(16);
-            coverText.setGravity(Gravity.CENTER);
-            coverText.setPadding(0, pad / 2, 0, pad);
-            coverButton = new Button(this);
-            coverButton.setOnClickListener(v -> performGlobalAction(coverBack ? GLOBAL_ACTION_BACK : GLOBAL_ACTION_HOME));
-            cover.addView(title);
-            cover.addView(coverText);
-            cover.addView(coverButton);
             windows.addView(cover, layout(bounds));
         } else if (moved) {
             windows.updateViewLayout(cover, layout(bounds));
         }
-        coverText.setText(text);
-        coverBack = back;
-        coverButton.setText(back ? R.string.go_back : R.string.go_home);
+        cover.setText(text);
     }
 
     private static WindowManager.LayoutParams layout(Rect bounds) {
@@ -331,8 +351,30 @@ public final class BlockService extends AccessibilityService {
             getSystemService(WindowManager.class).removeView(cover);
         } catch (RuntimeException ignored) { }
         cover = null;
-        coverText = null;
-        coverButton = null;
         coverBounds.setEmpty();
+    }
+
+    /** The full block screen. Close always dismisses it; it is rebuilt only when its words change. */
+    private void showScreen(Shown content) {
+        if (screenView != null && content.key().equals(screenKey)) return;
+        hideScreen();
+        screenKey = content.key();
+        screenView = BlockScreenView.build(this, content.style, content.image, content.title, content.text, content.status,
+                content.footnote, getString(R.string.close), v -> { hideScreen(); refresh(); });
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                PixelFormat.OPAQUE);
+        params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+        getSystemService(WindowManager.class).addView(screenView, params);
+    }
+
+    private void hideScreen() {
+        if (screenView == null) return;
+        try {
+            getSystemService(WindowManager.class).removeView(screenView);
+        } catch (RuntimeException ignored) { }
+        screenView = null; // Drops the view and any image with it.
+        screenKey = null;
     }
 }

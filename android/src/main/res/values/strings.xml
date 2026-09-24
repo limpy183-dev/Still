@@ -46,11 +46,8 @@
     <string name="cancel_release">Cancel request</string>
     <string name="end">End focus session</string>
 
-    <string name="cover_title">Still is on</string>
     <string name="cover_text">%1$s is blocked until %2$s.</string>
     <string name="cover_guard">Still\'s settings are locked until %1$s.</string>
-    <string name="cover_limit">Today\'s time on %1$s is used up. It\'s back after midnight.</string>
-    <string name="cover_bedtime">%1$s is resting for bedtime until %2$s.</string>
 
     <string name="limits_title">Time limits</string>
     <string name="limits_open">Time limits</string>
@@ -73,8 +70,36 @@
     <string name="remove">Remove</string>
     <string name="cancel">Cancel</string>
 
-    <string name="go_home">Go home</string>
-    <string name="go_back">Go back</string>
+    <string name="close">Close</string>
+
+    <!-- Block screens, worded like app/browser-extension/blocked.html and websites.js presets. -->
+    <string name="screen_eyebrow">A LITTLE SPACE FOR YOUR ATTENTION</string>
+    <string name="screen_footnote">Your focus session is managed by Still. Return there to request an early release.</string>
+    <string name="limit_title">That’s enough for today.</string>
+    <plurals name="limit_text">
+        <item quantity="one">You’ve spent your %1$d minute on %2$s today. It opens again at midnight.</item>
+        <item quantity="other">You’ve spent your %1$d minutes on %2$s today. It opens again at midnight.</item>
+    </plurals>
+    <string name="bedtime_title">Time to rest.</string>
+    <string name="bedtime_text">%1$s is asleep until %2$s. Tomorrow will be here soon.</string>
+    <string name="limit_status">You set this limit in Still. Change it there if your plans change.</string>
+    <string name="screen_title">Block screen</string>
+    <string name="screen_explain">Shown when a blocked app or website is closed. Each session keeps the screen it started with; changes apply to the next session.</string>
+    <string name="screen_garden">Quiet garden</string>
+    <string name="screen_dusk">Evening calm</string>
+    <string name="screen_paper">A clean page</string>
+    <string name="screen_custom">Your own screen</string>
+    <string name="screen_redirect">Redirect websites to a page</string>
+    <string name="screen_headline">Headline</string>
+    <string name="screen_text">A few words for yourself</string>
+    <string name="screen_choose_image">Choose image</string>
+    <string name="screen_remove_image">Remove image</string>
+    <string name="screen_image_failed">That image couldn\'t be opened. Try a JPG, PNG or WebP.</string>
+    <string name="screen_redirect_hint">https://</string>
+    <string name="screen_redirect_note">Blocked websites open this HTTPS page instead. It must be outside the websites you block. Apps and Still\'s settings still show Quiet garden.</string>
+    <string name="screen_preview">Preview</string>
+    <string name="screen_label">Block screen: %1$s</string>
+    <string name="screen_change">Change block screen</string>
 
     <string name="managed_profile">Still doesn\'t run in a work profile, so it never interferes with your organisation\'s device policy.</string>
     <string name="managed_device">This phone is managed by an organisation. Still doesn\'t run on managed phones, so it never interferes with their device policy.</string>

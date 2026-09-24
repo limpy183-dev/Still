@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The block page's orbit and leaf (app/browser-extension/blocked.css), tinted per style. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="92dp"
+    android:height="92dp"
+    android:viewportWidth="92"
+    android:viewportHeight="92">
+    <path
+        android:pathData="M46,0.5a45.5,45.5 0 1,0 0.01,0z"
+        android:strokeWidth="1"
+        android:strokeColor="#FFFFFFFF" />
+    <group android:pivotX="46" android:pivotY="46" android:rotation="-30">
+        <group android:translateX="23.5" android:translateY="23.5">
+            <path
+                android:fillColor="#FFFFFFFF"
+                android:pathData="M22.5,0A22.5,22.5 0 0,1 45,22.5L45,45L22.5,45A22.5,22.5 0 0,1 0,22.5A22.5,22.5 0 0,1 22.5,0z" />
+        </group>
+    </group>
+</vector>

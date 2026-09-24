@@ -32,6 +32,8 @@ final class Session {
     final Map<String, String> apps = new LinkedHashMap<>();
     /** Blocked website domains (normalised, unique). */
     final Set<String> websites = new LinkedHashSet<>();
+    /** The block screen, frozen when the session starts. */
+    BlockScreen screen = BlockScreen.DEFAULT;
 
     /** {@code targetCount} is apps plus websites, like on Windows. Website-only sessions are allowed. */
     static void validate(int minutes, int delay, int targetCount) {

@@ -58,6 +58,12 @@
         </activity>
 
         <activity
+            android:name=".BlockScreenActivity"
+            android:exported="false"
+            android:label="@string/screen_title"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
             android:name=".LimitsActivity"
             android:exported="false"
             android:label="@string/limits_title"

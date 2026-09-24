@@ -2,9 +2,9 @@
 
 [← Back to the overview](../README.md) · [User guide](user-guide.md) · [Development](development.md)
 
-A native Android version of Still's focus sessions, in [`android/`](../android). So far: sessions, app and website blocking, a release delay, strict protection, the managed-phone check, and daily website limits with bedtime. Custom block screens, to-dos, alerts and a history screen come later. There is no release build yet.
+A native Android version of Still's focus sessions, in [`android/`](../android). So far: sessions, app and website blocking, a release delay, strict protection, the managed-phone check, daily website limits with bedtime, and block screens. To-dos, alerts and a history screen come later. There is no release build yet.
 
-Android 11 or newer. It is written in plain Java against the Android framework, with no libraries, so the release APK is about 57 KB.
+Android 11 or newer. It is written in plain Java against the Android framework, with no libraries, so the release APK is about 96 KB.
 
 ## How a session works
 
@@ -25,15 +25,25 @@ It follows the Windows rules: a 1–1,440 minute session, an optional 1–120 mi
 
 Type a domain or paste a link under **Websites to block**. Links are reduced to their domain, and the whole domain and its subdomains are blocked: youtube.com also covers m.youtube.com, but not notyoutube.com. Still accepts and rejects the same input as the Windows app (no IP addresses, wildcards, credentials or local names).
 
-During a session with websites, Still reads the address bar of **Chrome** (and Beta, Dev, Canary), **Edge**, **Brave**, **Vivaldi**, **Firefox**, **Samsung Internet** and **DuckDuckGo**. This includes links opened from other apps in those browsers' in-app tabs. When a blocked website is open, Still goes back a page and shows *"youtube.com is blocked until …"* over the tab until it has gone, with a **Go back** button. The browser stays usable for other websites, and nothing is blocked while you're typing in the address bar. Browsers Still can't read are blocked completely during sessions with websites, and are listed under **Blocked**, so they can't be used to get around it.
+During a session with websites, Still reads the address bar of **Chrome** (and Beta, Dev, Canary), **Edge**, **Brave**, **Vivaldi**, **Firefox**, **Samsung Internet** and **DuckDuckGo**. This includes links opened from other apps in those browsers' in-app tabs. When a blocked website is open, Still goes back a page and shows the block screen (below). The browser stays usable for other websites, and nothing is blocked while you're typing in the address bar. Browsers Still can't read are blocked completely during sessions with websites, and are listed under **Blocked**, so they can't be used to get around it.
 
 Why not a VPN or DNS filter? A local VPN would route every name lookup on the phone through Still, so any fault would break the whole internet. It would also take the phone's only VPN slot and could be skipped by Private DNS. Reading the address bar uses the service Still already runs, needs no new permission and fails open. The trade-off is that websites inside other apps' built-in web views aren't covered; block those apps instead. The Windows companion has the same scope: Chrome and Edge, not other apps.
+
+## Block screens
+
+When Still sends a blocked app home, or steps back from a blocked website, it shows a block screen until you tap **Close**. The blocked app or page is never behind it, because Home or Back has already been pressed. Choose the screen under **Change block screen** on the main screen. The options match Windows' website block screens and use the same wording and colors as the browser companion's block page:
+
+- **Quiet garden**, **Evening calm** or **A clean page**.
+- **Your own screen**: your headline (120 characters), a few words (1,000 characters) and an optional JPG, PNG or WebP image. The image is picked with Android's file picker, so no storage permission is needed. It's shrunk and re-encoded once to at most 180 KB, the same budget as on Windows.
+- **Redirect websites to a page**: blocked websites open an HTTPS page of your choice in the same browser. It must be outside the websites you block. Apps and Still's settings still show Quiet garden.
+
+As on Windows, the chosen screen (and a copy of its image) is frozen into each session, so changing it during a session applies to the next one. The copy is deleted when the session ends, and history doesn't keep artwork. Daily limits and bedtime use the Windows limit page instead: *"That's enough for today."* and *"Time to rest."* A picture-in-picture window, which Home and Back can't close, gets a small plain cover instead.
 
 ## Daily limits and bedtime
 
 Open **Time limits** from the main screen, during a session or not. They follow the Windows rules. Give any website a daily allowance of 0–1,440 minutes (0 means no daily limit) and choose whether it rests at bedtime. One bedtime window applies to every website with bedtime on. The default is 22:30–07:00 and it may cross midnight. YouTube, Instagram, TikTok, Reddit and X are offered as suggestions. The settings are saved in the same JSON shape as `websiteLimits` in the Windows preferences.
 
-Time counts only while a limited website is the page in the browser window you're using, with the screen on. When the allowance is used up, or bedtime starts, the site is stepped back from and covered, like a session website: *"Today's time on youtube.com is used up. It's back after midnight."* or *"youtube.com is resting for bedtime until 7:00 AM."* Counts reset at local midnight. Bedtime and the daily count follow the phone's clock, so changing the date starts a new day, as on Windows. Limits work outside focus sessions and can be changed at any time, so they aren't protected by strict mode, matching Windows.
+Time counts only while a limited website is the page in the browser window you're using, with the screen on. When the allowance is used up, or bedtime starts, the site is stepped back from and a limit page is shown, like on Windows: *"That's enough for today. You've spent your 30 minutes on youtube.com today. It opens again at midnight."* or *"Time to rest. youtube.com is asleep until 7:00 AM."* Counts reset at local midnight. Bedtime and the daily count follow the phone's clock, so changing the date starts a new day, as on Windows. Limits work outside focus sessions and can be changed at any time, so they aren't protected by strict mode, matching Windows.
 
 ## Set up
 
@@ -45,7 +55,7 @@ Time counts only while a limited website is the page in the browser window you'r
 
 - **Fail open.** If anything goes wrong while blocking, Still removes its cover rather than leaving the phone stuck. If the saved state can't be read, nothing is blocked, and the damaged file is kept as `state.corrupt.json`.
 - **Atomic saves with a backup.** `state.json` is written through Android's `AtomicFile`, which keeps `state.json.bak` until a write completes and restores it after a crash or power loss.
-- **Never locked out.** The cover only covers blocked windows, always has a **Go home** button, and never covers the home screen, phone or Settings pages that don't mention Still. System gestures always work.
+- **Never locked out.** A block screen appears only after the blocked app or page has been sent away, and **Close** always dismisses it. It is removed when the session ends, when the screen turns off and on any error. Protected apps (home screen, phone, Settings pages that don't mention Still) are never blocked.
 - **Clock changes don't count.** Within one boot, deadlines use the uptime clock, so changing the date or time neither ends nor extends a session. After a reboot the wall clock is used again, capped at the session's own length.
 - **Emergency release (USB debugging):** `adb shell am broadcast -n io.github.limpy183dev.still/.Recover` ends the session as *recovered* and keeps history. The receiver requires `android.permission.DUMP`, which only the system and the adb shell hold, so other apps can't send it.
 - **Last resort: Safe mode.** Rebooting into Android's Safe mode switches off every downloaded app, including Still's blocking, without any help from Still.
@@ -69,12 +79,13 @@ cd android
 ./gradlew testDebugUnitTest assembleDebug
 ```
 
-Gradle needs a JDK and the Android SDK (`ANDROID_HOME`). Android Studio's bundled JDK works (`JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"`). The rules in `Session.java`, `Websites.java` and `Limits.java` are plain Java and are unit-tested on the JVM (`src/test`).
+Gradle needs a JDK and the Android SDK (`ANDROID_HOME`). Android Studio's bundled JDK works (`JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"`). The rules in `Session.java`, `Websites.java`, `Limits.java` and `BlockScreen.java` are plain Java and are unit-tested on the JVM (`src/test`).
 
 | File | What it does |
 | --- | --- |
 | `Session.java` | Session rules and deadlines (mirrors `native/Session.cs`) |
 | `Websites.java` | Domain validation and matching (mirrors `app/websites.js`) and reading a host from an address bar |
+| `BlockScreen.java`, `BlockScreenView.java`, `BlockScreenActivity.java` | Block screen rules (mirrors `presets`/`screen()`), drawing them, and the editor with a live preview |
 | `Limits.java`, `LimitStore.java`, `LimitsActivity.java` | Limit and bedtime rules (mirrors `limits`/`inBedtime`/`limitBlocks`), their storage and today's usage, and the Time limits screen |
 | `Store.java` | Atomic state, history (500 entries), the end alarm and notifications |
 | `BlockService.java` | The accessibility service that blocks apps and websites and protects Still in strict sessions |

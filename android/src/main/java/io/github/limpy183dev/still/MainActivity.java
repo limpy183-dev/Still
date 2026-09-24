@@ -27,7 +27,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -105,6 +108,7 @@ public final class MainActivity extends Activity {
         View.OnClickListener openLimits = v -> startActivity(new Intent(this, LimitsActivity.class));
         findViewById(R.id.open_limits).setOnClickListener(openLimits);
         findViewById(R.id.open_limits_active).setOnClickListener(openLimits);
+        findViewById(R.id.change_screen).setOnClickListener(v -> startActivity(new Intent(this, BlockScreenActivity.class)));
         siteInput.setOnEditorActionListener((view, action, event) -> { addSite(); return true; });
         renderSites();
         findViewById(R.id.enable_blocking).setOnClickListener(v ->
@@ -153,6 +157,8 @@ public final class MainActivity extends Activity {
     private void renderSetup() {
         ((Chronometer) findViewById(R.id.countdown)).stop();
         blockingCard.setVisibility(Device.blockingEnabled(this) ? View.GONE : View.VISIBLE);
+        ((TextView) findViewById(R.id.screen_summary)).setText(getString(R.string.screen_label,
+                getString(BlockScreenActivity.name(BlockScreenActivity.saved(this).mode))));
         if (apps.isEmpty() && !appsLoading) loadApps();
         updateSetup();
     }
@@ -261,8 +267,12 @@ public final class MainActivity extends Activity {
             // Browsers whose address bar Still can't read would let blocked websites through, so they wait too.
             if (!sites.isEmpty()) for (Map.Entry<String, String> browser : Device.otherBrowsers(this).entrySet())
                 chosen.putIfAbsent(browser.getKey(), browser.getValue());
+            // The screen is re-checked against this session's websites, then frozen into it (as on Windows).
+            BlockScreen saved = BlockScreenActivity.saved(this);
+            BlockScreen screen = BlockScreen.of(saved.mode, saved.title, saved.text, saved.redirect, saved.image, sites);
             Session s = Session.start(UUID.randomUUID().toString(), intentionInput.getText().toString(), minutes, delay,
                     strict.isChecked(), chosen, sites, Store.clock(this));
+            s.screen = screen.image ? withImage(screen) : screen;
             savePrefs();
             Store.start(this, s);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
@@ -274,6 +284,17 @@ public final class MainActivity extends Activity {
             Toast.makeText(this, R.string.save_failed, Toast.LENGTH_LONG).show();
         }
         render();
+    }
+
+    /** Copies the image, so changing it later can't change a running session. Without it, the text still shows. */
+    private BlockScreen withImage(BlockScreen screen) {
+        try {
+            Files.copy(new File(getFilesDir(), BlockScreenActivity.IMAGE).toPath(),
+                    new File(getFilesDir(), Store.SESSION_IMAGE).toPath(), StandardCopyOption.REPLACE_EXISTING);
+            return screen;
+        } catch (IOException | RuntimeException e) {
+            return BlockScreen.of(screen.mode, screen.title, screen.text, screen.redirect, false, new ArrayList<>());
+        }
     }
 
     private static int number(EditText input) {
