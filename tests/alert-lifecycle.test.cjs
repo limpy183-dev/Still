@@ -8,21 +8,22 @@ const { pathToFileURL } = require('node:url');
 const source = fs.readFileSync(require.resolve('../app/alerts-main.cjs'), 'utf8');
 const base = { id: 'saved-alert', title: 'Focus', note: '', date: '2026-09-23', time: '09:00', repeat: 'once', lengthMode: 'duration', durationMinutes: 20, endTime: '10:00', style: 'card', blockMode: 'custom', apps: [{ name: 'Game', path: 'C:\\StillPreview\\Game.exe' }], unlockDelayMinutes: 0, sound: 'silent', volume: 65, enabled: true };
 
-async function scheduler(saved = [], preferences = { apps: base.apps, selected: [base.apps[0].path] }) {
+async function scheduler(saved = [], preferences = { apps: base.apps, selected: [base.apps[0].path] }, workArea = { x: 0, y: 0, width: 1200, height: 900 }) {
   let now = +new Date('2026-09-23T09:00:00'), interval, stored = JSON.stringify(saved), preparations = 0, reads = 0, opened = 0;
   const handlers = {}, windows = [], starts = [], events = [], notifications = [], timers = new Map();
   const guard = { installed: true, scheduledAlerts: true, snoozeAlerts: true, session: null };
   class Window {
-    constructor() {
+    constructor(options) {
+      this.options = options;
       this.webContents = { mainFrame: { url: pathToFileURL(path.resolve('app/alarm.html')).href }, send: (name, value) => { this[name] = value; }, setWindowOpenHandler() {}, on() {}, once: (_name, fn) => { this.loaded = fn; } };
       windows.push(this);
     }
-    loadFile() { this.loaded(); }
+    loadURL() { this.loaded(); }
     on() {} setAlwaysOnTop() {} show() {} focus() {}
     isDestroyed() { return !!this.destroyed; }
     destroy() { this.destroyed = true; }
   }
-  const screen = { getCursorScreenPoint() {}, getDisplayNearestPoint: () => ({ workArea: { x: 0, y: 0, width: 1200, height: 900 } }) };
+  const screen = { getCursorScreenPoint() {}, getDisplayNearestPoint: () => ({ workArea }) };
   class Notification extends EventEmitter {
     static isSupported() { return true; }
     constructor(options) { super(); this.options = options; notifications.push(this); }
@@ -51,6 +52,16 @@ async function scheduler(saved = [], preferences = { apps: base.apps, selected: 
     snooze: () => { const window = windows.at(-1); return handlers['alarm-action']({ sender: window.webContents, senderFrame: window.webContents.mainFrame }, 'snooze'); }
   };
 }
+
+test('alarm cards stay inside small work areas on secondary monitors', async () => {
+  const area = { x: -400, y: 100, width: 400, height: 500 };
+  const s = await scheduler([], {}, area);
+  await s.handlers['alerts:save']({ ...base, blockMode: 'none', apps: [] });
+  await s.tick();
+  const bounds = s.windows[0].options;
+  assert.ok(bounds.x >= area.x && bounds.y >= area.y);
+  assert.ok(bounds.x + bounds.width <= area.x + area.width && bounds.y + bounds.height <= area.y + area.height);
+});
 
 test('running → five-minute snooze → running keeps the exact selected apps and deadline', async () => {
   const s = await scheduler();

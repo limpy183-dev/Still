@@ -1,0 +1,37 @@
+# Still: notes for agents
+
+Still is a Windows 10/11 x64 focus app. It blocks apps (through AppLocker) and websites (through a Chrome/Edge companion), and it also has to-dos, alerts and session history. Repo: `limpy183-dev/Still`. Website: https://limpy183-dev.github.io/Still/
+
+## The suite
+
+| Part | Where | Notes |
+| --- | --- | --- |
+| Desktop app | `app/` | Electron (CommonJS `.cjs` main side, plain JS renderer). `main.cjs` is the entry point and `preload.cjs` is the IPC bridge. Feature modules are `alerts-*`, `websites-*` and `todos.js`. `domain.cjs` / `alert-domain.cjs` handle validation. |
+| Browser companion | `app/browser-extension/` | MV3 extension that talks to the app over native messaging. The app copies it to disk on start and stamps `version_name` with the app version, and the companion reloads itself when that changes (see `websites-main.cjs`). Its own `manifest.json` `version` is separate from the app version. |
+| Still Guard (native) | `native/` | C# SYSTEM service (`Guard.cs`), session rules (`Session.cs`), website helpers (`Websites.cs`) and Windows checks (`WindowsCompatibility.cs`). `policy.ps1` writes the AppLocker rules and `discover.ps1` finds installed apps. It is built with the .NET Framework compiler that ships with Windows (`npm run build:native`), so it needs no SDK. |
+| Installer | `installer/` | WPF Setup (`Setup.cs`/`.xaml`) that installs, updates and uninstalls per user. `scripts/build-installer.ps1` builds it. |
+| Website | `website/` | Static HTML/CSS/JS with no build step. `.github/workflows/pages.yml` deploys it to GitHub Pages on every push to `main` that touches `website/**`. |
+| Docs | `README.md`, `docs/` | User guide, website blocking, development, Windows compatibility. |
+| Tests | `tests/` | `npm test` runs the `*.test.cjs` unit tests. There are also Playwright/Electron UI scripts (`test:ui`, `test:todos`, `test:alerts`, `test:websites`), PowerShell policy tests and C# native tests. See `docs/development.md`. |
+
+## Keep in mind when changing things
+
+- **Safety first.** A strict session is meant to be hard to escape, and a bug can lock users out of their own apps. Never weaken the checks that refuse managed/MDM/domain PCs or PCs with existing app-control policy. Never weaken the IPC sender validation either.
+- **Use `npm run demo` or the test scripts** to try the UI. Preview mode never blocks anything. Don't run live protection (`scripts/Test-WindowsProtection.ps1 -RunLiveTest`) unless the user asks.
+- **Validate at boundaries.** IPC input is checked in `domain.cjs`/`alert-domain.cjs` and again natively. If you add a field, add validation and a test on both sides.
+- **User data must survive updates.** Preferences, alerts, to-dos and history persist across installs, so change storage formats in a backward-compatible way.
+- **Paths may be unusual:** Unicode, apostrophes, `%`, `&`, brackets, redirected folders. See `docs/windows-compatibility.md` before touching file URLs, installer paths or PowerShell invocation.
+- **Keep dependencies at zero** for the website and the runtime app (devDeps only: electron, electron-builder, playwright). Don't add npm packages casually.
+- **Features touch several places.** A user-visible change usually means updating the app, the docs (`README.md`/`docs/user-guide.md`) and the website (`features.html`, `guide.html`, `faq.html`). Refresh the screenshots if the UI changed (see `docs/development.md`).
+- Run `npm test` before finishing. Run the relevant UI script if the UI changed.
+
+## Releasing a new version
+
+1. Bump `version` in `package.json` (and `package-lock.json`).
+2. **GitHub release notes:** edit `.github/release-notes.md`. The release workflow passes it as the release body, and `--generate-notes` appends the commit list. Add or replace a short "What's new in vX.Y.Z" section at the top and keep the install instructions.
+3. **Website changelog** (https://limpy183-dev.github.io/Still/changelog.html, `website/changelog.html`):
+   - Add a new `<article class="panel release latest" data-tag="vX.Y.Z">` at the top of `#releases`, with a date, a plain-language bullet list, and download/GitHub links in the same format as the existing entries.
+   - Remove `latest`, the "Latest" pill and the primary download button from the previous entry.
+4. **Website version everywhere:** update `FALLBACK` in `website/js/site.js` (version, date, size, url, sha256 of the new `Still-Setup-X.Y.Z.exe`). Also update the hardcoded `data-version` / `data-size` / `data-date` fallback text in every `website/*.html`, including the titlebar on every page and `404.html`. You can find them with `grep -rn "1\.0\.1" website` (swap in the old version). JS refreshes these from the GitHub API at runtime, but the static text has to be right for when it can't reach GitHub.
+5. Commit, then `git tag vX.Y.Z && git push origin main vX.Y.Z`. `.github/workflows/release.yml` checks that the tag matches `package.json`, runs the tests, builds `Still-Setup-X.Y.Z.exe` and publishes it as the latest release.
+6. After the release exists, fill in the real size and sha256 in `site.js` if you didn't have them before, and push `main` so Pages redeploys.

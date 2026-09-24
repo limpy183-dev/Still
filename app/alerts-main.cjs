@@ -5,7 +5,7 @@ const { randomUUID, createHash } = require('node:crypto');
 const { createReadStream } = require('node:fs');
 const { pathToFileURL } = require('node:url');
 const { validateAlert, dueOccurrence, nextOccurrence, MEDIA_FILE } = require('./alert-domain.cjs');
-const { validateSession } = require('./domain.cjs');
+const { validateSession, sameFileUrl } = require('./domain.cjs');
 protocol.registerSchemesAsPrivileged([{ scheme: 'still-media', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } }]);
 
 async function setupAlerts({ handle, getWindow, showWindow, getPreferences, status, getStatusGeneration = () => 0, start, snooze, prepare }) {
@@ -75,7 +75,7 @@ async function setupAlerts({ handle, getWindow, showWindow, getPreferences, stat
     for (const [index, target] of displays.entries()) {
       const area = target.workArea;
       const window = new BrowserWindow({
-        ...(item.alert.style === 'full' ? target.bounds : { x: area.x + area.width - Math.min(460, area.width) - 16, y: area.y + area.height - Math.min(610, area.height) - 16, width: Math.min(460, area.width), height: Math.min(610, area.height) }),
+        ...(item.alert.style === 'full' ? target.bounds : { x: area.x + Math.max(0, area.width - 460 - 16), y: area.y + Math.max(0, area.height - 610 - 16), width: Math.min(460, area.width), height: Math.min(610, area.height) }),
         frame: false, resizable: false, minimizable: false, maximizable: false, skipTaskbar: true, show: false,
         backgroundColor: '#f5f6f1', webPreferences: { preload: path.join(__dirname, 'alarm-preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, autoplayPolicy: 'no-user-gesture-required', backgroundThrottling: false }
       });
@@ -87,7 +87,7 @@ async function setupAlerts({ handle, getWindow, showWindow, getPreferences, stat
         window.webContents.send('alarm-data', { ...item, audible: index === 0, reducedMotion: getPreferences().reducedMotion });
         if (!quiet) { if (item.alert.style === 'full') window.setFullScreen(true); if (item.alert.onTop === false) window.showInactive(); else { window.setAlwaysOnTop(true, 'screen-saver'); window.show(); window.focus(); } }
       });
-      window.loadFile(path.join(__dirname, 'alarm.html'));
+      window.loadURL(alarmUrl);
     }
     if (quiet && Notification.isSupported()) {
       current.notification = new Notification({ title: item.preview ? `Preview · ${item.alert.title}` : item.alert.title, body: [item.alert.note, item.message].filter(Boolean).join('\n'), silent: true, icon: path.join(__dirname, '..', 'assets', 'still.ico') });
@@ -103,7 +103,7 @@ async function setupAlerts({ handle, getWindow, showWindow, getPreferences, stat
     presentations.push({ alert: { ...alert }, occurrence, message, preview }); showNext();
   }
   function trustedAlarm(event) {
-    if (!active?.windows.some(window => window.webContents === event.sender) || event.senderFrame !== event.sender.mainFrame || event.senderFrame.url !== alarmUrl) throw Error('Untrusted alarm request.');
+    if (!active?.windows.some(window => window.webContents === event.sender) || event.senderFrame !== event.sender.mainFrame || !sameFileUrl(event.senderFrame.url, alarmUrl)) throw Error('Untrusted alarm request.');
   }
   ipcMain.handle('alarm-action', async (event, action) => {
     trustedAlarm(event);

@@ -4,7 +4,8 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 async function run() {
   const environment = { ...process.env }; delete environment.ELECTRON_RUN_AS_NODE;
-  const application = await electron.launch({ executablePath: path.resolve('release/win-unpacked/Still.exe'), args: ['--test'], env: environment, timeout: 60000 });
+  await fs.mkdir('test-results', { recursive: true });
+  const application = await electron.launch({ executablePath: path.resolve(process.env.STILL_TEST_EXECUTABLE || 'release/win-unpacked/Still.exe'), args: ['--test'], env: environment, timeout: 60000 });
   try {
     const window = await application.firstWindow();
     const errors = []; window.on('pageerror', error => errors.push(error.message));
@@ -28,13 +29,14 @@ async function run() {
     await first.click(); await window.locator('#picker-done').click();
     assert.equal(await window.locator('#selected-count').innerText(), '1');
     await window.locator('#start-button').click();
-    assert.ok((await window.locator('#confirm-body').innerText()).includes('administrator approval'));
+    assert.ok((await window.locator('#confirm-body').innerText()).includes(initial.installed ? 'Save any open work' : 'administrator approval'));
     await window.locator('#confirm-cancel').click();
     const final = await window.evaluate(() => window.still.status());
     assert.equal(final.installed, initial.installed, 'Smoke test does not install a service');
     assert.deepEqual(errors, []);
-    await fs.access('release/win-unpacked/resources/guard/Still.Guard.exe');
-    await fs.access('release/win-unpacked/resources/guard/policy.ps1');
+    const resources = await application.evaluate(() => process.resourcesPath);
+    await fs.access(path.join(resources, 'guard/Still.Guard.exe'));
+    await fs.access(path.join(resources, 'guard/policy.ps1'));
     console.log(`Passed: packaged app, bundled resources/font, ${discovered} discovered Windows apps, selection/search, and setup prompt. No protection installed or rules applied.`);
   } finally { await application.close(); }
 }

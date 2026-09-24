@@ -1,4 +1,11 @@
 const path = require('node:path');
+const { fileURLToPath } = require('node:url');
+function sameFileUrl(actual, expected) {
+  try {
+    const url = new URL(actual);
+    return url.protocol === 'file:' && !url.search && !url.hash && fileURLToPath(url) === fileURLToPath(expected);
+  } catch { return false; }
+}
 const Websites = require('./websites.js');
 const allowedTarget = target => allowedApp(target) || Websites.allowedWebsite(target);
 const protectedNames = new Set(['still', 'still.guard', 'electron', 'powershell', 'pwsh', 'cmd', 'conhost', 'explorer', 'taskmgr', 'regedit', 'sc', 'services', 'mmc', 'winlogon', 'csrss', 'lsass', 'svchost', 'wininit', 'dwm', 'sihost', 'userinit', 'smss', 'consent', 'runtimebroker', 'dllhost', 'rundll32']);
@@ -55,4 +62,4 @@ function newerVersion(latest, current) {
 function updateUrl(url) {
   return typeof url === 'string' && url.startsWith(releases) ? url : releases + 'latest';
 }
-module.exports = { allowedApp, allowedTarget, validateSession, validatePreferences, newerVersion, updateUrl };
+module.exports = { allowedApp, allowedTarget, validateSession, validatePreferences, newerVersion, updateUrl, sameFileUrl };

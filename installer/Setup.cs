@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -49,9 +50,17 @@ static partial class Setup {
         using (new Mutex(true, @"Local\Still.Setup", out first)) {
             if (!first) return 0;
             uninstaller = Assembly.GetExecutingAssembly().GetManifestResourceInfo("payload.zip") == null;
+            if (!uninstaller) {
+                try { Still.WindowsCompatibility.Ensure(); }
+                catch (Exception ex) { MessageBox.Show(ex.Message, "Still Setup", MessageBoxButton.OK, MessageBoxImage.Information); return 1; }
+            }
             var app = new Application();
             app.DispatcherUnhandledException += (sender, e) => { Log(e.Exception); MessageBox.Show(e.Exception.Message, "Still Setup", MessageBoxButton.OK, MessageBoxImage.Error); };
             window = (Window)XamlReader.Load(Resource("Setup.xaml"));
+            // WorkArea is in WPF logical pixels, so this also covers high display scaling.
+            double scale = Math.Min(1, Math.Min(SystemParameters.WorkArea.Width / window.Width, SystemParameters.WorkArea.Height / window.Height));
+            ((FrameworkElement)window.Content).LayoutTransform = new ScaleTransform(scale, scale);
+            window.Width *= scale; window.Height *= scale;
             try { window.FontFamily = new FontFamily(new Uri(Fonts() + "\\"), "./#Manrope, Segoe UI Variable Text, Segoe UI"); } catch { /* the Windows font still looks at home */ }
             Get<TextBlock>("TitleText").Text = Spaced(uninstaller ? "STILL · UNINSTALL" : "STILL · SETUP " + Version);
             Get<FrameworkElement>("TitleBar").MouseLeftButtonDown += delegate { window.DragMove(); };
@@ -101,7 +110,7 @@ static partial class Setup {
             dir = key == null ? null : key.GetValue("InstallLocation") as string;
             installedVersion = key == null ? null : key.GetValue("DisplayVersion") as string;
         }
-        if (dir == null || !File.Exists(Path.Combine(dir, "Still.exe"))) { dir = DefaultDir; installedVersion = null; }
+        if (!IsInstallDirectory(dir) || !File.Exists(Path.Combine(dir, "Still.exe"))) { dir = DefaultDir; installedVersion = null; }
         Get<TextBlock>("LocationText").Text = dir;
         Get<TextBlock>("LocationLabel").Text = installedVersion == null ? "Installs to" : "Installed in";
         Get<TextBlock>("VersionText").Text = installedVersion + "  →  " + Version;
@@ -122,7 +131,7 @@ static partial class Setup {
         string registered;
         using (var key = Registry.CurrentUser.OpenSubKey(UninstallKey)) registered = key == null ? null : key.GetValue("InstallLocation") as string;
         // Never empty a folder that isn't a Still installation (e.g. the uninstaller copied to Downloads).
-        if (!File.Exists(Path.Combine(dir, "Still.exe")) && !string.Equals(registered, dir, StringComparison.OrdinalIgnoreCase)) {
+        if (!IsInstallDirectory(dir) || (!File.Exists(Path.Combine(dir, "Still.exe")) && !string.Equals(registered, dir, StringComparison.OrdinalIgnoreCase))) {
             Page("NOTHING TO REMOVE", "Still isn't ", "here.", "This uninstaller only removes the Still installation it belongs to. Use Settings → Apps → Installed apps to remove Still.", null, null, "Close");
             return;
         }
@@ -195,6 +204,7 @@ static partial class Setup {
             int shown = -1;
             foreach (var entry in zip.Entries) {
                 string path = Path.GetFullPath(Path.Combine(target, entry.FullName));
+                if (!path.StartsWith(Path.GetFullPath(target) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) throw new IOException("Invalid installer archive path.");
                 if (entry.FullName.EndsWith("/")) { Directory.CreateDirectory(path); continue; }
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
                 using (var input = entry.Open())
@@ -300,9 +310,10 @@ static partial class Setup {
 
     static void RemoveGuard(bool data) {
         // One administrator prompt: the guard releases its rules and unregisters, then its folders are removed.
-        string folders = "rmdir /s /q \"" + Path.GetDirectoryName(GuardExe) + "\"";
-        if (data) folders += " & rmdir /s /q \"" + Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Still") + "\"";
-        var start = new ProcessStartInfo("cmd.exe", "/c \"\"" + GuardExe + "\" --uninstall && (" + folders + " & exit /b 0)\"") { UseShellExecute = true, Verb = "runas", WindowStyle = ProcessWindowStyle.Hidden };
+        string script = "& " + QuotePowerShell(GuardExe) + " --uninstall; if ($LASTEXITCODE -ne 0) { exit 1 }; Remove-Item -LiteralPath " + QuotePowerShell(Path.GetDirectoryName(GuardExe)) + " -Recurse -Force;";
+        if (data) script += " Remove-Item -LiteralPath " + QuotePowerShell(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Still")) + " -Recurse -Force;";
+        var start = PowerShell(script);
+        start.UseShellExecute = true; start.Verb = "runas";
         try {
             using (var process = Process.Start(start)) {
                 process.WaitForExit();
@@ -314,23 +325,40 @@ static partial class Setup {
         }
     }
 
-    // The running uninstaller can't delete itself, so a short-lived hidden command removes the folder after it exits.
+    // Pass paths as PowerShell literals, not cmd text (% and & are legal in account names).
+    static string QuotePowerShell(string value) { return "'" + value.Replace("'", "''") + "'"; }
+    static ProcessStartInfo PowerShell(string script) {
+        return new ProcessStartInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), @"WindowsPowerShell\v1.0\powershell.exe"),
+            "-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand " + Convert.ToBase64String(Encoding.Unicode.GetBytes("$ErrorActionPreference='Stop'; try { " + script + " } catch { exit 1 }")))
+            { CreateNoWindow = true, UseShellExecute = false, WindowStyle = ProcessWindowStyle.Hidden, WorkingDirectory = Path.GetTempPath() };
+    }
+    static bool IsInstallDirectory(string path) {
+        return !string.IsNullOrWhiteSpace(path) && string.Equals(Path.GetFullPath(path).TrimEnd('\\'), Path.GetFullPath(DefaultDir).TrimEnd('\\'), StringComparison.OrdinalIgnoreCase);
+    }
+    // Wait for this exact process to exit before deleting its validated installation directory.
     static void RemoveFolderLater() {
-        Process.Start(new ProcessStartInfo("cmd.exe", "/c ping 127.0.0.1 -n 3 > nul & rmdir /s /q \"" + dir + "\"") { CreateNoWindow = true, UseShellExecute = false, WorkingDirectory = Path.GetTempPath() });
+        if (!IsInstallDirectory(dir)) throw new IOException("Unexpected uninstall directory.");
+        Process.Start(PowerShell("Wait-Process -Id " + Process.GetCurrentProcess().Id + " -ErrorAction SilentlyContinue; Remove-Item -LiteralPath " + QuotePowerShell(dir) + " -Recurse -Force;"));
     }
 
     // ----- helpers -----
 
     static bool StillRunning() {
         var processes = Process.GetProcessesByName("Still");
+        bool running = processes.Any(IsThisInstallation);
         foreach (var process in processes) process.Dispose();
-        return processes.Length > 0;
+        return running;
+    }
+
+    static bool IsThisInstallation(Process process) {
+        try { return process.SessionId == Process.GetCurrentProcess().SessionId && string.Equals(process.MainModule.FileName, Path.Combine(dir, "Still.exe"), StringComparison.OrdinalIgnoreCase); }
+        catch { return false; }
     }
 
     // Still hides to the tray instead of quitting on close, so it is stopped. Preferences are written atomically.
     static void CloseStill() {
         foreach (var process in Process.GetProcessesByName("Still"))
-            using (process) try { process.Kill(); process.WaitForExit(10000); } catch { /* already gone, or another user's */ }
+            using (process) try { if (IsThisInstallation(process)) { process.Kill(); process.WaitForExit(10000); } } catch { /* already gone, or another user's */ }
     }
 
     static void DeleteDirectory(string path) {

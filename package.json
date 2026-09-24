@@ -23,6 +23,9 @@
   "author": "Still",
   "license": "MIT",
   "type": "commonjs",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "devDependencies": {
     "electron": "44.2.0",
     "electron-builder": "26.15.3",

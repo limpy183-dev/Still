@@ -91,6 +91,10 @@ namespace Still {
         }
         static void Install(string sid) {
             new SecurityIdentifier(sid);
+            WindowsCompatibility.Ensure();
+            var source = AppDomain.CurrentDomain.BaseDirectory;
+            // Check the new policy before stopping/replacing an existing working service.
+            RunPolicy("check", null, source);
             bool installed = ServiceController.GetServices().Any(s => s.ServiceName == ServiceId);
             if (installed)
             {
@@ -105,7 +109,6 @@ namespace Still {
             }
             ProtectDirectory(InstallDir, sid);
             ProtectDirectory(Data, sid);
-            var source = AppDomain.CurrentDomain.BaseDirectory;
             // Browsers keep Still.Guard.exe running as their native messaging host, which locks it.
             // A running exe can still be renamed, so move old copies aside and clean them up later.
             foreach (var old in Directory.GetFiles(InstallDir, "*.old")) { try { File.Delete(old); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
@@ -116,7 +119,6 @@ namespace Still {
                 File.Copy(Path.Combine(source, file), destination);
             }
             File.WriteAllText(Path.Combine(Data, "owner.txt"), sid);
-            RunPolicy("check", null);
             if (!installed) Run("sc.exe", "create " + ServiceId + " binPath= \"\\\"" + Path.Combine(InstallDir, "Still.Guard.exe") + "\\\"\" start= auto DisplayName= \"Still Focus Guard\"");
             Run("sc.exe", "description " + ServiceId + " \"Enforces Still focus sessions and safely releases expired application blocks.\"");
             Run("sc.exe", "failure " + ServiceId + " reset= 86400 actions= restart/5000/restart/10000/restart/30000");
@@ -167,8 +169,8 @@ namespace Still {
                 return output.Result;
             }
         }
-        static void RunPolicy(string action, object payload) {
-            string script = Path.Combine(InstallDir, "policy.ps1").Replace("'", "''");
+        static void RunPolicy(string action, object payload, string directory = null) {
+            string script = Path.Combine(directory ?? InstallDir, "policy.ps1").Replace("'", "''");
             string encoded = payload == null ? "" : Convert.ToBase64String(Encoding.UTF8.GetBytes(Json.Serialize(payload)));
             string command = "$ErrorActionPreference='Stop'; try { & '" + script + "' -Action '" + action + "' -Payload '" + encoded + "' } catch { [Console]::Error.WriteLine($_.Exception.Message); exit 1 }";
             Run(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), @"WindowsPowerShell\v1.0\powershell.exe"),

@@ -1,11 +1,11 @@
-const { app, BrowserWindow, ipcMain, dialog, Tray, Menu, nativeImage, Notification, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Tray, Menu, nativeImage, Notification, shell, screen } = require('electron');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const net = require('node:net');
 const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const { pathToFileURL } = require('node:url');
-const { allowedApp, validateSession, validatePreferences, newerVersion, updateUrl } = require('./domain.cjs');
+const { allowedApp, validateSession, validatePreferences, newerVersion, updateUrl, sameFileUrl } = require('./domain.cjs');
 const { setupWebsites } = require('./websites-main.cjs');
 const { setupAlerts } = require('./alerts-main.cjs');
 const { createGuardClient } = require('./guard-client.cjs');
@@ -20,7 +20,8 @@ const psExe = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'Wi
 const demoState = { installed: false, session: null, history: [], historyRevision: require('node:crypto').randomUUID(), error: null, demo: true };
 function powershell(script, timeout = 45000, input) {
   // Progress records otherwise leak into stderr as CLIXML ("Preparing modules for first use").
-  const result = execute(psExe, ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', Buffer.from("$ProgressPreference='SilentlyContinue'; " + script, 'utf16le').toString('base64')], { windowsHide: true, timeout, maxBuffer: 4 * 1024 * 1024 });
+  // UTF-8 output: non-English Windows otherwise writes messages (e.g. a cancelled UAC prompt) in the OEM code page.
+  const result = execute(psExe, ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', Buffer.from("$ProgressPreference='SilentlyContinue'; [Console]::OutputEncoding=[Text.UTF8Encoding]::new($false); " + script, 'utf16le').toString('base64')], { windowsHide: true, timeout, maxBuffer: 4 * 1024 * 1024 });
   if (input !== undefined) result.child.stdin.end(input);
   return result;
 }
@@ -136,7 +137,7 @@ async function discoverApps(storeOnly = false, executables = []) {
   return (Array.isArray(apps) ? apps : [apps]).slice(0, 300);
 }
 function trusted(event) {
-  if (event.sender !== win?.webContents || event.senderFrame !== win.webContents.mainFrame || event.senderFrame.url !== uiUrl) throw new Error('Untrusted request.');
+  if (event.sender !== win?.webContents || event.senderFrame !== win.webContents.mainFrame || !sameFileUrl(event.senderFrame.url, uiUrl)) throw new Error('Untrusted request.');
 }
 function handle(name, handler) {
   ipcMain.handle(name, async (event, ...args) => { trusted(event); return handler(...args); });
@@ -275,11 +276,12 @@ async function showWindow() {
   win.show(); win.focus();
 }
 function makeWindow() {
-  win = new BrowserWindow({ width: 1350, height: 900, minWidth: 980, minHeight: 720, frame: false, backgroundColor: '#f6f7f2', icon: path.join(__dirname, '..', 'assets', 'still.ico'), show: false, webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false } });
+  const area = screen.getPrimaryDisplay().workArea;
+  win = new BrowserWindow({ width: Math.min(1350, area.width), height: Math.min(900, area.height), minWidth: Math.min(640, area.width), minHeight: Math.min(480, area.height), frame: false, backgroundColor: '#f6f7f2', icon: path.join(__dirname, '..', 'assets', 'still.ico'), show: false, webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false } });
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   win.webContents.on('will-navigate', event => event.preventDefault());
   win.webContents.session.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
-  win.loadFile(path.join(__dirname, 'index.html'));
+  win.loadURL(uiUrl);
   win.on('close', event => { if (!quitting && tray) { event.preventDefault(); win.hide(); } });
   for (const event of ['hide', 'minimize']) win.on(event, () => win.webContents.send('presentation-visible', false));
   for (const event of ['show', 'restore']) win.on(event, () => win.webContents.send('presentation-visible', true));
@@ -301,12 +303,15 @@ else {
     app.setAppUserModelId('app.still.focus');
     if (app.isPackaged && !demo && !process.argv.includes('--test')) {
       // Portable builds have no installer to register their Windows notification identity.
-      const programs = path.join(app.getPath('appData'), 'Microsoft', 'Windows', 'Start Menu', 'Programs');
-      try {
+      // Not awaited: a cold PowerShell start on a slow PC must not delay the window.
+      (async () => {
+        const { stdout } = await powershell("[Console]::Write([Environment]::GetFolderPath('Programs'))", 10000);
+        const programs = stdout.trim();
+        if (!path.isAbsolute(programs)) throw Error('Windows did not return a Start menu folder.');
         await fs.mkdir(programs, { recursive: true });
         const target = process.env.PORTABLE_EXECUTABLE_FILE || process.execPath;
         if (!shell.writeShortcutLink(path.join(programs, 'Still Focus.lnk'), { target, cwd: path.dirname(target), appUserModelId: 'app.still.focus', toastActivatorClsid: '2BB3B6B9-632E-4618-9488-990BD152DD54', description: 'Still — a space for focus' })) throw Error('Windows could not create the Still notification shortcut.');
-      } catch (error) { console.warn('Notification registration:', error.message); }
+      })().catch(error => console.warn('Notification registration:', error.message));
     }
     registerHandlers();
     await setupAlerts({ handle, getWindow: () => win, showWindow, getPreferences: () => preferences, status, getStatusGeneration: () => guardClient.generation, start: request => startSession(request, true), snooze: snoozeSession, prepare: async () => {
@@ -337,6 +342,9 @@ else {
         }
       } finally { polling = false; }
     }, 2000).unref();
+  }).catch(error => {
+    dialog.showErrorBox('Still could not start', `${error.message}\n\nCheck that your Windows account can write to its app-data folder, then reopen Still.`);
+    app.quit();
   });
   app.on('before-quit', () => { quitting = true; });
   app.on('window-all-closed', () => {});
