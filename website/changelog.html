@@ -17,12 +17,12 @@
 <link rel="preload" href="assets/Manrope.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/site.css?v=4">
 <script>document.documentElement.classList.add('js')</script>
-<script src="js/site.js?v=3" defer></script>
+<script src="js/site.js?v=4" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <div class="progress-bar" aria-hidden="true"></div>
-<div class="titlebar"><div class="wrap"><a href="changelog.html"><span class="tiny-dot"></span><span>Still <span data-version>1.0.1</span> is here · See what’s new</span></a><span class="window-dots" aria-hidden="true"><span>−</span><span>□</span><span>×</span></span></div></div>
+<div class="titlebar"><div class="wrap"><a href="changelog.html"><span class="tiny-dot"></span><span>Still <span data-version>1.0.2</span> is here · See what’s new</span></a><span class="window-dots" aria-hidden="true"><span>−</span><span>□</span><span>×</span></span></div></div>
 <header class="site-header"><div class="wrap">
   <a class="brand" href="index.html" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a>
   <nav class="nav" id="site-nav" aria-label="Main"><a href="features.html">Features</a><a href="guide.html">Guide</a><a href="download.html">Download</a><a href="privacy.html">Privacy</a><a href="faq.html">FAQ</a><a href="changelog.html" aria-current="page">Changelog</a></nav>
@@ -43,14 +43,27 @@
 
 <div class="wrap" style="max-width:880px">
   <div class="timeline" id="releases">
-    <article class="panel release latest" data-tag="v1.0.1" data-reveal>
-      <div class="release-head"><h2>Still v1.0.1</h2><span class="pill"><span class="tiny-dot"></span>Latest</span><span class="muted small">24 September 2026</span></div>
+    <article class="panel release latest" data-tag="v1.0.2" data-reveal>
+      <div class="release-head"><h2>Still v1.0.2</h2><span class="pill"><span class="tiny-dot"></span>Latest</span><span class="muted small">24 September 2026</span></div>
+      <div class="release-body">
+        <ul>
+          <li>Works with more Windows setups: folders and account names with accents, apostrophes, <code>%</code>, <code>&amp;</code> or brackets, and redirected folders.</li>
+          <li>Setup checks that your PC meets the requirements (Windows version and updates, .NET, PowerShell) before installing, and explains what to fix if it doesn't.</li>
+          <li>The app and Setup windows fit on small screens and at high display scaling.</li>
+          <li>Uninstalling is safer: it only ever removes Still's own folder.</li>
+          <li>Clearer messages on non-English Windows, and a helpful message if Still can't start.</li>
+        </ul>
+      </div>
+      <div class="release-foot"><a class="btn btn-primary btn-sm" href="https://github.com/limpy183-dev/Still/releases/download/v1.0.2/Still-Setup-1.0.2.exe"><svg aria-hidden="true"><use href="#i-download"/></svg>Still-Setup-1.0.2.exe</a><a class="btn btn-secondary btn-sm" href="https://github.com/limpy183-dev/Still/releases/tag/v1.0.2"><svg aria-hidden="true"><use href="#i-github"/></svg>View on GitHub</a></div>
+    </article>
+    <article class="panel release" data-tag="v1.0.1" data-reveal>
+      <div class="release-head"><h2>Still v1.0.1</h2><span class="muted small">24 September 2026</span></div>
       <div class="release-body">
         <ul>
           <li>The browser companion now refreshes itself automatically after updates: Still updates its files when it starts, and the companion reloads within a minute. Blocking rules stay in place.</li>
         </ul>
       </div>
-      <div class="release-foot"><a class="btn btn-primary btn-sm" href="https://github.com/limpy183-dev/Still/releases/download/v1.0.1/Still-Setup-1.0.1.exe"><svg aria-hidden="true"><use href="#i-download"/></svg>Still-Setup-1.0.1.exe</a><a class="btn btn-secondary btn-sm" href="https://github.com/limpy183-dev/Still/releases/tag/v1.0.1"><svg aria-hidden="true"><use href="#i-github"/></svg>View on GitHub</a></div>
+      <div class="release-foot"><a class="btn btn-secondary btn-sm" href="https://github.com/limpy183-dev/Still/releases/tag/v1.0.1"><svg aria-hidden="true"><use href="#i-github"/></svg>View on GitHub</a></div>
     </article>
     <article class="panel release" data-tag="v1.0.0" data-reveal>
       <div class="release-head"><h2>Still v1.0.0</h2><span class="muted small">24 September 2026</span></div>

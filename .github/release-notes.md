@@ -1,3 +1,11 @@
+## What's new in v1.0.2
+
+- Works with more Windows setups: folders and account names with accents, apostrophes, `%`, `&` or brackets, and redirected folders.
+- Setup checks that your PC meets the requirements (Windows version and updates, .NET, PowerShell) before installing, and explains what to fix if it doesn't.
+- The app and Setup windows fit on small screens and at high display scaling.
+- Uninstalling is safer: it only ever removes Still's own folder.
+- Clearer messages on non-English Windows, and a helpful message if Still can't start.
+
 ## Install or update
 
 Download **Still-Setup** below and run it. It installs Still for your Windows account (no administrator approval needed), or updates an existing installation while keeping your preferences, alerts, to-dos and history.
