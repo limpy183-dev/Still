@@ -49,16 +49,21 @@ function setupWebsites({ handle, getWindow }) {
     }
     throw Error('Choose a smaller image.');
   });
-  handle('websiteSetup', async () => {
-    const directory = path.join(app.getPath('userData'), 'browser-companion');
-    await fs.mkdir(directory, { recursive: true });
+  const directory = path.join(app.getPath('userData'), 'browser-companion');
+  async function copyCompanion() {
+    await fs.mkdir(path.join(directory, 'icons'), { recursive: true });
     // Copy files individually: Electron's Windows ASAR support cannot recursively cp a directory.
     const source = path.join(__dirname, 'browser-extension');
-    await Promise.all(['manifest.json', 'background.js', 'blocked.html', 'blocked.css', 'blocked.js'].map(file => fs.copyFile(path.join(source, file), path.join(directory, file))));
-    await fs.mkdir(path.join(directory, 'icons'), { recursive: true });
-    await Promise.all(['icon-16.png', 'icon-32.png', 'icon-48.png', 'icon-128.png'].map(file => fs.copyFile(path.join(source, 'icons', file), path.join(directory, 'icons', file))));
+    await Promise.all(['background.js', 'blocked.html', 'blocked.css', 'blocked.js', ...['icon-16.png', 'icon-32.png', 'icon-48.png', 'icon-128.png'].map(icon => path.join('icons', icon))].map(file => fs.copyFile(path.join(source, file), path.join(directory, file))));
     await fs.copyFile(path.join(__dirname, 'websites.js'), path.join(directory, 'websites.js'));
-    const manifest = JSON.parse(await fs.readFile(path.join(directory, 'manifest.json'), 'utf8'));
+    // The manifest goes last: the companion reloads itself once its version_name on disk changes.
+    const manifest = { ...JSON.parse(await fs.readFile(path.join(source, 'manifest.json'), 'utf8')), version_name: app.getVersion() };
+    await fs.writeFile(path.join(directory, 'manifest.json.tmp'), JSON.stringify(manifest, null, 2));
+    await fs.rename(path.join(directory, 'manifest.json.tmp'), path.join(directory, 'manifest.json'));
+    return manifest;
+  }
+  handle('websiteSetup', async () => {
+    const manifest = await copyCompanion();
     const id = require('node:crypto').createHash('sha256').update(Buffer.from(manifest.key, 'base64')).digest('hex').slice(0, 32).replace(/[0-9a-f]/g, digit => String.fromCharCode(97 + parseInt(digit, 16)));
     const hostFile = path.join(directory, 'native-host.json');
     await fs.writeFile(hostFile, JSON.stringify({ name: 'app.still.focus', description: 'Still focus sessions', path: path.join(process.env.ProgramFiles, 'Still Guard', 'Still.Guard.exe'), type: 'stdio', allowed_origins: [`chrome-extension://${id}/`] }));
@@ -67,5 +72,7 @@ function setupWebsites({ handle, getWindow }) {
     const error = await shell.openPath(directory); if (error) throw Error(error);
     return directory;
   });
+  // After an update, bring an already set-up companion up to date without asking the user to set it up again.
+  return fs.access(directory).then(copyCompanion, () => {}).catch(error => console.warn('Browser companion refresh:', error.message));
 }
 module.exports = { setupWebsites };

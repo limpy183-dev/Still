@@ -77,7 +77,15 @@ function connect() {
     });
   } catch { retryTimer = setTimeout(connect, 5000); }
 }
-chrome.alarms.onAlarm.addListener(alarm => { if (alarm.name === 'reconnect') connect(); if (alarm.name === 'limits') tick(); });
+// Still rewrites this unpacked companion on disk when the app updates; reload to run the new files.
+// Blocking rules and storage persist across the reload.
+async function reloadIfUpdated() {
+  try {
+    const onDisk = await (await fetch(chrome.runtime.getURL('manifest.json'), { cache: 'no-store' })).json();
+    if (onDisk.version_name !== chrome.runtime.getManifest().version_name) chrome.runtime.reload();
+  } catch { /* Mid-update or unreadable; the next alarm checks again. */ }
+}
+chrome.alarms.onAlarm.addListener(alarm => { if (alarm.name === 'reconnect') connect(); if (alarm.name === 'limits') { tick(); reloadIfUpdated(); } });
 chrome.alarms.get('limits').then(alarm => { if (!alarm) chrome.alarms.create('limits', { periodInMinutes: 0.5 }); }).catch(() => {});
 chrome.tabs.onActivated?.addListener(() => tick());
 chrome.tabs.onRemoved?.addListener(() => tick());

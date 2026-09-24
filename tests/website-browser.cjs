@@ -8,6 +8,9 @@ async function run() {
   const extension = path.join(root, 'extension');
   await fs.cp(path.resolve('app/browser-extension'), extension, { recursive: true });
   await fs.copyFile('app/websites.js', path.join(extension, 'websites.js'));
+  // Keep every service worker, including one restarted by a reload, away from an installed Still Guard.
+  const background = path.join(extension, 'background.js');
+  await fs.writeFile(background, "chrome.runtime.connectNative = () => { throw Error('Isolated test'); };\n" + await fs.readFile(background, 'utf8'));
   let executablePath = process.env.STILL_TEST_BROWSER;
   if (!executablePath) {
     const directory = path.join(process.env.LOCALAPPDATA, 'ms-playwright');
@@ -52,9 +55,24 @@ async function run() {
     assert.equal(matches.length, 2); assert.deepEqual(matches[1], { type: 'block', domains: ['youtube.com'] });
     await worker.evaluate(() => apply({ sessionId: 'test', websites: ['youtube.com'], screen: { mode: 'redirect', redirect: 'https://example.com/work' }, endsAt: Date.now() + 600000 }));
     await blocked.goto('https://youtube.com').catch(() => {}); await blocked.waitForURL('https://example.com/work');
-    await worker.evaluate(() => apply({ sessionId: null, websites: [], screen: null, endsAt: 0 }));
+    // An app update rewrites the companion on disk; the running companion reloads itself and keeps its rules.
+    // Like a real setup (Load unpacked needs Developer mode); without it Chromium disables the companion when it reloads.
+    const settings = await context.newPage(); await settings.goto('chrome://extensions');
+    await settings.evaluate(() => chrome.developerPrivate.updateProfileConfiguration({ inDeveloperMode: true })); await settings.close();
+    const manifestFile = path.join(extension, 'manifest.json');
+    await fs.writeFile(manifestFile, JSON.stringify({ ...JSON.parse(await fs.readFile(manifestFile, 'utf8')), version_name: '9.9.9' }));
+    await worker.evaluate(() => reloadIfUpdated()).catch(() => {}); // The old worker ends mid-call.
+    let updated;
+    for (let wait = 0; !updated; wait += 100) {
+      if (wait > 15000) throw Error('The companion did not reload after its files changed.');
+      await new Promise(resolve => setTimeout(resolve, 100));
+      updated = context.serviceWorkers().find(candidate => candidate !== worker);
+    }
+    assert.equal(await updated.evaluate(() => chrome.runtime.getManifest().version_name), '9.9.9');
+    assert.equal((await updated.evaluate(() => chrome.declarativeNetRequest.getDynamicRules())).length, 2, 'Blocking rules survive the reload');
+    await updated.evaluate(() => apply({ sessionId: null, websites: [], screen: null, endsAt: 0 }));
     await blocked.goto('https://youtube.com'); assert.equal(await blocked.locator('h1').innerText(), 'Allowed page');
-    console.log('Real Chromium extension passed: existing tabs, subdomains, custom text, redirect, unrelated domains and release.');
+    console.log('Real Chromium extension passed: existing tabs, subdomains, custom text, redirect, unrelated domains, self-reload after updates and release.');
   } finally {
     await context.close();
     // Unique temporary directory created above, never a user browser profile.

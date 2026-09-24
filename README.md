@@ -8,7 +8,7 @@ A local Windows productivity app: choose distracting apps, games, and websites, 
 2. Run it and choose **Install Still**. It installs for your Windows account in `%LOCALAPPDATA%\Programs\Still`, adds a **Still Focus** Start menu shortcut (and optionally a desktop shortcut), and needs no administrator approval.
 3. The build is not code-signed, so Windows SmartScreen may say it "protected your PC". Choose **More info → Run anyway**.
 
-**Updating:** run the newer setup; it detects the installed version, closes Still for a moment, and replaces it while keeping your preferences, alerts, to-dos, and history. Settings → **Check for updates** tells you when a new version is out (it contacts GitHub only when you click it). Windows protection keeps running during updates.
+**Updating:** run the newer setup; it detects the installed version, closes Still for a moment, and replaces it while keeping your preferences, alerts, to-dos, and history. Settings → **Check for updates** tells you when a new version is out (it contacts GitHub only when you click it). Windows protection keeps running during updates. A browser companion you already set up is refreshed automatically: Still updates its files when it starts, and the companion reloads itself within a minute (blocking rules stay in place).
 
 **Uninstalling:** Windows Settings → Apps → Installed apps → Still. You can choose to also remove Still Guard (administrator approval; not possible during an active focus session) and your data.
 
