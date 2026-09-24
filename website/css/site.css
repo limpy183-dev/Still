@@ -329,7 +329,7 @@ section{position:relative}
 .todo-line.done .txt:after{width:100%}
 .todo-line.h{font-size:20px;font-weight:750;letter-spacing:-.4px}
 .slash{position:relative}
-.slash-menu{position:absolute;left:36px;top:100%;z-index:3;width:230px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 40px -16px #2a371c40;padding:6px;opacity:0;transform:translateY(-6px) scale(.97);transform-origin:0 0;transition:opacity .3s,transform .35s var(--ease-out);pointer-events:none}
+.slash-menu{position:absolute;left:36px;bottom:100%;z-index:3;width:230px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 -18px 40px -16px #2a371c40;padding:6px;opacity:0;transform:translateY(6px) scale(.97);transform-origin:0 100%;transition:opacity .3s,transform .35s var(--ease-out);pointer-events:none}
 .slash-menu.show{opacity:1;transform:none}
 .slash-menu span{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:13px;color:#566447}
 .slash-menu span.on{background:var(--active);color:var(--active-ink)}
