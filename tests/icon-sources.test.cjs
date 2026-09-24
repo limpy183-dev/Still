@@ -56,7 +56,7 @@ test('Windows extracts ICO and indexed executable resources, skipping unavailabl
   const script = fs.readFileSync(path.resolve('native/discover.ps1'), 'utf8').split('$items = @{}')[0];
   const quote = value => `'${value.replaceAll("'", "''")}'`;
   const icon = path.resolve('assets/still.ico');
-  const exe = path.resolve('node_modules/electron/dist/electron.exe');
+  const exe = process.execPath; // node.exe always exists; the Electron binary may not be downloaded in CI
   const command = `${script}\n@((Get-ResourceIcon @('missing.ico', ${quote('"' + icon + '",0')})), (Get-ResourceIcon @(${quote(exe + ',99999')}, ${quote(exe + ',0')}))) | ConvertTo-Json -Compress`;
   const result = require('node:child_process').execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(command, 'utf16le').toString('base64')], { encoding: 'utf8', windowsHide: true });
   const icons = JSON.parse(result);
