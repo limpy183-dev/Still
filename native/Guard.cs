@@ -106,10 +106,14 @@ namespace Still {
             ProtectDirectory(InstallDir, sid);
             ProtectDirectory(Data, sid);
             var source = AppDomain.CurrentDomain.BaseDirectory;
+            // Browsers keep Still.Guard.exe running as their native messaging host, which locks it.
+            // A running exe can still be renamed, so move old copies aside and clean them up later.
+            foreach (var old in Directory.GetFiles(InstallDir, "*.old")) { try { File.Delete(old); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
             foreach (var file in new string[] { "Still.Guard.exe", "policy.ps1" }) {
                 var destination = Path.Combine(InstallDir, file);
-                if (!String.Equals(Path.Combine(source, file), destination, StringComparison.OrdinalIgnoreCase))
-                    File.Copy(Path.Combine(source, file), destination, true);
+                if (String.Equals(Path.Combine(source, file), destination, StringComparison.OrdinalIgnoreCase)) continue;
+                if (File.Exists(destination)) File.Move(destination, destination + "." + Guid.NewGuid().ToString("N") + ".old");
+                File.Copy(Path.Combine(source, file), destination);
             }
             File.WriteAllText(Path.Combine(Data, "owner.txt"), sid);
             RunPolicy("check", null);

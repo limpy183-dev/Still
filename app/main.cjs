@@ -19,7 +19,8 @@ let nativeDir = app.isPackaged ? path.join(process.resourcesPath, 'guard') : pat
 const psExe = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
 const demoState = { installed: false, session: null, history: [], historyRevision: require('node:crypto').randomUUID(), error: null, demo: true };
 function powershell(script, timeout = 45000, input) {
-  const result = execute(psExe, ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], { windowsHide: true, timeout, maxBuffer: 4 * 1024 * 1024 });
+  // Progress records otherwise leak into stderr as CLIXML ("Preparing modules for first use").
+  const result = execute(psExe, ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', Buffer.from("$ProgressPreference='SilentlyContinue'; " + script, 'utf16le').toString('base64')], { windowsHide: true, timeout, maxBuffer: 4 * 1024 * 1024 });
   if (input !== undefined) result.child.stdin.end(input);
   return result;
 }
@@ -76,7 +77,7 @@ async function elevate(command) {
   const args = command === 'install' ? "@('--install', [Security.Principal.WindowsIdentity]::GetCurrent().User.Value)" : "@('--uninstall')";
   const script = `$ErrorActionPreference='Stop'; try { $p=Start-Process -FilePath '${file.replaceAll("'", "''")}' -ArgumentList ${args} -Verb RunAs -WindowStyle Hidden -PassThru -Wait; if ($p.ExitCode -ne 0) { throw 'Protection setup did not finish. Check the Windows message and try again.' } } catch { [Console]::Error.WriteLine($_.Exception.Message); exit 1 }`;
   try { await powershell(script, 180000); }
-  catch (error) { throw new Error(error.stderr?.trim() || 'Windows administrator permission was cancelled or setup failed.'); }
+  catch (error) { throw new Error(error.stderr?.replace(/#< CLIXML[\s\S]*?(<\/Objs>|$)/g, '').trim() ||'Windows administrator permission was cancelled or setup failed.'); }
   finally { guardClient.invalidate(); }
   for (let attempt = 0; command === 'install' && attempt < 15; attempt++) {
     const result = await status(); if (result.installed) return result;

@@ -450,23 +450,33 @@ function renderStats() {
 }
 
 let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+let selectedDay = null, colorPickerFor = null;
+const INTENTION_COLORS = ['sage', 'moss', 'lime', 'sky', 'lavender', 'rose', 'clay', 'sand'];
+const intentionLabel = record => record.intention || 'Time to focus';
+// Unpicked tasks get a stable colour from their name, so the list is distinct out of the box.
+const intentionColor = label => (prefs.intentionColors || {})[label] || INTENTION_COLORS[[...label].reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) >>> 0, 7) % INTENTION_COLORS.length];
+const dayEnd = start => { const end = new Date(start); end.setDate(end.getDate() + 1); return +end; };
 
 function renderSessionCalendar() {
   const year = calendarMonth.getFullYear(), month = calendarMonth.getMonth();
   const records = [...state.history, ...(state.session ? [state.session] : [])];
-  const counts = new Map();
+  const byDay = new Map();
   for (const record of records) {
     const date = new Date(record.startedAt);
-    if (date.getFullYear() === year && date.getMonth() === month) counts.set(date.getDate(), (counts.get(date.getDate()) || 0) + 1);
+    if (date.getFullYear() !== year || date.getMonth() !== month) continue;
+    const entry = byDay.get(date.getDate()) || { count: 0, labels: new Set() };
+    entry.count++; entry.labels.add(intentionLabel(record));
+    byDay.set(date.getDate(), entry);
   }
   $('#calendar-month').textContent = calendarMonth.toLocaleDateString([], { month: 'long', year: 'numeric' });
   const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => '<span class="calendar-weekday">' + day + '</span>').join('');
   const blanks = '<span aria-hidden="true"></span>'.repeat((calendarMonth.getDay() + 6) % 7);
   const today = new Date(now()).toDateString();
   const dates = Array.from({ length: new Date(year, month + 1, 0).getDate() }, (_, i) => {
-    const day = i + 1, count = counts.get(day) || 0, date = new Date(year, month, day);
+    const day = i + 1, { count = 0, labels = new Set() } = byDay.get(day) || {}, date = new Date(year, month, day);
     const label = escapeHtml(date.toLocaleDateString([], { dateStyle: 'long' }) + ': ' + count + ' focus session' + (count === 1 ? '' : 's') + ' created');
-    return '<span class="calendar-day' + (count ? ' has-session' : '') + '" title="' + label + '" aria-label="' + label + '"' + (date.toDateString() === today ? ' aria-current="date"' : '') + '>' + day + (count ? '<span class="session-dot" aria-hidden="true"></span>' : '') + '</span>';
+    const dots = [...labels].slice(0, 3).map(name => '<span class="session-dot" data-color="' + intentionColor(name) + '"></span>').join('');
+    return '<button type="button" class="calendar-day' + (count ? ' has-session' : '') + '" data-calendar-day="' + +date + '" aria-pressed="' + (+date === selectedDay) + '" title="' + label + '" aria-label="' + label + '"' + (date.toDateString() === today ? ' aria-current="date"' : '') + '>' + day + (count ? '<span class="session-dots" aria-hidden="true">' + dots + '</span>' : '') + '</button>';
   }).join('');
   $('#progress-calendar').innerHTML = weekdays + blanks + dates;
 }
@@ -477,6 +487,63 @@ for (const [id, offset] of [['calendar-previous', -1], ['calendar-next', 1]]) {
     renderSessionCalendar();
   };
 }
+
+$('#progress-calendar').onclick = event => {
+  const day = event.target.closest('[data-calendar-day]');
+  if (!day) return;
+  selectedDay = Number(day.dataset.calendarDay) === selectedDay ? null : Number(day.dataset.calendarDay);
+  renderProgress();
+};
+
+const intentionSorters = {
+  time: (a, b) => b.minutes - a.minutes || b.last - a.last,
+  recent: (a, b) => b.last - a.last,
+  sessions: (a, b) => b.sessions - a.sessions || b.minutes - a.minutes,
+  name: (a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' })
+};
+
+function renderIntentions(records, rangeStart) {
+  const container = $('#progress-intentions');
+  container.hidden = prefs.showIntentions === false;
+  const allTime = prefs.intentionScope === 'all', from = selectedDay ?? (allTime ? 0 : rangeStart), to = selectedDay === null ? now() : dayEnd(selectedDay);
+  const groups = new Map();
+  for (const record of records) {
+    const minutes = focusMilliseconds(record, from, to) / 60000;
+    // A chosen day also lists sessions started that day, so every marked calendar day has something to show.
+    if (minutes <= 0 && !(selectedDay !== null && record.startedAt >= from && record.startedAt < to)) continue;
+    const label = intentionLabel(record), group = groups.get(label) || { label, minutes: 0, sessions: 0, last: 0 };
+    group.minutes += minutes; group.sessions++; group.last = Math.max(group.last, record.startedAt);
+    groups.set(label, group);
+  }
+  const sort = intentionSorters[prefs.intentionSort] ? prefs.intentionSort : 'time';
+  const list = [...groups.values()].sort(intentionSorters[sort]), timed = list.filter(group => group.minutes > 0);
+  const total = list.reduce((sum, group) => sum + group.minutes, 0), max = Math.max(1, ...list.map(group => group.minutes));
+  const scope = selectedDay === null ? [['range', `Last ${prefs.progressDays || 30} days`], ['all', 'All time']].map(([value, text]) => `<button type="button" data-intention-scope="${value}" aria-pressed="${(value === 'all') === allTime}">${text}</button>`).join('') : new Date(selectedDay).toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' });
+  const when = time => selectedDay === null ? new Date(time).toLocaleDateString([], { month: 'short', day: 'numeric' }) : new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const options = [['time', 'Most time'], ['recent', 'Most recent'], ['sessions', 'Most sessions'], ['name', 'Name (A–Z)']].map(([value, text]) => `<option value="${value}"${value === sort ? ' selected' : ''}>${text}</option>`).join('');
+  const rows = list.map(group => {
+    const color = intentionColor(group.label), picking = colorPickerFor === group.label, name = escapeHtml(group.label);
+    const picker = picking ? `<div class="swatch-picker" role="group" aria-label="Colours for ${name}">${INTENTION_COLORS.map(option => `<button type="button" data-color="${option}" data-set-color="${option}" data-label="${name}" aria-label="${option}" aria-pressed="${option === color}"></button>`).join('')}</div>` : '';
+    return `<li class="attention-row" data-color="${color}"><button type="button" class="attention-swatch" data-intention-color="${name}" aria-expanded="${picking}" aria-label="Change colour for ${name}" title="Change colour"></button><div class="attention-name"><strong title="${name}">${name}</strong><small>${group.sessions} session${group.sessions === 1 ? '' : 's'} · ${selectedDay === null ? 'last' : 'started'} ${when(group.last)}</small></div><div class="attention-track"><span></span></div><strong class="attention-time">${readableTime(Math.floor(group.minutes))}</strong>${picker}</li>`;
+  }).join('');
+  container.innerHTML = `<div class="attention-heading"><div><h3>Where your attention went</h3><p>${selectedDay === null ? `<span class="attention-scopes" role="group" aria-label="Period">${scope}</span>` : `<span class="attention-scope">${escapeHtml(scope)}</span><button type="button" class="attention-clear" data-intention-clear>Show all days ×</button>`}</p></div><label class="attention-sort">Sort by<select id="intention-sort">${options}</select></label></div>` + (list.length
+    ? `<div class="attention-total"><strong>${readableTime(Math.floor(total))}</strong><span>across ${list.length} focus task${list.length === 1 ? '' : 's'}</span></div><div class="attention-stack" aria-hidden="true">${timed.map(group => `<span data-color="${intentionColor(group.label)}"></span>`).join('')}</div><ul class="attention-list">${rows}</ul>`
+    : `<p class="progress-note">${selectedDay === null ? 'Give your next session an intention to see your focus take shape here.' : 'No focus sessions on this day. Pick a marked day to see what you worked on.'}</p>`);
+  const fills = $$('.attention-track>span'), segments = $$('.attention-stack>span');
+  list.forEach((group, i) => { fills[i].style.width = `${group.minutes / max * 100}%`; });
+  timed.forEach((group, i) => { segments[i].style.flexGrow = group.minutes; });
+  $('#intention-sort').onchange = event => { prefs.intentionSort = event.target.value; renderProgress(); save(); };
+}
+
+$('#progress-intentions').onclick = event => {
+  const target = event.target.closest('[data-intention-color],[data-set-color],[data-intention-clear],[data-intention-scope]');
+  if (!target) return;
+  if (target.dataset.intentionClear !== undefined) selectedDay = null;
+  else if (target.dataset.intentionScope) { prefs.intentionScope = target.dataset.intentionScope; save(); }
+  else if (target.dataset.setColor) { prefs.intentionColors = { ...prefs.intentionColors, [target.dataset.label]: target.dataset.setColor }; colorPickerFor = null; save(); }
+  else colorPickerFor = colorPickerFor === target.dataset.intentionColor ? null : target.dataset.intentionColor;
+  renderProgress();
+};
 
 function renderProgress() {
   if (!presentationVisible || page !== 'history') return;
@@ -525,19 +592,11 @@ function renderProgress() {
   $$('.trend-bar').forEach((bar, i) => { bar.style.height = `${Math.max(2, days[i][metric] / max * 100)}%`; });
 
   renderSessionCalendar();
-  const intentions = new Map();
-
-  for (const r of records) { const minutes = focusMilliseconds(r, days[0].start) / 60000; if (minutes > 0) intentions.set(r.intention || 'Time to focus', (intentions.get(r.intention || 'Time to focus') || 0) + minutes); }
-
-  const ranked = [...intentions].sort((a, b) => b[1] - a[1]).slice(0, 5);
-
-  $('#progress-intentions').hidden = prefs.showIntentions === false;
-
-  $('#progress-intentions').innerHTML = '<h3>Where your attention went</h3>' + (ranked.length ? ranked.map(([label, minutes]) => `<div class="intention-progress"><span>${escapeHtml(label)}</span><progress max="${ranked[0][1]}" value="${minutes}" aria-label="${escapeHtml(label)}"></progress><strong>${readableTime(Math.floor(minutes))}</strong></div>`).join('') : '<p class="progress-note">Give your next session an intention to see your focus take shape here.</p>');
+  renderIntentions(records, days[0].start);
 
 }
 
-$('#history-filter').onchange = event => { historyFilter = event.target.value; renderHistory(); };
+$('#history-filter').onchange = event => { historyFilter = event.target.value; historyView.page = 0; renderHistoryList(); };
 
 for (const [id, key] of [['progress-days', 'progressDays'], ['progress-metric', 'progressMetric'], ['daily-goal', 'dailyGoal'], ['show-intentions', 'showIntentions']]) {
 
@@ -556,13 +615,40 @@ for (const [id, key] of [['progress-days', 'progressDays'], ['progress-metric', 
 function renderHistory() {
 
   renderStats();
+  renderHistoryList();
 
-  const visible = state.history.filter(s => historyFilter === 'all' || !!s.archived === (historyFilter === 'archived'));
-
-  $('#history-count').textContent = `${visible.length} sessions`;
-
-  $('#history-list').innerHTML = visible.length ? visible.map(s => `<div class="history-row"><span class="history-symbol">${icon(s.outcome === 'completed' ? 'check' : 'clock')}</span><div><h3>${escapeHtml(s.intention || 'Time to focus')}</h3><p>${new Date(s.startedAt).toLocaleDateString([], { month: 'short', day: 'numeric' })} · ${new Date(s.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · ${s.apps.length} apps / websites put on hold</p></div><strong>${Math.floor(focusMilliseconds(s) / 60000)}m</strong><span class="history-outcome${s.outcome !== 'completed' ? ' early' : ''}">${escapeHtml(({ completed: 'Completed', 'ended-early': 'Ended early', failed: 'Not started', interrupted: 'Interrupted', recovered: 'Recovered' })[s.outcome] || s.outcome)}</span><div class="history-actions"><button class="text-button" data-history-action="${s.archived ? 'restore' : 'archive'}" data-id="${escapeHtml(s.id)}" ${state.unavailable ? 'disabled' : ''}>${s.archived ? 'Restore' : 'Archive'}</button><button class="text-button danger" data-history-action="delete" data-id="${escapeHtml(s.id)}" ${state.unavailable ? 'disabled' : ''}>Delete</button></div></div>`).join('') : empty('No sessions in this view.', 'Your saved sessions will appear here. Try another view to find archived sessions.', 'leaf');
 }
+
+const historyView = { search: '', days: 0, outcome: 'all', sort: 'newest', page: 0 };
+const historySorters = { newest: (a, b) => b.startedAt - a.startedAt, oldest: (a, b) => a.startedAt - b.startedAt, longest: (a, b) => focusMilliseconds(b) - focusMilliseconds(a) || b.startedAt - a.startedAt };
+
+function renderHistoryList() {
+  const { search, days, outcome, sort } = historyView, query = search.trim().toLowerCase(), since = days ? now() - days * 86400000 : 0;
+  const visible = state.history.filter(s => (historyFilter === 'all' || !!s.archived === (historyFilter === 'archived'))
+    && (!query || intentionLabel(s).toLowerCase().includes(query))
+    && s.startedAt >= since
+    && (outcome === 'all' || (outcome === 'other' ? !['completed', 'ended-early'].includes(s.outcome) : s.outcome === outcome))).sort(historySorters[sort]);
+  const size = prefs.historyPageSize ?? 10, pages = size ? Math.max(1, Math.ceil(visible.length / size)) : 1;
+  historyView.page = Math.min(historyView.page, pages - 1);
+  const first = size ? historyView.page * size : 0, shown = size ? visible.slice(first, first + size) : visible;
+  const filtered = query || days || outcome !== 'all';
+  $('#history-count').textContent = `${visible.length} session${visible.length === 1 ? '' : 's'}`;
+  $('#history-clear').hidden = !filtered;
+  $$('[data-history-days]').forEach(button => button.setAttribute('aria-pressed', Number(button.dataset.historyDays) === days));
+  $('#history-pager').hidden = pages < 2;
+  $('#history-page').textContent = `${first + 1}–${first + shown.length} of ${visible.length} · Page ${historyView.page + 1} of ${pages}`;
+  $('#history-previous').disabled = historyView.page === 0; $('#history-next').disabled = historyView.page >= pages - 1;
+  $('#history-list').innerHTML = shown.length ? shown.map(s => `<div class="history-row"><span class="history-symbol" data-color="${intentionColor(intentionLabel(s))}">${icon(s.outcome === 'completed' ? 'check' : 'clock')}</span><div><h3>${escapeHtml(s.intention || 'Time to focus')}</h3><p>${new Date(s.startedAt).toLocaleDateString([], { month: 'short', day: 'numeric' })} · ${new Date(s.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · ${s.apps.length} apps / websites put on hold</p></div><strong>${Math.floor(focusMilliseconds(s) / 60000)}m</strong><span class="history-outcome${s.outcome !== 'completed' ? ' early' : ''}">${escapeHtml(({ completed: 'Completed', 'ended-early': 'Ended early', failed: 'Not started', interrupted: 'Interrupted', recovered: 'Recovered' })[s.outcome] || s.outcome)}</span><div class="history-actions"><button class="text-button" data-history-action="${s.archived ? 'restore' : 'archive'}" data-id="${escapeHtml(s.id)}" ${state.unavailable ? 'disabled' : ''}>${s.archived ? 'Restore' : 'Archive'}</button><button class="text-button danger" data-history-action="delete" data-id="${escapeHtml(s.id)}" ${state.unavailable ? 'disabled' : ''}>Delete</button></div></div>`).join('') : filtered ? empty('No sessions match these filters.', 'Try a different search, period, or outcome.', 'leaf') : empty('No sessions in this view.', 'Your saved sessions will appear here. Try another view to find archived sessions.', 'leaf');
+}
+
+const refreshHistory = () => { historyView.page = 0; renderHistoryList(); };
+$('#history-search').oninput = event => { historyView.search = event.target.value; refreshHistory(); };
+$('#history-outcome').onchange = event => { historyView.outcome = event.target.value; refreshHistory(); };
+$('#history-sort').onchange = event => { historyView.sort = event.target.value; refreshHistory(); };
+$('#history-page-size').onchange = event => { prefs.historyPageSize = Number(event.target.value); refreshHistory(); save(); };
+$('#history-period').onclick = event => { const button = event.target.closest('[data-history-days]'); if (button) { historyView.days = Number(button.dataset.historyDays); refreshHistory(); } };
+$('#history-clear').onclick = () => { Object.assign(historyView, { search: '', days: 0, outcome: 'all' }); $('#history-search').value = ''; $('#history-outcome').value = 'all'; refreshHistory(); };
+for (const [id, step] of [['history-previous', -1], ['history-next', 1]]) $('#' + id).onclick = () => { historyView.page += step; renderHistoryList(); };
 
 function setupProtection() {
 
@@ -759,7 +845,7 @@ async function init() {
 
     selected = new Set((prefs.selected || []).filter(p => apps.some(a => a.path === p))); groups = prefs.groups || [];
 
-    $('#duration').value = prefs.duration; $('#delay').value = prefs.delay; $('#delay-enabled').checked = prefs.delayEnabled; $('#intention').value = prefs.intention;
+    $('#duration').value = prefs.duration; $('#delay').value = prefs.delay; $('#delay-enabled').checked = prefs.delayEnabled; $('#intention').value = prefs.intention; $('#history-page-size').value = String(prefs.historyPageSize ?? 10);
 
     $('#notifications').checked = prefs.notifications; $('#reduced-motion').checked = prefs.reducedMotion; $('#launch-at-login').checked = prefs.launchAtLogin;
 

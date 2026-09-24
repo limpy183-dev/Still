@@ -89,7 +89,7 @@ test('daily limits and bedtime normalize, cross midnight, and pick the right rea
   assert.deepEqual(Websites.limitBlocks({ ...config, bedtime: { ...config.bedtime, on: false } }, {}, at('23:00')), {});
   assert.deepEqual(validatePreferences({ websiteLimits: { sites: [{ domain: 'x.com', minutes: 15, bedtime: true }] } }).websiteLimits.sites, [{ domain: 'x.com', minutes: 15, bedtime: true }]);
 });
-test('companion counts active-tab time, blocks over-limit sites alongside session rules, and keeps limits when preferences are unreadable', async () => {
+test('companion counts time while a limited site is open in any tab, even unfocused, blocks over-limit sites alongside session rules, and keeps limits when preferences are unreadable', async () => {
   const listeners = {}, events = name => ({ addListener: listener => { listeners[name] = listener; } });
   const updates = [], storage = {}; let dynamic = [], clock = new Date('2026-09-24T12:00:00').getTime();
   const port = { onMessage: events('message'), onDisconnect: events('disconnect'), postMessage() {} };
@@ -101,7 +101,7 @@ test('companion counts active-tab time, blocks over-limit sites alongside sessio
     declarativeNetRequest: { getDynamicRules: async () => dynamic, updateDynamicRules: async value => { dynamic = value.addRules; } },
     action: { setBadgeText: async () => {}, setTitle: async () => {}, onClicked: events('click') },
     alarms: { create: () => {}, get: async () => null, onAlarm: events('alarm') },
-    windows: { get: async () => ({ focused: true }), onFocusChanged: events('focus') },
+    windows: { get: async () => ({ focused: false }), onFocusChanged: events('focus') },
     tabs: { query: async () => tabs, update: async (id, value) => updates.push({ id, ...value }), onActivated: events('activated') },
     webNavigation: { onCommitted: events('committed'), onHistoryStateUpdated: events('history'), onErrorOccurred: events('error') }
   };

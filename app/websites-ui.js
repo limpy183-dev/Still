@@ -45,7 +45,7 @@ function updateWebsiteLock() {
   $('#website-setup').disabled = !!state.session;
   $('#website-screen-locked').hidden = !state.session;
 }
-const limitChoices = [[0, 'No daily limit'], [5, '5 min a day'], [15, '15 min a day'], [30, '30 min a day'], [45, '45 min a day'], [60, '1 hour a day'], [90, '1½ hours a day'], [120, '2 hours a day'], [180, '3 hours a day']];
+const limitChoices = [[0, 'No daily limit'], [1, '1 min a day'], [5, '5 min a day'], [15, '15 min a day'], [30, '30 min a day'], [45, '45 min a day'], [60, '1 hour a day'], [90, '1½ hours a day'], [120, '2 hours a day'], [180, '3 hours a day']];
 const limitIcons = new Map();
 function renderLimits() {
   const config = prefs.websiteLimits = Websites.limits(prefs.websiteLimits);

@@ -60,7 +60,7 @@ async function run() {
     await window.evaluate(() => saveQueue);
     await window.reload(); await window.waitForSelector('#selected-apps [data-app="website:youtube.com"]');
     assert.equal(await window.evaluate(() => prefs.blockScreen.mode), 'dusk');
-    assert.deepEqual(await window.evaluate(() => prefs.websiteLimits), { bedtime: { from: '23:15', to: '07:00' }, sites: [{ domain: 'youtube.com', minutes: 60, bedtime: true }, { domain: 'twitch.tv', minutes: 30, bedtime: false }] });
+    assert.deepEqual(await window.evaluate(() => prefs.websiteLimits), { bedtime: { on: true, from: '23:15', to: '07:00' }, sites: [{ domain: 'youtube.com', minutes: 60, bedtime: true }, { domain: 'twitch.tv', minutes: 30, bedtime: false }] });
     assert.equal(await window.evaluate(() => groups[0].paths[0]), 'website:youtube.com');
     await window.locator('#delay-enabled').uncheck();
     await window.locator('#start-button').click(); await window.locator('#confirm-accept').click();

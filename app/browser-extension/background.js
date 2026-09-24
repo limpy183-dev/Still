@@ -1,6 +1,6 @@
 'use strict';
 importScripts('websites.js');
-let port, retryTimer, queue = Promise.resolve(), latest, limited = {};
+let port, retryTimer, finalTick, queue = Promise.resolve(), latest, limited = {};
 const ruleBase = 10000, limitBase = 20000;
 function rulesFor(snapshot) {
   return (snapshot?.websites || []).flatMap((domain, index) => [
@@ -22,17 +22,22 @@ function destination(url) {
   if (isBlocked(url)) return latest?.screen?.mode === 'redirect' ? latest.screen.redirect : chrome.runtime.getURL('blocked.html');
   const domain = limitedDomain(url); return domain ? chrome.runtime.getURL(limitPage(domain).slice(1)) : null;
 }
-// ponytail: counts the focused window's active tab in 30 s steps, so limits are accurate to ~30 s.
+// A limited site's clock runs while any tab has it open, in any window, focused or not.
+// Checked every 30 s, on tab/window/page changes, and once more exactly when a site runs out.
 async function tickLimits() {
-  const stored = await chrome.storage.local.get(['limits', 'usage', 'lastTick', 'lastSite']), config = Websites.limits(stored.limits), now = Date.now(), day = new Date().toDateString();
+  const stored = await chrome.storage.local.get(['limits', 'usage', 'lastTick', 'lastSites']), config = Websites.limits(stored.limits), now = Date.now(), day = new Date().toDateString();
   const usage = stored.usage?.day === day ? stored.usage : { day, seconds: {} };
-  // Time since the last tick belongs to the site that was in front then. Sleep/gaps count at most 60 s.
-  if (stored.lastSite && stored.lastTick && usage === stored.usage) usage.seconds[stored.lastSite] = (usage.seconds[stored.lastSite] || 0) + Math.min(60, Math.max(0, (now - stored.lastTick) / 1000));
-  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-  const focused = tab && (await chrome.windows.get(tab.windowId).catch(() => null))?.focused, host = focused && hostOf(tab.url);
-  const site = host && config.sites.find(item => item.minutes && Websites.matches(host, item.domain));
-  await chrome.storage.local.set({ usage, lastTick: now, lastSite: site?.domain || null });
+  // Time since the last tick belongs to the sites open then (one clock per site, however many tabs). Sleep/gaps count at most 60 s.
+  const elapsed = stored.lastTick && usage === stored.usage ? Math.min(60, Math.max(0, (now - stored.lastTick) / 1000)) : 0;
+  for (const domain of stored.lastSites || []) usage.seconds[domain] = (usage.seconds[domain] || 0) + elapsed;
+  const hosts = (await chrome.tabs.query({})).map(tab => hostOf(tab.url)).filter(Boolean);
+  const open = config.sites.filter(item => item.minutes && hosts.some(host => Websites.matches(host, item.domain))).map(item => item.domain);
+  await chrome.storage.local.set({ usage, lastTick: now, lastSites: open });
   const next = Websites.limitBlocks(config, usage.seconds, new Date(now));
+  // Check again exactly when the next open site runs out, instead of up to 30 s later.
+  clearTimeout(finalTick);
+  const left = Math.min(...open.filter(domain => !next[domain]).map(domain => config.sites.find(item => item.domain === domain).minutes * 60 - (usage.seconds[domain] || 0)));
+  if (left < 30) finalTick = setTimeout(tick, left * 1000 + 250);
   if (JSON.stringify(next) === JSON.stringify(limited)) return;
   limited = next; await chrome.storage.local.set({ limited });
   await syncRules(latest);
@@ -75,6 +80,7 @@ function connect() {
 chrome.alarms.onAlarm.addListener(alarm => { if (alarm.name === 'reconnect') connect(); if (alarm.name === 'limits') tick(); });
 chrome.alarms.get('limits').then(alarm => { if (!alarm) chrome.alarms.create('limits', { periodInMinutes: 0.5 }); }).catch(() => {});
 chrome.tabs.onActivated?.addListener(() => tick());
+chrome.tabs.onRemoved?.addListener(() => tick());
 chrome.windows?.onFocusChanged.addListener(() => tick());
 chrome.runtime.onStartup.addListener(connect);
 chrome.runtime.onInstalled.addListener(connect);
@@ -84,6 +90,8 @@ function navigation(details) {
   const target = details.error !== 'net::ERR_ABORTED' && details.frameId === 0 && destination(details.url);
   if (target) chrome.tabs.update(details.tabId, { url: target }).catch(() => {});
 }
+// A full page load starts (or stops) the clock now rather than at the next 30 s check.
+chrome.webNavigation.onCommitted.addListener(details => { if (details.frameId === 0) tick(); });
 chrome.webNavigation.onCommitted.addListener(navigation);
 chrome.webNavigation.onHistoryStateUpdated.addListener(navigation);
 chrome.webNavigation.onErrorOccurred.addListener(navigation);
