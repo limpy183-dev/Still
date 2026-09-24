@@ -10,7 +10,7 @@ class WebsitesTests {
     static void Check(bool ok, string label) { if (!ok) throw new Exception(label); count++; }
     static void Reject(Action action, string label) { bool rejected = false; try { action(); } catch { rejected = true; } Check(rejected, label); }
     static void Main(string[] args) {
-        if (args.Length == 2 && args[0] == "--host") { Websites.BrowserHost(args[1]); return; }
+        if (args.Length >= 2 && args[0] == "--host") { Websites.BrowserHost(args[1], args.Length > 2 ? args[2] : null); return; }
         var sites = new List<TargetApp> { new TargetApp { name = "YouTube", path = "website:youtube.com" } };
         FocusSession.Validate(25, 5, sites); Check(Websites.Domain(sites[0]) == "youtube.com", "Website-only session accepted");
         foreach (string host in new [] { "localhost", "127.0.0.1", "example.com\n", "*.example.com", "WWW.example.com", "a..com", "a.local" })

@@ -39,6 +39,16 @@ async function run() {
     await window.locator('[name="website-screen"][value="dusk"]').check({ force: true });
     await window.locator('.website-settings').scrollIntoViewIfNeeded();
     await window.screenshot({ path: 'test-results/website-screens.png', fullPage: true });
+    await window.locator('[data-page="limits"]').click();
+    assert.equal(await window.locator('[data-limit-website]').count(), 5, 'Five recommended websites');
+    await window.locator('[data-limit-website="youtube.com"]').click();
+    await window.locator('#limit-address').fill('https://www.twitch.tv/directory'); await window.locator('#limit-address').press('Enter');
+    await window.locator('[data-domain="youtube.com"] [data-limit-minutes]').selectOption('60');
+    await window.locator('[data-domain="twitch.tv"] [data-limit-bedtime]').uncheck();
+    await window.locator('#bedtime-from').fill('23:15'); await window.locator('#bedtime-from').dispatchEvent('change');
+    assert.equal(await window.locator('[data-limit-website]').count(), 4);
+    await window.locator('.website-limits').scrollIntoViewIfNeeded();
+    await window.locator('.website-limits').screenshot({ path: 'test-results/website-limits.png' });
     await window.locator('[data-page="alerts"]').click(); await window.locator('#alert-add').click();
     await window.locator('#alert-title').fill('Read without feeds');
     await window.locator('#alert-block').selectOption('custom');
@@ -50,6 +60,7 @@ async function run() {
     await window.evaluate(() => saveQueue);
     await window.reload(); await window.waitForSelector('#selected-apps [data-app="website:youtube.com"]');
     assert.equal(await window.evaluate(() => prefs.blockScreen.mode), 'dusk');
+    assert.deepEqual(await window.evaluate(() => prefs.websiteLimits), { bedtime: { from: '23:15', to: '07:00' }, sites: [{ domain: 'youtube.com', minutes: 60, bedtime: true }, { domain: 'twitch.tv', minutes: 30, bedtime: false }] });
     assert.equal(await window.evaluate(() => groups[0].paths[0]), 'website:youtube.com');
     await window.locator('#delay-enabled').uncheck();
     await window.locator('#start-button').click(); await window.locator('#confirm-accept').click();
@@ -64,7 +75,7 @@ async function run() {
     await window.waitForSelector('.focus-card:not(.running)');
     assert.equal((await window.evaluate(() => window.still.status())).history[0].apps[0].path, 'website:youtube.com');
     assert.deepEqual(errors, []);
-    console.log('Website UI passed: selection, groups, scheduled selection, presets, custom text, redirect validation, persistence, website-only sessions, locking and compact layout.');
+    console.log('Website UI passed: selection, groups, scheduled selection, presets, custom text, daily limits and bedtime, redirect validation, persistence, website-only sessions, locking and compact layout.');
   } finally { await application.close(); }
 }
 run().catch(error => { console.error(error); process.exit(1); });

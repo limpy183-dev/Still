@@ -103,14 +103,28 @@ namespace Still {
         }
         // A native-messaging process lives with each connected browser. File notifications wake it
         // only when the SYSTEM guard writes state; there is no URL inspection or polling loop.
-        public static int BrowserHost(string statePath = null) {
+        // Daily limits/bedtime come from the user's own Still preferences; the companion validates them.
+        static object Limits(string path) {
+            try {
+                var prefs = new JavaScriptSerializer { MaxJsonLength = 16 * 1024 * 1024 }.Deserialize<Dictionary<string, object>>(File.ReadAllText(path));
+                object limits; return prefs != null && prefs.TryGetValue("websiteLimits", out limits) ? limits : null;
+            } catch { return null; }
+        }
+        static FileSystemWatcher Watch(string file, AutoResetEvent changed) {
+            Directory.CreateDirectory(Path.GetDirectoryName(file));
+            var watcher = new FileSystemWatcher(Path.GetDirectoryName(file), Path.GetFileName(file));
+            watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size;
+            watcher.Changed += (s, e) => changed.Set(); watcher.Created += (s, e) => changed.Set(); watcher.Renamed += (s, e) => changed.Set();
+            watcher.Error += (s, e) => changed.Set();
+            watcher.EnableRaisingEvents = true;
+            return watcher;
+        }
+        public static int BrowserHost(string statePath = null, string prefsPath = null) {
             if (statePath == null) statePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Still", "state.json");
+            if (prefsPath == null) prefsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "still-focus", "preferences.json");
             using (var changed = new AutoResetEvent(true))
-            using (var watcher = new FileSystemWatcher(Path.GetDirectoryName(statePath), "state.json")) {
-                watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size;
-                watcher.Changed += (s, e) => changed.Set(); watcher.Created += (s, e) => changed.Set(); watcher.Renamed += (s, e) => changed.Set();
-                watcher.Error += (s, e) => changed.Set();
-                watcher.EnableRaisingEvents = true;
+            using (var watcher = Watch(statePath, changed))
+            using (var prefsWatcher = Watch(prefsPath, changed)) {
                 string previous = null;
                 var output = Console.OpenStandardOutput();
                 // Exit when the browser closes stdin, including while no state changes occur.
@@ -152,7 +166,7 @@ namespace Still {
                         var data = Json.Serialize(new { sessionId = session == null ? null : session.id,
                             websites = session == null || session.apps == null ? new string[0] : session.apps.Where(IsWebsite).Select(Domain).ToArray(),
                             screen = screen == null ? null : new { mode = screen.mode, title = screen.title, text = screen.text, image = screen.image, redirect = screen.redirect },
-                            endsAt = session == null ? 0 : session.endsAt });
+                            endsAt = session == null ? 0 : session.endsAt, limits = Limits(prefsPath) });
                         if (previous == data) continue;
                         var bytes = Encoding.UTF8.GetBytes(data); var length = BitConverter.GetBytes(bytes.Length);
                         output.Write(length, 0, 4); output.Write(bytes, 0, bytes.Length); output.Flush(); previous = data;

@@ -45,7 +45,52 @@ function updateWebsiteLock() {
   $('#website-setup').disabled = !!state.session;
   $('#website-screen-locked').hidden = !state.session;
 }
+const limitChoices = [[0, 'No daily limit'], [5, '5 min a day'], [15, '15 min a day'], [30, '30 min a day'], [45, '45 min a day'], [60, '1 hour a day'], [90, '1½ hours a day'], [120, '2 hours a day'], [180, '3 hours a day']];
+const limitIcons = new Map();
+function renderLimits() {
+  const config = prefs.websiteLimits = Websites.limits(prefs.websiteLimits);
+  $('#bedtime-on').checked = config.bedtime.on; $('#bedtime-from').disabled = $('#bedtime-to').disabled = !config.bedtime.on; $('#bedtime-from').value = config.bedtime.from; $('#bedtime-to').value = config.bedtime.to;
+  $('#limit-list').innerHTML = config.sites.length ? config.sites.map((site, index) => {
+    const known = apps.find(a => a.path === 'website:' + site.domain && a.icon) || { name: site.domain, path: 'website:' + site.domain, icon: limitIcons.get(site.domain) };
+    const choices = limitChoices.some(([m]) => m === site.minutes) ? limitChoices : [...limitChoices, [site.minutes, readableTime(site.minutes) + ' a day']];
+    return `<div class="limit-row" data-domain="${escapeHtml(site.domain)}">${appIcon(known, index)}<strong>${escapeHtml(site.domain)}</strong><select data-limit-minutes aria-label="Daily time on ${escapeHtml(site.domain)}">${choices.map(([m, label]) => `<option value="${m}"${m === site.minutes ? ' selected' : ''}>${label}</option>`).join('')}</select><label class="limit-bedtime"><input type="checkbox" data-limit-bedtime${site.bedtime ? ' checked' : ''}> Bedtime</label><button type="button" class="icon-button" data-limit-remove aria-label="Stop limiting ${escapeHtml(site.domain)}">${icon('close')}</button></div>`;
+  }).join('') : '<p class="limit-empty">No limits yet. Start with one of the usual suspects below.</p>';
+  const left = Websites.recommended.filter(host => !config.sites.some(site => site.domain === host));
+  $('#limit-suggestions').innerHTML = left.length ? '<span class="website-hint">Recommended:</span>' + left.map(host => `<button type="button" class="group-chip" data-limit-website="${host}">+ ${host}</button>`).join('') : '';
+}
+function addLimit(address) {
+  const domain = Websites.domain(address.trim()), config = Websites.limits(prefs.websiteLimits);
+  if (config.sites.some(site => site.domain === domain)) throw Error(domain + ' already has a limit.');
+  if (config.sites.length >= 100) throw Error('Limit up to 100 websites.');
+  prefs.websiteLimits = { ...config, sites: [...config.sites, { domain, minutes: 30, bedtime: true }] };
+  $('#limit-address').value = ''; renderLimits(); save();
+  api.websiteTarget?.(domain).then(target => { limitIcons.set(domain, target.icon); renderLimits(); }).catch(() => {});
+}
+function editLimit(domain, change) {
+  const config = Websites.limits(prefs.websiteLimits);
+  prefs.websiteLimits = { ...config, sites: config.sites.flatMap(site => site.domain !== domain ? [site] : change ? [{ ...site, ...change }] : []) };
+  renderLimits(); save();
+}
+function initLimits() {
+  renderLimits();
+  api.websiteIcons?.(prefs.websiteLimits.sites.map(site => Websites.target(site.domain))).then(found => { for (const target of found) limitIcons.set(target.name, target.icon); renderLimits(); }).catch(() => {});
+  const tryAdd = address => { try { addLimit(address); } catch (error) { toast(error.message, true); } };
+  $('#limit-add').onclick = () => tryAdd($('#limit-address').value);
+  $('#limit-address').onkeydown = event => { if (event.key === 'Enter') { event.preventDefault(); tryAdd($('#limit-address').value); } };
+  $('#limit-suggestions').onclick = event => { const button = event.target.closest('[data-limit-website]'); if (button) tryAdd(button.dataset.limitWebsite); };
+  $('#limit-list').onchange = event => {
+    const domain = event.target.closest('[data-domain]')?.dataset.domain; if (!domain) return;
+    if (event.target.matches('[data-limit-minutes]')) editLimit(domain, { minutes: Number(event.target.value) });
+    if (event.target.matches('[data-limit-bedtime]')) editLimit(domain, { bedtime: event.target.checked });
+  };
+  $('#limit-list').onclick = event => { const button = event.target.closest('[data-limit-remove]'); if (button) editLimit(button.closest('[data-domain]').dataset.domain, null); };
+  for (const [id, field] of [['bedtime-from', 'from'], ['bedtime-to', 'to'], ['bedtime-on', 'on']]) $('#' + id).onchange = () => {
+    const config = Websites.limits(prefs.websiteLimits);
+    prefs.websiteLimits = { ...config, bedtime: { ...config.bedtime, [field]: field === 'on' ? $('#' + id).checked : $('#' + id).value } }; renderLimits(); save();
+  };
+}
 function initWebsites() {
+  initLimits();
   websiteDraft = { ...Websites.screen(prefs.blockScreen) };
   $('#website-screen-title').value = websiteDraft.title; $('#website-screen-text').value = websiteDraft.text; $('#website-redirect').value = websiteDraft.redirect;
   renderWebsiteScreen(); updateWebsiteLock();
@@ -74,7 +119,7 @@ function initWebsites() {
   $('#website-image-remove').onclick = () => { websiteDraft.image = ''; renderWebsiteScreen(); commitWebsiteScreen(); };
   $('#website-setup').onclick = () => act(async () => {
     if (!api.websiteSetup || state.demo) throw Error('Browser setup is available in the installed Windows app, outside preview mode.');
-    if (!state.installed || !state.websiteBlocking) applyStatus(await api.install());
+    if (!state.installed || !state.websiteBlocking || !state.websiteLimits) applyStatus(await api.install());
     const directory = await api.websiteSetup();
     $('#website-setup-path').textContent = directory;
     $('#website-setup-steps').hidden = false;

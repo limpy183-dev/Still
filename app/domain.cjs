@@ -21,6 +21,7 @@ function validatePreferences(value) {
   if (!value || typeof value !== 'object') throw new Error('Invalid preferences.');
   return {
     blockScreen: Websites.screen(value.blockScreen),
+    websiteLimits: Websites.limits(value.websiteLimits),
     todos: (Array.isArray(value.todos) ? value.todos : []).filter(item => item && typeof item.text === 'string').slice(0, 500).map(item => ({ text: item.text.slice(0, 2000), type: ['checkbox', 'circle', 'bullet', 'number', 'heading', 'note'].includes(item.type) ? item.type : 'checkbox', done: item.done === true })),
     apps: (Array.isArray(value.apps) ? value.apps : []).filter(allowedTarget).slice(0, 300).map(a => ({ name: a.name.slice(0, 100), path: a.path })),
     selected: (Array.isArray(value.selected) ? value.selected : []).filter(s => typeof s === 'string').slice(0, 100),

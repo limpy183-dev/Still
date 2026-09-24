@@ -36,6 +36,31 @@
     }
     return result;
   }
-  const api = { presets, domain, target, isWebsite, allowedWebsite, matches, screen };
+  // Daily limits and bedtime, enforced by the browser companion. minutes 0 = no daily limit.
+  const recommended = ['youtube.com', 'instagram.com', 'tiktok.com', 'reddit.com', 'x.com'];
+  const clock = value => /^([01]\d|2[0-3]):[0-5]\d$/.test(value) ? value : null;
+  function limits(value) {
+    value = value && typeof value === 'object' ? value : {};
+    const bedtime = { on: value.bedtime?.on !== false, from: clock(value.bedtime?.from) || '22:30', to: clock(value.bedtime?.to) || '07:00' }, seen = new Set();
+    const sites = (Array.isArray(value.sites) ? value.sites : []).flatMap(site => {
+      try { const host = domain(String(site?.domain)); if (seen.has(host)) return []; seen.add(host); return [{ domain: host, minutes: Math.max(0, Math.min(1440, Math.round(Number(site.minutes) || 0))), bedtime: site.bedtime === true }]; } catch { return []; }
+    }).slice(0, 100);
+    return { bedtime, sites };
+  }
+  const minuteOf = text => +text.slice(0, 2) * 60 + +text.slice(3);
+  function inBedtime(bedtime, date) {
+    const now = date.getHours() * 60 + date.getMinutes(), from = minuteOf(bedtime.from), to = minuteOf(bedtime.to);
+    return from < to ? now >= from && now < to : from > to && (now >= from || now < to);
+  }
+  // Returns { domain: 'bedtime' | 'limit' } for every site currently out of reach.
+  function limitBlocks(config, seconds, date) {
+    const result = {}, night = config.bedtime.on && inBedtime(config.bedtime, date);
+    for (const site of config.sites) {
+      if (site.bedtime && night) result[site.domain] = 'bedtime';
+      else if (site.minutes && (seconds[site.domain] || 0) >= site.minutes * 60) result[site.domain] = 'limit';
+    }
+    return result;
+  }
+  const api = { presets, domain, target, isWebsite, allowedWebsite, matches, screen, recommended, limits, inBedtime, limitBlocks };
   if (typeof module !== 'undefined') module.exports = api; else root.Websites = api;
 })(globalThis);

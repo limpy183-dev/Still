@@ -266,7 +266,7 @@ namespace Still {
         }
         object StatusResponse(Request request) {
             var response = new Dictionary<string, object> {
-                { "ok", true }, { "installed", true }, { "scheduledAlerts", true }, { "snoozeAlerts", true }, { "websiteBlocking", true },
+                { "ok", true }, { "installed", true }, { "scheduledAlerts", true }, { "snoozeAlerts", true }, { "websiteBlocking", true }, { "websiteLimits", true },
                 { "session", state.session == null ? null : state.session.Summary() }, { "historyRevision", historyRevision },
                 { "error", state.error }, { "now", Now() }
             };

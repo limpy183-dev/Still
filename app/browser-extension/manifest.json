@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Still · Website focus",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Keep your selected websites on hold during Still focus sessions.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArAlB9Lj/TZhUrtCNETLYCC2Qb6qMUrqF4H/L0vfy/QyKQNF0FoXbo/3ZhnmukQ/TSXPhxwfujGAuMKuKlzp0VgxPr7AzExVR6RQimiThIHpQ/lnDGL2eNzSGaJ5+saixUKIMFwhmX2087vigPKZbHqiq2aDUqs9DbaVMhiiJlk984rJw+gk6VjkLm3bUouvJ5R67REeGrDOWz8U2rFHxiKp+b76OYqK35qoFjpNR3yZ/EwCOBHFur7B47m9HBV6wXDmi3Dnv84xVQ803L/WEKv39NxloieTsiu7uGBg+XJ3FDT0gnLnxqYtYcLjbVNJK8xnBmmwAZfOSx8t97mnKiwIDAQAB",
   "permissions": [

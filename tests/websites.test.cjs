@@ -48,7 +48,8 @@ test('companion installs redirects and subresource blocks, redirects open tabs, 
     storage: { local: { get: async () => storage, set: async value => Object.assign(storage, value) } },
     declarativeNetRequest: { getDynamicRules: async () => dynamic, updateDynamicRules: async value => { dynamic = value.addRules; } },
     action: { setBadgeText: async () => {}, setTitle: async () => {}, onClicked: events('click') },
-    alarms: { create: () => {}, onAlarm: events('alarm') },
+    alarms: { create: () => {}, get: async () => null, onAlarm: events('alarm') },
+    windows: { get: async () => ({ focused: false }), onFocusChanged: events('focus') },
     tabs: { query: async () => [{ id: 1, url: 'https://m.youtube.com/watch' }, { id: 2, url: 'https://example.com/' }], update: async (id, value) => updates.push({ id, ...value }) },
     webNavigation: { onBeforeNavigate: events('before'), onCommitted: events('committed'), onHistoryStateUpdated: events('history'), onErrorOccurred: events('error') }
   };
@@ -74,4 +75,52 @@ test('companion installs redirects and subresource blocks, redirects open tabs, 
   assert.equal(dynamic[0].action.redirect.url, 'https://example.com/notes');
   listeners.message({ sessionId: null, websites: [], screen: null, endsAt: 0 });
   await vm.runInContext('queue', context); assert.equal(dynamic.length, 0);
+});
+test('daily limits and bedtime normalize, cross midnight, and pick the right reason', () => {
+  const config = Websites.limits({ bedtime: { from: '22:00', to: '07:00' }, sites: [{ domain: 'https://www.youtube.com/watch', minutes: 30, bedtime: true }, { domain: 'youtube.com', minutes: 5 }, { domain: 'localhost', minutes: 5 }, { domain: 'reddit.com', minutes: 99999 }] });
+  assert.deepEqual(config.sites, [{ domain: 'youtube.com', minutes: 30, bedtime: true }, { domain: 'reddit.com', minutes: 1440, bedtime: false }]);
+  assert.deepEqual(Websites.limits({ bedtime: { from: '25:00' } }).bedtime, { on: true, from: '22:30', to: '07:00' });
+  const at = time => new Date(`2026-09-24T${time}:00`);
+  assert.equal(Websites.inBedtime(config.bedtime, at('23:30')), true); assert.equal(Websites.inBedtime(config.bedtime, at('06:59')), true);
+  assert.equal(Websites.inBedtime(config.bedtime, at('07:00')), false); assert.equal(Websites.inBedtime({ from: '13:00', to: '14:00' }, at('13:30')), true);
+  assert.deepEqual(Websites.limitBlocks(config, { 'youtube.com': 1799 }, at('12:00')), {});
+  assert.deepEqual(Websites.limitBlocks(config, { 'youtube.com': 1800, 'reddit.com': 10 }, at('12:00')), { 'youtube.com': 'limit' });
+  assert.deepEqual(Websites.limitBlocks(config, {}, at('23:00')), { 'youtube.com': 'bedtime' });
+  assert.deepEqual(Websites.limitBlocks({ ...config, bedtime: { ...config.bedtime, on: false } }, {}, at('23:00')), {});
+  assert.deepEqual(validatePreferences({ websiteLimits: { sites: [{ domain: 'x.com', minutes: 15, bedtime: true }] } }).websiteLimits.sites, [{ domain: 'x.com', minutes: 15, bedtime: true }]);
+});
+test('companion counts active-tab time, blocks over-limit sites alongside session rules, and keeps limits when preferences are unreadable', async () => {
+  const listeners = {}, events = name => ({ addListener: listener => { listeners[name] = listener; } });
+  const updates = [], storage = {}; let dynamic = [], clock = new Date('2026-09-24T12:00:00').getTime();
+  const port = { onMessage: events('message'), onDisconnect: events('disconnect'), postMessage() {} };
+  const tabs = [{ id: 1, url: 'https://m.youtube.com/watch', windowId: 1 }];
+  const chrome = {
+    extension: { isAllowedIncognitoAccess: async () => true },
+    runtime: { connectNative: () => port, getURL: path => 'chrome-extension://still/' + path, onStartup: events('startup'), onInstalled: events('installed') },
+    storage: { local: { get: async () => ({ ...storage }), set: async value => Object.assign(storage, JSON.parse(JSON.stringify(value))) } },
+    declarativeNetRequest: { getDynamicRules: async () => dynamic, updateDynamicRules: async value => { dynamic = value.addRules; } },
+    action: { setBadgeText: async () => {}, setTitle: async () => {}, onClicked: events('click') },
+    alarms: { create: () => {}, get: async () => null, onAlarm: events('alarm') },
+    windows: { get: async () => ({ focused: true }), onFocusChanged: events('focus') },
+    tabs: { query: async () => tabs, update: async (id, value) => updates.push({ id, ...value }), onActivated: events('activated') },
+    webNavigation: { onCommitted: events('committed'), onHistoryStateUpdated: events('history'), onErrorOccurred: events('error') }
+  };
+  const FakeDate = class extends Date { constructor(...args) { super(...(args.length ? args : [clock])); } static now() { return clock; } };
+  const context = vm.createContext({ chrome, Websites, importScripts() {}, URL, URLSearchParams, JSON, console, Date: FakeDate, setTimeout: () => 1, clearTimeout() {} });
+  vm.runInContext(fs.readFileSync(require.resolve('../app/browser-extension/background.js'), 'utf8'), context);
+  await new Promise(setImmediate);
+  const limits = { bedtime: { from: '22:00', to: '07:00' }, sites: [{ domain: 'youtube.com', minutes: 1, bedtime: false }] };
+  listeners.message({ sessionId: 'focus', websites: ['reddit.com'], screen: { mode: 'garden' }, endsAt: clock + 1e6, limits });
+  await vm.runInContext('queue', context); await vm.runInContext('queue', context);
+  assert.equal(dynamic.length, 2, 'Only session rules before the limit is used up');
+  for (let i = 0; i < 2; i++) { clock += 30000; listeners.alarm({ name: 'limits' }); await vm.runInContext('queue', context); }
+  assert.equal(storage.usage.seconds['youtube.com'], 60);
+  assert.equal(dynamic.length, 3, 'Session rules survive alongside the limit rule');
+  assert.match(dynamic[2].action.redirect.extensionPath, /why=limit&site=youtube\.com/);
+  assert.match(updates.at(-1).url, /blocked\.html\?why=limit/); assert.equal(updates.at(-1).id, 1);
+  listeners.message({ sessionId: null, websites: [], screen: null, endsAt: 0, limits: null });
+  await vm.runInContext('queue', context);
+  assert.equal(dynamic.length, 1, 'Unreadable preferences keep the existing limit');
+  clock = new Date('2026-09-25T12:00:00').getTime(); listeners.alarm({ name: 'limits' }); await vm.runInContext('queue', context);
+  assert.equal(dynamic.length, 0, 'Limits reset at midnight');
 });

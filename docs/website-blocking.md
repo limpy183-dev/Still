@@ -13,6 +13,10 @@ In **Settings → Website block screens**, choose Quiet garden, Evening calm, or
 
 The local build uses an unpacked companion. A store-published, managed extension would be needed for a stronger installation/removal boundary; this build does not claim that protection. Existing companions should be reloaded from the extensions page after updating Still's companion files.
 
+## Daily limits and bedtime
+
+In **Time limits** (in the sidebar under Your workspace), add any website (or one of five recommended: YouTube, Instagram, TikTok, Reddit, X), choose how long it gets each day, and switch bedtime on or off per website. One bedtime window (default 22:30–07:00) applies to every website with bedtime on. Limits live in Still's preferences; the companion's native host forwards them when they change, and the companion counts time while a limited website is the active tab of a focused browser window (30-second steps). When the time is used up, or bedtime starts, open tabs are sent to a block page and new visits are redirected until midnight or the end of bedtime. Limits work outside focus sessions and do not use the SYSTEM guard; they can be changed in Still at any time. Reload the companion after updating Still.
+
 ## Enforcement and recovery
 
 The SYSTEM guard freezes the selected domains, screen, deadline, and release delay. Chrome/Edge declarative request rules redirect top-level visits and block matching subresources. Existing blocked tabs are redirected once when the rules change; cached/history navigation is covered too. A new website session is reported active only after a connected companion installs its rules, redirects existing tabs, and confirms private-window access. Without confirmation the start fails and rolls back. Domains are matched at label boundaries, so blocking youtube.com does not block notyoutube.com.

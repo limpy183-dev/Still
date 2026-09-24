@@ -8,7 +8,8 @@ async function run() {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'Still-host-test-'));
   const file = path.join(root, 'state.json');
   await fs.writeFile(file, JSON.stringify({ session: null }));
-  const child = spawn(path.resolve('native/bin/WebsitesTests.exe'), ['--host', file], { windowsHide: true });
+  const prefs = path.join(root, 'prefs', 'preferences.json');
+  const child = spawn(path.resolve('native/bin/WebsitesTests.exe'), ['--host', file, prefs], { windowsHide: true });
   let buffer = Buffer.alloc(0), messages = [];
   child.stdout.on('data', chunk => {
     buffer = Buffer.concat([buffer, chunk]);
@@ -32,8 +33,11 @@ async function run() {
     assert.equal(messages.length, 2, 'Unreadable state never releases blocking');
     await fs.writeFile(file + '.tmp', JSON.stringify({ session: null })); await fs.rename(file + '.tmp', file);
     assert.deepEqual((await message(3)).websites, []);
+    const websiteLimits = { bedtime: { from: '22:00', to: '07:00' }, sites: [{ domain: 'youtube.com', minutes: 30, bedtime: true }] };
+    await fs.writeFile(prefs + '.tmp', JSON.stringify({ todos: [], websiteLimits })); await fs.rename(prefs + '.tmp', prefs);
+    assert.deepEqual((await message(4)).limits, websiteLimits);
     child.stdin.end(); const [code] = await once(child, 'exit'); assert.equal(code, 0);
-    console.log('Native messaging passed: initial state, atomic saves, large artwork, change-only delivery, corrupt-state retention, release and clean exit.');
+    console.log('Native messaging passed: initial state, atomic saves, large artwork, change-only delivery, corrupt-state retention, release, daily limits and clean exit.');
   } finally {
     if (child.exitCode === null) child.kill();
     if (path.dirname(root) === os.tmpdir() && path.basename(root).startsWith('Still-host-test-')) await fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
