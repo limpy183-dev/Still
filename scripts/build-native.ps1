@@ -8,7 +8,16 @@ if (!(Test-Path -LiteralPath $compiler)) { throw 'Build on 64-bit Windows with .
 if ($LASTEXITCODE -ne 0) { throw 'Compatibility test compilation failed.' }
 & "$out/WindowsCompatibilityTests.exe"
 if ($LASTEXITCODE -ne 0) { throw 'Windows compatibility tests failed.' }
-& $compiler /nologo /target:winexe /optimize+ /platform:x64 /r:System.ServiceProcess.dll /r:System.Web.Extensions.dll /r:System.Windows.Forms.dll "/out:$out\Still.Guard.exe" "$root\native\Guard.cs" "$root\native\WindowsCompatibility.cs" "$root\native\Session.cs" "$root\native\Websites.cs"
+# Product name and version on the guard binary (code signing requires them).
+$version = (Get-Content (Join-Path $root 'package.json') -Raw | ConvertFrom-Json).version
+$info = Join-Path $out 'GuardInfo.cs'
+Set-Content $info "[assembly: System.Reflection.AssemblyTitle(`"Still Guard`")]
+[assembly: System.Reflection.AssemblyProduct(`"Still`")]
+[assembly: System.Reflection.AssemblyCompany(`"Still`")]
+[assembly: System.Reflection.AssemblyVersion(`"$version`")]
+[assembly: System.Reflection.AssemblyFileVersion(`"$version`")]
+[assembly: System.Reflection.AssemblyInformationalVersion(`"$version`")]"
+& $compiler /nologo /target:winexe /optimize+ /platform:x64 /r:System.ServiceProcess.dll /r:System.Web.Extensions.dll /r:System.Windows.Forms.dll "/out:$out\Still.Guard.exe" "$info" "$root\native\Guard.cs" "$root\native\WindowsCompatibility.cs" "$root\native\Session.cs" "$root\native\Websites.cs"
 if ($LASTEXITCODE -ne 0) { throw 'Native guard compilation failed.' }
 & $compiler /nologo /target:exe /optimize+ /r:System.Web.Extensions.dll "/out:$out\SessionTests.exe" "$root\native\Session.cs" "$root\native\Websites.cs" "$root\tests\SessionTests.cs"
 if ($LASTEXITCODE -ne 0) { throw 'Test compilation failed.' }

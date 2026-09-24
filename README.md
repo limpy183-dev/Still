@@ -163,6 +163,15 @@ Still combines an **Electron interface**, a **C# Windows service**, **PowerShell
 
 Live elevated service installation, kernel-enforced launch denial, and reboot recovery still need an administrator smoke test on a suitable Windows PC before relying on strict sessions. The [development guide](docs/development.md#develop-and-verify) includes the fixture-based smoke-test command.
 
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+- Committers and reviewers: [limpy183-dev](https://github.com/limpy183-dev), [adambelalxd](https://github.com/adambelalxd)
+- Approvers: [limpy183-dev](https://github.com/limpy183-dev), [adambelalxd](https://github.com/adambelalxd)
+
+Only Still's own binaries are signed, built by the [release workflow](.github/workflows/release.yml) from this repository, and each release is approved by hand. Privacy: this program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. See the [privacy page](https://limpy183-dev.github.io/Still/privacy.html).
+
 ---
 
 <div align="center">
