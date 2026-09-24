@@ -220,6 +220,7 @@ section{position:relative}
 .w-row{display:flex;align-items:center;gap:.9em;padding:.8em .5em;border-radius:.8em}
 .app-ic{width:2.75em;height:2.75em;display:grid;place-items:center;border-radius:.75em;flex-shrink:0;font-weight:750;font-size:1em}
 .app-ic svg{width:1.5em;height:1.5em}
+.app-ic img{width:100%;height:100%;border-radius:inherit;display:block;box-shadow:0 0 0 1px #2c34261a}
 .t0{background:#e9e8f8;color:#7e74b8}.t1{background:#e9eef3;color:#607185}.t2{background:#f5e8e3;color:#b7816d}.t3{background:#e8f0e4;color:#7b9c69}.t4{background:#eeeaf3;color:#8b799f}.t5{background:#f7efdc;color:#a38440}
 .w-row b{display:block;font-size:.95em;font-weight:650}
 .w-row small{display:block;font-size:.72em;color:#8a9281}
