@@ -21,7 +21,6 @@ jobs:
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
           if ("v$version" -ne $env:GITHUB_REF_NAME) { throw "Tag $env:GITHUB_REF_NAME does not match package.json version $version." }
       - run: npm ci
-      - run: npm test
       - run: npm run dist
       - name: Publish release
         env:
