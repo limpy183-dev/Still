@@ -4,6 +4,7 @@
   <p><strong>Your time. On purpose.</strong></p>
   <p>A quieter space for your attention.<br />Block distracting apps and websites, make a little plan, and settle into focus.</p>
   <p>
+    <a href="https://limpy183-dev.github.io/Still/">Website</a> ·
     <a href="https://github.com/limpy183-dev/Still/releases/latest"><strong>Download for Windows</strong></a> ·
     <a href="#get-started">Get started</a> ·
     <a href="#take-a-look">Screenshots</a> ·
@@ -146,6 +147,8 @@ No app can guarantee an unbreakable lock against the administrator of the same P
 </details>
 
 ## Build and explore
+
+The [Still website](https://limpy183-dev.github.io/Still/) is served from `website/` by GitHub Pages. Changes to that folder on `main` deploy automatically through the **Deploy website** workflow; it can also be run manually from Actions. The site uses plain HTML, CSS, and JavaScript, with no install or build step. In repository **Settings → Pages**, the publishing source must be **GitHub Actions**. The custom 404 page uses the `/Still/` project path; update its links if the repository is renamed or moved to a custom domain.
 
 Still combines an **Electron interface**, a **C# Windows service**, **PowerShell AppLocker integration**, and a **Chrome / Edge companion**.
 

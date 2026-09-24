@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guide — Still</title>
+<meta name="description" content="How to install Still, start your first focus session, set up Windows protection and the Chrome/Edge companion, use alerts, time limits and the to-do list, and recover if something goes wrong.">
+<meta name="theme-color" content="#f5f6f1">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Still">
+<meta property="og:title" content="Guide — Still">
+<meta property="og:description" content="How to install Still, start your first focus session, set up Windows protection and the Chrome/Edge companion, use alerts, time limits and the to-do list, and recover if something goes wrong.">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="assets/still.ico" sizes="any">
+<link rel="icon" href="assets/still.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/still.png">
+<link rel="preload" href="assets/Manrope.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/site.css">
+<script>document.documentElement.classList.add('js')</script>
+<script src="js/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="progress-bar" aria-hidden="true"></div>
+<div class="titlebar"><div class="wrap"><a href="changelog.html"><span class="tiny-dot"></span><span>Still <span data-version>1.0.1</span> is here · See what’s new</span></a><span class="window-dots" aria-hidden="true"><span>−</span><span>□</span><span>×</span></span></div></div>
+<header class="site-header"><div class="wrap">
+  <a class="brand" href="index.html" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a>
+  <nav class="nav" id="site-nav" aria-label="Main"><a href="features.html">Features</a><a href="guide.html" aria-current="page">Guide</a><a href="download.html">Download</a><a href="privacy.html">Privacy</a><a href="faq.html">FAQ</a><a href="changelog.html">Changelog</a></nav>
+  <a class="btn btn-primary btn-sm header-cta" href="download.html"><svg aria-hidden="true"><use href="#i-download"/></svg>Download</a>
+  <button class="menu-toggle" type="button" aria-label="Menu" aria-controls="site-nav" aria-expanded="false"><span></span></button>
+</div></header>
+<main id="main">
+
+<section class="page-hero">
+  <div class="deco" aria-hidden="true"><i></i><i></i><i></i><b></b></div>
+  <div class="wrap"><div class="inner">
+    <nav class="crumbs fade-in" style="--d:0s" aria-label="Breadcrumb"><a href="index.html">Still</a><span>/</span><b>Guide</b></nav>
+    <span class="eyebrow fade-in" style="--d:.05s"><span class="tiny-dot"></span>A little guidance</span>
+    <h1 class="h1 split">Getting started, <span>one step at a time.</span></h1>
+    <p class="lead fade-in" style="--d:.5s">Everything you need to install Still, protect your focus, and put things right if they ever go wrong.</p>
+  </div></div>
+</section>
+
+<div class="wrap docs">
+  <nav class="toc" aria-label="On this page" data-spy>
+    <strong>ON THIS PAGE</strong>
+    <a href="#install">Install</a>
+    <a href="#first-session">Your first session</a>
+    <a href="#protection">Windows protection</a>
+    <a href="#ending-early">Ending early</a>
+    <a href="#websites">Website blocking</a>
+    <a href="#limits">Time limits &amp; bedtime</a>
+    <a href="#alerts">Alerts</a>
+    <a href="#todos">To-do list</a>
+    <a href="#progress">Progress &amp; export</a>
+    <a href="#updating">Updating &amp; removing</a>
+    <a href="#recovery">Recovery</a>
+    <a href="#troubleshooting">Troubleshooting</a>
+    <a href="#source">Build from source</a>
+  </nav>
+
+  <div class="doc">
+    <section class="panel doc-section" id="install" data-reveal>
+      <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-download"/></svg></span>Install</h2>
+      <ol class="olist">
+        <li><span>Download <b>Still-Setup-<span data-version>1.0.1</span>.exe</b> from the <a href="download.html">download page</a>.</span></li>
+        <li><span>Run it and choose <b>Install Still</b>. It installs for your Windows account in <code>%LOCALAPPDATA%\Programs\Still</code>, adds a <b>Still Focus</b> Start menu shortcut (and optionally a desktop shortcut), and needs no administrator approval.</span></li>
+        <li><span>The build isn’t code-signed, so Windows SmartScreen may say it “protected your PC”. Choose <b>More info → Run anyway</b>.</span></li>
+      </ol>
+      <div class="note green"><svg aria-hidden="true"><use href="#i-info"/></svg><span>Closing the window hides Still in the system tray. Quitting the app never stops Windows protection or an active session.</span></div>
+    </section>
+
+    <section class="panel doc-section" id="first-session" data-reveal>
+      <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-focus"/></svg></span>Your first session</h2>
+      <ol class="olist">
+        <li><span>Choose <b>Add applications</b>. Still discovers desktop apps, running windowed apps, and eligible Microsoft Store packages. You can also browse directly to one or more <code>.exe</code> files. Select a game’s executable as well as its launcher.</span></li>
+        <li><span>Set a duration of <b>1–1,440 minutes</b> and, optionally, a release delay of <b>1–120 minutes</b>. Save selections as reusable groups in the library.</span></li>
+        <li><span>Enable <b>Windows protection</b> once (see below).</span></li>
+        <li><span>Save your work in the selected apps, then choose <b>Start focusing</b>. Selected running apps are closed. The selection, duration and release delay can’t be changed during a session.</span></li>
+      </ol>
+      <p>Timers and release requests are saved and survive restarting Windows. When a session finishes on its own, everything is released, even if a release wait would have lasted longer.</p>
+    </section>
+
+    <section class="panel doc-section" id="protection" data-reveal>
+      <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-shield"/></svg></span>Windows protection</h2>
+      <p>Choose <b>Set up protection</b> (or <b>Settings → Enable Windows protection</b>). Windows asks for administrator approval and installs <b>Still Guard</b> in Program Files as an automatic Windows service.</p>
+      <ul class="ulist">
+        <li>Desktop apps get exact path and file-hash rules; Store apps use package rules for your Windows account.</li>
+        <li>Apps already running are closed when you start. Save your work first.</li>
+        <li>Still verifies the effective policy before it reports a successful start.</li>
+        <li>Still adds explicit allow rules for everything else before its temporary deny rules, so nothing unrelated is blocked.</li>
+      </ul>
+      <p>Reopening <b>Enable Windows protection</b> reconnects an existing stopped guard belonging to the same account. To remove it, finish any session and choose <b>Settings → Remove protection service</b>.</p>
+      <div class="note"><svg aria-hidden="true"><use href="#i-alert"/></svg><span>Domain-joined and MDM-managed PCs, and PCs with existing application-control rules, are refused to avoid changing an organisation’s security policy. Read the <a href="privacy.html#limits">honest limits</a>.</span></div>
+    </section>
+
+    <section class="panel doc-section" id="ending-early" data-reveal>
+      <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-clock"/></svg></span>Ending early</h2>
+      <ol class="olist">
+        <li><span>Choose <b>Request early release</b>. Apps and websites stay blocked while you wait.</span></li>
+        <li><span>Wait for the release delay you set before starting.</span></li>
+        <li><span>Choose <b>End focus session</b>. Waiting alone doesn’t end the session. You decide.</span></li>
+      </ol>
+      <p>Choosing <b>Keep focusing</b> cancels the request and restores the lock. A new request starts a new full wait. <a href="index.html#pause">Try the demo</a>.</p>
+    </section>
+
+    <section class="panel doc-section" id="websites" data-reveal>
+      <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-globe"/></svg></span>Website blocking</h2>
+      <p>Website selections work everywhere app selections do: Focus space, the library, saved groups, alerts and history. Paste a URL or enter a domain in <b>Add website</b>; the whole domain and its subdomains are blocked. Up to 100 apps and websites can be selected together, including website-only sessions.</p>
+      <h3>Set up the browser companion (Chrome &amp; Edge)</h3>
+      <ol class="olist">
+        <li><span>Finish any active session. Choose <b>Settings → Set up browser companion</b>. This updates Still Guard, registers the browser’s native messaging host, and opens a stable copy of the companion folder.</span></li>
+        <li><span>Open <code>chrome://extensions</code> or <code>edge://extensions</code>, enable <b>Developer mode</b>, select <b>Load unpacked</b>, and choose that folder.</span></li>
+        <li><span>Open the Still extension’s <b>Details</b> and enable <b>Allow in incognito</b> (Chrome) or <b>Allow in InPrivate</b> (Edge).</span></li>
+        <li><span>Repeat in every browser profile you use, then restart those browsers. The extension’s tooltip should say it’s connected and ready.</span></li>
+      </ol>
+      <div class="note green"><svg aria-hidden="true"><use href="#i-info"/></svg><span>Keep at least one connected browser open when a website session or scheduled alert starts. Still waits for the companion to confirm its rules; without confirmation the start fails safely and rolls back.</span></div>
+      <h3>Block screens</h3>
+      <p>In <b>Settings → Website block screens</b>, choose Quiet garden, Evening calm or A clean page; create your own with a headline, text and a JPG/PNG/WebP image; or redirect blocked visits to an HTTPS page outside your blocked websites. The screen is fixed for the length of each session.</p>
+      <h3>How it’s enforced</h3>
+      <p>The companion uses the browser’s own declarative request rules to redirect visits and block matching resources, and turns already-open blocked tabs into your block screen. As a separate fallback, Still Guard writes temporary Chrome/Edge URL blocklist policies and restricts guest and private browsing. It journals and removes only its own values. No TLS interception, certificates, proxies or DNS changes are used.</p>
+    </section>
+
+    <section class="panel doc-section" id="limits" data-reveal>
+      <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-hourglass"/></svg></span>Time limits &amp; bedtime</h2>
+      <p>Open <b>Time limits</b> in the sidebar. Add any website, or one of the recommendations (YouTube, Instagram, TikTok, Reddit, X), choose how long it gets each day, and switch bedtime on or off per website.</p>
+      <ul class="ulist">
+        <li>One bedtime window, 22:30–07:00 by default, applies to every website with bedtime on.</li>
+        <li>Time counts while a limited website is the active tab of a focused browser window, in 30-second steps.</li>
+        <li>When time runs out, or bedtime starts, open tabs go to a block page and new visits are redirected until midnight or the end of bedtime.</li>
+        <li>Limits work outside focus sessions and can be changed at any time. They need the browser companion.</li>
+      </ul>
+    </section>
+
+    <section class="panel doc-section" id="alerts" data-reveal>
+      <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-bell"/></svg></span>Alerts</h2>
+      <p>Open <b>Alerts → New alert</b> to schedule a task once, daily or on weekdays, starting on a chosen date. Set a duration of 1–1,440 minutes or an end time; ranges can cross midnight. Each alert can use the current Focus space selection, its own selection, or no blocking.</p>
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>Style</th><th>What happens</th></tr></thead>
+        <tbody>
+          <tr><td>Full attention</td><td>Covers all displays above regular apps, with sound (required).</td></tr>
+          <tr><td>Focus card</td><td>A smaller window above your apps.</td></tr>
+          <tr><td>Quiet reminder</td><td>A dismissible Windows notification.</td></tr>
+        </tbody>
+      </table></div>
+      <ul class="ulist">
+        <li>Four built-in sounds, silent reminders, volume control, and your own audio/video files (up to 200 MB; MP3/WAV and H.264 MP4 recommended).</li>
+        <li>Full-screen and card alarms support images, GIFs and muted video banners.</li>
+        <li>Each alarm has a snooze limit (blank for unlimited, 0 to hide Snooze) and a Show/Hide Dismiss setting. Snooze releases that alarm’s apps and blocks them again after five minutes.</li>
+        <li>Alarm audio stops after one minute; overlays dismiss after five. <kbd>Esc</kbd> dismisses an overlay when Dismiss is shown.</li>
+      </ul>
+      <div class="note"><svg aria-hidden="true"><use href="#i-alert"/></svg><span>Alerts run while Still is open or in the tray. Enable <b>Ready when you are</b> to resume after restarting. Sleeping PCs aren’t woken; on resume, only a still-active focus window is delivered.</span></div>
+    </section>
+
+    <section class="panel doc-section" id="todos" data-reveal>
+      <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-check"/></svg></span>To-do list</h2>
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>Keys</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>/</kbd></td><td>At the start of a line or after a space: choose a checkbox, tick circle, bullet, numbered item, heading or note. Keep typing to filter.</td></tr>
+          <tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd></td><td>Move through formats and pick one (or click).</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>Dismiss the format menu.</td></tr>
+          <tr><td><kbd>Enter</kbd></td><td>Create another line.</td></tr>
+          <tr><td><kbd>Backspace</kbd></td><td>On an empty line, remove it.</td></tr>
+        </tbody>
+      </table></div>
+      <p>Edits save automatically, even during focus sessions. The list holds up to 500 lines of 2,000 characters each.</p>
+    </section>
+
+    <section class="panel doc-section" id="progress" data-reveal>
+      <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-chart"/></svg></span>Progress &amp; export</h2>
+      <p><b>Your progress</b> shows total focus time, completed sessions and this week, plus charts for the last 7, 30 or 90 days, a daily goal, a consistency grid and a session calendar. Search by intention, filter by outcome, archive sessions, and use <b>Export history</b> to save a JSON file.</p>
+      <p>Time is split across local calendar days; completed sessions count on the day they finish. Archived sessions still count toward progress. The guard keeps up to 500 recent sessions.</p>
+    </section>
+
+    <section class="panel doc-section" id="updating" data-reveal>
+      <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-refresh"/></svg></span>Updating &amp; removing</h2>
+      <p><b>Updating:</b> run the newer setup. It detects the installed version, closes Still for a moment, and replaces it while keeping your preferences, alerts, to-dos and history. Windows protection keeps running during updates, and a browser companion you already set up refreshes itself within a minute.</p>
+      <p><b>Checking:</b> Settings → <b>Check for updates</b> contacts GitHub only when you click it.</p>
+      <p><b>Uninstalling:</b> Windows Settings → Apps → Installed apps → Still. You can also remove Still Guard (administrator approval; not during an active session) and your data.</p>
+    </section>
+
+    <section class="panel doc-section" id="recovery" data-reveal>
+      <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-help"/></svg></span>Recovery</h2>
+      <p>If the app can’t connect, open Windows <b>Services</b> and check <b>Still Focus Guard</b>. If Windows refuses to release rules, the guard reports the error and retries.</p>
+      <p>As a last resort, an administrator can run this emergency command in an <b>elevated PowerShell</b> window:</p>
+      <div class="codeblock"><button class="copy" type="button" data-copy="#recover-cmd"><svg aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button><pre id="recover-cmd">&amp; "$env:ProgramFiles\Still Guard\Still.Guard.exe" --recover</pre></div>
+      <p>This deliberately overrides a session, stops and unregisters Still Guard, and removes Still’s rules. It doesn’t erase your preferences or history, or touch unrelated application-control rules. <code>--uninstall</code> refuses while a session is unexpired.</p>
+      <div class="note"><svg aria-hidden="true"><use href="#i-alert"/></svg><span>If a service is being deleted, close Windows Services before reinstalling. A full disk or damaged Windows application-control components must be repaired before cleanup can succeed.</span></div>
+    </section>
+
+    <section class="panel doc-section" id="troubleshooting" data-reveal>
+      <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-wand"/></svg></span>Troubleshooting</h2>
+      <h3>A website session won’t start</h3>
+      <p>Make sure a Chrome or Edge window with the companion is open, that <b>Allow in incognito / InPrivate</b> is on, and that the extension says it’s connected. Restart the browser after setup.</p>
+      <h3>An app still opens</h3>
+      <p>Check you selected the app’s own executable, not only its launcher. Modified or differently identified binaries, other accounts and remote/streamed games are outside protection.</p>
+      <h3>Website rules remain after a session</h3>
+      <p>The companion keeps its last confirmed rules if its connection is lost, and releases only when the guard confirms. Restart Windows protection from Settings.</p>
+      <h3>No alarm after sleep</h3>
+      <p>Sleeping PCs aren’t woken. Expired one-time reminders are marked missed; keep the PC awake for important alarms.</p>
+      <p>Still stuck? <a href="https://github.com/limpy183-dev/Still/issues">Open an issue on GitHub</a> or browse the <a href="faq.html">FAQ</a>.</p>
+    </section>
+
+    <section class="panel doc-section" id="source" data-reveal>
+      <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-github"/></svg></span>Build from source</h2>
+      <p>Still is open source under the MIT license. You’ll need Node.js; the native guard compiles with the .NET Framework compiler already in Windows.</p>
+      <div class="codeblock"><button class="copy" type="button" data-copy="#src-cmd"><svg aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button><pre id="src-cmd">npm install
+npm run build:native   <span class="c"># compile the guard + native checks</span>
+npm start              <span class="c"># run Still</span>
+npm run demo           <span class="c"># interactive preview; never blocks real apps</span>
+npm run dist           <span class="c"># release/Still-Setup-&lt;version&gt;.exe</span>
+npm test               <span class="c"># IPC validation and preference bounds</span></pre></div>
+      <p>See the <a href="https://github.com/limpy183-dev/Still#readme">README</a> for the full test suite and source map.</p>
+    </section>
+  </div>
+</div>
+
+</main>
+<footer class="site-footer"><div class="foot-orbit" aria-hidden="true"></div><div class="wrap">
+  <div class="foot-grid">
+    <div class="foot-brand"><a class="brand" href="index.html" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a><p>Less distraction.<br>More possibility.</p><small>A quieter space for your attention. Free for Windows 10 &amp; 11.</small></div>
+    <div class="foot-col"><strong>STILL</strong><a href="features.html">Features</a><a href="download.html">Download</a><a href="changelog.html">Changelog</a><a href="https://github.com/limpy183-dev/Still/releases">All releases</a></div>
+    <div class="foot-col"><strong>LEARN</strong><a href="guide.html">Getting started</a><a href="guide.html#websites">Website blocking</a><a href="guide.html#recovery">Recovery</a><a href="faq.html">FAQ</a></div>
+    <div class="foot-col"><strong>TRUST</strong><a href="privacy.html">Privacy &amp; security</a><a href="privacy.html#limits">Honest limits</a><a href="https://github.com/limpy183-dev/Still">Source code</a><a href="https://github.com/limpy183-dev/Still/blob/main/LICENSE">MIT license</a></div>
+  </div>
+  <div class="foot-bottom"><span><span class="tiny-dot"></span>Just you. Your focus stays yours.</span><span><svg aria-hidden="true"><use href="#i-leaf"/></svg>Small beginnings. Meaningful things. © <span data-year>2026</span> Still</span></div>
+</div></footer>
+</body>
+</html>

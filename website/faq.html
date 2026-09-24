@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ — Still</title>
+<meta name="description" content="Answers to common questions about Still: price, requirements, SmartScreen, how blocking works, ending sessions early, websites, alerts, privacy and updates.">
+<meta name="theme-color" content="#f5f6f1">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Still">
+<meta property="og:title" content="FAQ — Still">
+<meta property="og:description" content="Answers to common questions about Still: price, requirements, SmartScreen, how blocking works, ending sessions early, websites, alerts, privacy and updates.">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="assets/still.ico" sizes="any">
+<link rel="icon" href="assets/still.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/still.png">
+<link rel="preload" href="assets/Manrope.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/site.css">
+<script>document.documentElement.classList.add('js')</script>
+<script src="js/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="progress-bar" aria-hidden="true"></div>
+<div class="titlebar"><div class="wrap"><a href="changelog.html"><span class="tiny-dot"></span><span>Still <span data-version>1.0.1</span> is here · See what’s new</span></a><span class="window-dots" aria-hidden="true"><span>−</span><span>□</span><span>×</span></span></div></div>
+<header class="site-header"><div class="wrap">
+  <a class="brand" href="index.html" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a>
+  <nav class="nav" id="site-nav" aria-label="Main"><a href="features.html">Features</a><a href="guide.html">Guide</a><a href="download.html">Download</a><a href="privacy.html">Privacy</a><a href="faq.html" aria-current="page">FAQ</a><a href="changelog.html">Changelog</a></nav>
+  <a class="btn btn-primary btn-sm header-cta" href="download.html"><svg aria-hidden="true"><use href="#i-download"/></svg>Download</a>
+  <button class="menu-toggle" type="button" aria-label="Menu" aria-controls="site-nav" aria-expanded="false"><span></span></button>
+</div></header>
+<main id="main">
+
+<section class="page-hero">
+  <div class="deco" aria-hidden="true"><i></i><i></i><i></i><b></b></div>
+  <div class="wrap"><div class="inner">
+    <nav class="crumbs fade-in" style="--d:0s" aria-label="Breadcrumb"><a href="index.html">Still</a><span>/</span><b>FAQ</b></nav>
+    <span class="eyebrow fade-in" style="--d:.05s"><span class="tiny-dot"></span>Questions, answered</span>
+    <h1 class="h1 split">Curious? <span>That’s a good start.</span></h1>
+    <p class="lead fade-in" style="--d:.5s">Short answers to the things people ask most. For step-by-step help, see the <a class="linklike" style="font-size:inherit;padding:0" href="guide.html">guide</a>.</p>
+  </div></div>
+</section>
+
+<div class="wrap" style="max-width:880px">
+  <div class="faq-tools" data-reveal>
+    <label class="search"><svg aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Search questions</span><input id="faq-search" type="search" placeholder="Search questions" autocomplete="off"></label>
+    <div class="chips" role="group" aria-label="Filter by topic">
+      <button type="button" data-cat="all" aria-pressed="true">All</button>
+      <button type="button" data-cat="start" aria-pressed="false">Getting started</button>
+      <button type="button" data-cat="blocking" aria-pressed="false">Blocking</button>
+      <button type="button" data-cat="features" aria-pressed="false">Features</button>
+      <button type="button" data-cat="privacy" aria-pressed="false">Privacy</button>
+    </div>
+  </div>
+
+  <div class="faq" id="faq-list" data-stagger>
+    <details data-cat="start" id="free" data-reveal><summary><span class="cat">Start</span>Is Still free?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Yes. Still is free and open source under the MIT license. There are no subscriptions, ads or in-app purchases.</p></div></details>
+    <details data-cat="start" id="requirements" data-reveal><summary><span class="cat">Start</span>What do I need to run it?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>An up-to-date Windows 10 (version 2004 or later) or Windows 11, 64-bit, with Windows PowerShell 5.1 and .NET Framework 4.8. Both are normally included. Website blocking and time limits need Chrome or Edge.</p></div></details>
+    <details data-cat="start" id="mac" data-reveal><summary><span class="cat">Start</span>Is there a Mac, Linux or phone version?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Not at the moment. Still is built around Windows’ own application control (AppLocker), so it’s Windows-only for now.</p></div></details>
+    <details data-cat="start" id="smartscreen" data-reveal><summary><span class="cat">Start</span>Why does Windows say it “protected my PC”?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>The installer isn’t code-signed yet, so SmartScreen doesn’t recognise it. Choose <b>More info → Run anyway</b>. You can compare the SHA-256 checksum on the <a href="download.html">download page</a>, or build Still from source.</p></div></details>
+    <details data-cat="start" id="admin" data-reveal><summary><span class="cat">Start</span>Do I need to be an administrator?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Not to install. Still installs for your account. Enabling Windows protection needs administrator approval once, because it installs the Still Guard service.</p></div></details>
+    <details data-cat="start" id="work-pc" data-reveal><summary><span class="cat">Start</span>Can I use it on a work or school PC?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Probably not. Domain-joined and MDM-managed PCs, and PCs that already use application-control rules, are intentionally refused so Still never changes an organisation’s security policy.</p></div></details>
+
+    <details data-cat="blocking" id="how-blocking" data-reveal><summary><span class="cat">Blocking</span>How does app blocking work?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Still Guard applies temporary Windows AppLocker rules: exact path and file-hash rules for desktop apps, publisher rules for signed updates where possible, and package identity for Store apps. Windows then refuses to start them, whether from Explorer, a shortcut, a launcher or the command line.</p><p>It isn’t a loop that closes apps after they open.</p></div></details>
+    <details data-cat="blocking" id="end-early" data-reveal><summary><span class="cat">Blocking</span>Can I end a session early?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Yes. Request release, wait out the delay you chose (1–120 minutes, or none), then choose <b>End focus session</b>. Cancelling restores the lock, and a new request starts a new full wait.</p></div></details>
+    <details data-cat="blocking" id="close-app" data-reveal><summary><span class="cat">Blocking</span>What if I quit Still or restart my PC?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>The session carries on. Still Guard runs independently of the window, and timers and release requests are saved and survive restarting Windows.</p></div></details>
+    <details data-cat="blocking" id="unbreakable" data-reveal><summary><span class="cat">Blocking</span>Is it impossible to get around?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>No, and no app can honestly promise that against the administrator of the same PC. Still is designed to add friction and a moment to reconsider. Read the <a href="privacy.html#limits">honest limits</a>.</p></div></details>
+    <details data-cat="blocking" id="games" data-reveal><summary><span class="cat">Blocking</span>I blocked a launcher but a game still opens.<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>A launcher alone doesn’t identify every game it can start. Select each game’s own executable as well. You can browse to any <code>.exe</code> from <b>Add applications</b>.</p></div></details>
+    <details data-cat="blocking" id="browsers" data-reveal><summary><span class="cat">Blocking</span>Which browsers are supported for websites?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Chrome and Edge, via the Still browser companion in each profile you use, plus machine-level browser policies as a fallback. <a href="guide.html#websites">See setup</a>.</p></div></details>
+    <details data-cat="blocking" id="subdomains" data-reveal><summary><span class="cat">Blocking</span>Does blocking a site block its subdomains?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Yes. Blocking <code>youtube.com</code> also covers <code>m.youtube.com</code>, but not a different domain like <code>notyoutube.com</code>.</p></div></details>
+
+    <details data-cat="features" id="groups" data-reveal><summary><span class="cat">Features</span>Can I save sets of apps?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Yes. Select what you want in <b>Apps &amp; websites</b> and choose <b>Save selected as group</b>. Groups appear in Focus space for one-click selection.</p></div></details>
+    <details data-cat="features" id="schedule" data-reveal><summary><span class="cat">Features</span>Can sessions start on a schedule?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Yes, with Alerts. Schedule once, daily or on weekdays, and have the alert block the current selection, its own selection, or nothing. An existing session is never replaced.</p></div></details>
+    <details data-cat="features" id="limits" data-reveal><summary><span class="cat">Features</span>How are daily time limits counted?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Only while a limited website is the active tab of a focused Chrome or Edge window, in 30-second steps. When time is up, the site rests until midnight. Bedtime rests it overnight.</p></div></details>
+    <details data-cat="features" id="custom-screen" data-reveal><summary><span class="cat">Features</span>Can I customise the block page?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Yes: choose a built-in screen, write your own headline and note with a JPG/PNG/WebP image, or redirect to an HTTPS page of your choice.</p></div></details>
+    <details data-cat="features" id="motion" data-reveal><summary><span class="cat">Features</span>Can I turn off animations?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Yes. Settings → <b>A gentler pace</b> reduces motion in the app. This website also respects your system’s reduced-motion setting.</p></div></details>
+
+    <details data-cat="privacy" id="data" data-reveal><summary><span class="cat">Privacy</span>Does Still collect any data?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>No. There are no accounts, analytics or telemetry. Your selections, sessions and history stay on your PC. <a href="privacy.html">Read more</a>.</p></div></details>
+    <details data-cat="privacy" id="online" data-reveal><summary><span class="cat">Privacy</span>Does it connect to the internet?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Only to fetch a selected website’s logo (cached afterwards) and to check GitHub for updates when you click <b>Check for updates</b>.</p></div></details>
+    <details data-cat="privacy" id="history" data-reveal><summary><span class="cat">Privacy</span>Does the browser companion see my history?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>It matches visits against your blocked domains using the browser’s own rules. It doesn’t upload browsing history, intercept encrypted traffic or install certificates.</p></div></details>
+    <details data-cat="start" id="update" data-reveal><summary><span class="cat">Start</span>How do I update?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Download and run the newer setup. It keeps your preferences, alerts, to-dos and history, and protection keeps running. <a href="changelog.html">See what’s new</a>.</p></div></details>
+    <details data-cat="start" id="uninstall" data-reveal><summary><span class="cat">Start</span>How do I uninstall?<span class="plus"><svg aria-hidden="true"><use href="#i-plus"/></svg></span></summary><div class="answer"><p>Windows Settings → Apps → Installed apps → Still. You can also remove Still Guard and your data. If something’s stuck, see <a href="guide.html#recovery">recovery</a>.</p></div></details>
+  </div>
+  <div class="empty" id="faq-empty" hidden><svg aria-hidden="true"><use href="#i-leaf"/></svg><b>No questions match that.</b><p>Try another word, or <a class="linklike" href="https://github.com/limpy183-dev/Still/issues">ask on GitHub</a>.</p></div>
+</div>
+
+</main>
+<footer class="site-footer"><div class="foot-orbit" aria-hidden="true"></div><div class="wrap">
+  <div class="foot-grid">
+    <div class="foot-brand"><a class="brand" href="index.html" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a><p>Less distraction.<br>More possibility.</p><small>A quieter space for your attention. Free for Windows 10 &amp; 11.</small></div>
+    <div class="foot-col"><strong>STILL</strong><a href="features.html">Features</a><a href="download.html">Download</a><a href="changelog.html">Changelog</a><a href="https://github.com/limpy183-dev/Still/releases">All releases</a></div>
+    <div class="foot-col"><strong>LEARN</strong><a href="guide.html">Getting started</a><a href="guide.html#websites">Website blocking</a><a href="guide.html#recovery">Recovery</a><a href="faq.html">FAQ</a></div>
+    <div class="foot-col"><strong>TRUST</strong><a href="privacy.html">Privacy &amp; security</a><a href="privacy.html#limits">Honest limits</a><a href="https://github.com/limpy183-dev/Still">Source code</a><a href="https://github.com/limpy183-dev/Still/blob/main/LICENSE">MIT license</a></div>
+  </div>
+  <div class="foot-bottom"><span><span class="tiny-dot"></span>Just you. Your focus stays yours.</span><span><svg aria-hidden="true"><use href="#i-leaf"/></svg>Small beginnings. Meaningful things. © <span data-year>2026</span> Still</span></div>
+</div></footer>
+</body>
+</html>
