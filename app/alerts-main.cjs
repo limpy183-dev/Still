@@ -85,7 +85,7 @@ async function setupAlerts({ handle, getWindow, showWindow, getPreferences, stat
       window.on('close', event => { event.preventDefault(); closePresentation(); });
       window.webContents.once('did-finish-load', () => {
         window.webContents.send('alarm-data', { ...item, audible: index === 0, reducedMotion: getPreferences().reducedMotion });
-        if (!quiet) { if (item.alert.style === 'full') window.setFullScreen(true); window.setAlwaysOnTop(true, 'screen-saver'); window.show(); window.focus(); }
+        if (!quiet) { if (item.alert.style === 'full') window.setFullScreen(true); if (item.alert.onTop === false) window.showInactive(); else { window.setAlwaysOnTop(true, 'screen-saver'); window.show(); window.focus(); } }
       });
       window.loadFile(path.join(__dirname, 'alarm.html'));
     }

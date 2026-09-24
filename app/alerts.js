@@ -40,6 +40,7 @@ function openAlert(record = null) {
   $('#alert-dialog-title').textContent = record ? 'A moment, made yours.' : 'Make room for a moment.';
   $('#alert-snooze-limit').value = value.snoozeLimit ?? '';
   $('#alert-show-dismiss').value = value.showDismiss === false ? 'hide' : 'show';
+  $('#alert-on-top').value = value.onTop === false ? 'below' : 'above';
   for (const [id, key] of [['title', 'title'], ['note', 'note'], ['date', 'date'], ['time', 'time'], ['repeat', 'repeat'], ['length', 'lengthMode'], ['duration', 'durationMinutes'], ['end', 'endTime'], ['block', 'blockMode'], ['sound', 'sound'], ['volume', 'volume'], ['delay', 'unlockDelayMinutes']]) $('#alert-' + id).value = value[key];
   $(`[name="alert-style"][value="${value.style}"]`).checked = true;
   alertSoundFile = record?.soundFile || null; alertBanner = record?.banner || null;
@@ -50,7 +51,7 @@ function openAlert(record = null) {
 }
 function readAlertForm() {
   return { id: editingAlert?.id, title: $('#alert-title').value.trim(), note: $('#alert-note').value, date: $('#alert-date').value, time: $('#alert-time').value,
-    snoozeLimit: $('#alert-snooze-limit').value === '' ? null : Number($('#alert-snooze-limit').value), showDismiss: $('#alert-show-dismiss').value === 'show',
+    snoozeLimit: $('#alert-snooze-limit').value === '' ? null : Number($('#alert-snooze-limit').value), showDismiss: $('#alert-show-dismiss').value === 'show', onTop: $('#alert-on-top').value === 'above',
     repeat: $('#alert-repeat').value, lengthMode: $('#alert-length').value, durationMinutes: Number($('#alert-duration').value), endTime: $('#alert-end').value,
     style: $('[name="alert-style"]:checked').value, blockMode: $('#alert-block').value, apps: [...alertApps.values()].map(({ name, path }) => ({ name, path })),
     sound: $('#alert-sound').value, volume: Number($('#alert-volume').value), unlockDelayMinutes: Number($('#alert-delay').value), soundFile: alertSoundFile, banner: alertBanner, enabled: editingAlert?.enabled !== false };

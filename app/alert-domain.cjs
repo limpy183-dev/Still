@@ -23,6 +23,7 @@ function validateAlert(value) {
   const snoozeLimit = value.snoozeLimit ?? null;
   if (snoozeLimit !== null && (!Number.isInteger(snoozeLimit) || snoozeLimit < 0 || snoozeLimit > 100)) throw Error('Choose 0–100 snoozes, or unlimited.');
   if (value.showDismiss !== undefined && typeof value.showDismiss !== 'boolean') throw Error('Choose whether to show Dismiss.');
+  if (value.onTop !== undefined && typeof value.onTop !== 'boolean') throw Error('Choose whether the alarm stays above other apps.');
   if (!['none', 'current', 'custom'].includes(value.blockMode)) throw Error('Choose which apps or websites to block.');
   if (!Array.isArray(value.apps) || value.apps.length > 100 || !value.apps.every(allowedTarget)) throw Error('Choose up to 100 apps or websites.');
   if (value.blockMode === 'custom' && !value.apps.length) throw Error('Select apps or websites to block, or choose “No blocking”.');
@@ -37,7 +38,7 @@ function validateAlert(value) {
   if (value.sound === 'custom' && !soundFile) throw Error('Choose your custom sound file.');
   if (value.style === 'full' && (value.sound === 'silent' || value.volume === 0)) throw Error('Full-screen alarms need an audible sound.');
   return { title, note: String(value.note || '').slice(0, 500), date: value.date, time: value.time, repeat: value.repeat,
-    lengthMode: value.lengthMode, durationMinutes: value.durationMinutes, endTime: value.endTime, style: value.style, snoozeLimit, showDismiss: value.showDismiss !== false,
+    lengthMode: value.lengthMode, durationMinutes: value.durationMinutes, endTime: value.endTime, style: value.style, snoozeLimit, showDismiss: value.showDismiss !== false, onTop: value.onTop !== false,
     blockMode: value.blockMode, apps: value.apps.map(({ name, path }) => ({ name: name.slice(0, 100), path })),
     unlockDelayMinutes: value.unlockDelayMinutes, sound: value.sound, volume: value.volume, soundFile, banner, enabled: value.enabled !== false };
 }

@@ -7,6 +7,9 @@ test('alert boundary rejects unsafe apps, invalid schedules and silent full-scre
   assert.equal(validateAlert(base).title, base.title);
   assert.equal(validateAlert(base).snoozeLimit, null);
   assert.equal(validateAlert(base).showDismiss, true);
+  assert.equal(validateAlert(base).onTop, true);
+  assert.equal(validateAlert({ ...base, onTop: false }).onTop, false);
+  assert.throws(() => validateAlert({ ...base, onTop: 'no' }));
   for (const snoozeLimit of [-1, 1.5, 101, '2']) assert.throws(() => validateAlert({ ...base, snoozeLimit }));
   assert.throws(() => validateAlert({ ...base, showDismiss: 'false' }));
   for (const change of [{ title: '' }, { time: '25:00' }, { date: '2026-02-30' }, { durationMinutes: 0 }, { durationMinutes: 1.5 }, { repeat: 'hourly' }, { blockMode: 'custom' }, { apps: [{ name: 'Windows', path: 'C:\\Windows\\explorer.exe' }] }, { sound: 'custom' }, { style: 'full', volume: 0 }, { style: 'full', sound: 'silent' }, { banner: { file: '../../private.png', name: 'bad' } }, { lengthMode: 'range', endTime: '09:00' }]) assert.throws(() => validateAlert({ ...base, ...change }));
