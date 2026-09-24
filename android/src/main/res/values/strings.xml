@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Strict mode finds Still's own screens by this name, so keep it distinctive. -->
+    <string name="app_name">Still Focus</string>
+    <string name="service_description">Still uses this to see which app is on screen during a focus session and to send the apps you chose to block back to the home screen. It reads nothing else, stores nothing about what you do, and does nothing when no session is running. During a strict session it also covers the Settings pages that could switch Still off.</string>
+
+    <string name="setup_title">Focus space</string>
+    <string name="blocking_explain">To block apps, Still needs its accessibility service. It only checks which app is open, and only while a session runs.</string>
+    <string name="enable_blocking">Turn on app blocking</string>
+    <string name="restricted_hint">If Android says the setting is restricted, open App info, tap ⋮ and choose Allow restricted settings, then try again.</string>
+    <string name="app_info">Open App info</string>
+    <string name="intention_hint">What are you focusing on?</string>
+    <string name="duration">Duration (minutes)</string>
+    <string name="delay">Release delay (minutes)</string>
+    <string name="delay_label">Minutes</string>
+    <string name="strict">Protect Still during the session</string>
+    <string name="strict_hint">Settings and uninstall screens that mention Still Focus are closed until the session ends, so Still can\'t be switched off early.</string>
+    <string name="apps_loading">Finding apps…</string>
+    <string name="apps_title">Apps to block</string>
+    <string name="apps_none">None selected yet.</string>
+    <string name="choose_apps">Choose apps</string>
+    <string name="done">Done</string>
+    <string name="start">Start focus</string>
+    <string name="need_blocking">Turn on app blocking first.</string>
+    <string name="delay_range">Choose a release delay from 1 to 120 minutes.</string>
+    <string name="save_failed">Still couldn\'t save the session. Free some storage and try again.</string>
+    <string name="state_reset">Still\'s saved data was damaged, so nothing is blocked. A copy was kept.</string>
+
+    <string name="in_session">Focusing</string>
+    <string name="until">Until %1$s</string>
+    <string name="blocking_list">Blocked: %1$s</string>
+    <string name="release_none">You can end this session at any time.</string>
+    <plurals name="release_delay">
+        <item quantity="one">To end early, request release and wait %1$d minute.</item>
+        <item quantity="other">To end early, request release and wait %1$d minutes.</item>
+    </plurals>
+    <string name="release_at">You can end the session at %1$s. Cancelling starts the full wait again next time.</string>
+    <string name="release_ready">The wait is over. You can end the session now.</string>
+    <string name="request_release">Request release</string>
+    <string name="cancel_release">Cancel request</string>
+    <string name="end">End focus session</string>
+
+    <string name="cover_title">Still is on</string>
+    <string name="cover_text">%1$s is blocked until %2$s.</string>
+    <string name="cover_guard">Still\'s settings are locked until %1$s.</string>
+    <string name="go_home">Go home</string>
+
+    <string name="managed_profile">Still doesn\'t run in a work profile, so it never interferes with your organisation\'s device policy.</string>
+    <string name="managed_device">This phone is managed by an organisation. Still doesn\'t run on managed phones, so it never interferes with their device policy.</string>
+
+    <string name="channel_session">Focus session</string>
+    <string name="channel_done">Session finished</string>
+    <string name="notice_until">Blocking apps until %1$s</string>
+    <string name="done_title">Focus session complete</string>
+    <string name="done_text">Your apps are available again.</string>
+</resources>

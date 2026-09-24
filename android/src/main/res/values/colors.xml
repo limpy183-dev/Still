@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Matches the desktop app (app/styles.css). -->
+<resources>
+    <color name="bg">#F5F6F1</color>
+    <color name="ink">#252A27</color>
+    <color name="muted">#6F766D</color>
+    <color name="green">#637D33</color>
+    <color name="soft">#EEF3E2</color>
+    <color name="line">#E9ECE4</color>
+    <!-- The block cover and icon keep these in both themes. -->
+    <color name="cover_bg">#252A27</color>
+    <color name="cover_text">#FFFFFF</color>
+    <color name="lime">#DCF78B</color>
+    <color name="icon_bg">#283026</color>
+</resources>
