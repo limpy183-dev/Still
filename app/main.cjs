@@ -5,7 +5,7 @@ const net = require('node:net');
 const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const { pathToFileURL } = require('node:url');
-const { allowedApp, validateSession, validatePreferences } = require('./domain.cjs');
+const { allowedApp, validateSession, validatePreferences, newerVersion, updateUrl } = require('./domain.cjs');
 const { setupWebsites } = require('./websites-main.cjs');
 const { setupAlerts } = require('./alerts-main.cjs');
 const { createGuardClient } = require('./guard-client.cjs');
@@ -213,6 +213,19 @@ function registerHandlers() {
     return status();
   });
   handle('window', action => { if (action === 'minimize') win.minimize(); else if (action === 'maximize') win.isMaximized() ? win.unmaximize() : win.maximize(); else if (action === 'close') win.close(); });
+  let downloadUrl;
+  handle('checkForUpdates', async () => {
+    let release;
+    try {
+      const response = await fetch('https://api.github.com/repos/limpy183-dev/Still/releases/latest', { headers: { accept: 'application/vnd.github+json' }, signal: AbortSignal.timeout(15000) });
+      if (!response.ok) throw Error(response.statusText);
+      release = await response.json();
+    } catch { throw Error('Could not reach GitHub. Check your connection and try again.'); }
+    const latest = String(release.tag_name || '').replace(/^v/, '');
+    downloadUrl = updateUrl((release.assets || []).find(asset => /^Still-Setup-[\d.]+\.exe$/.test(asset.name))?.browser_download_url);
+    return { current: app.getVersion(), latest, newer: newerVersion(latest, app.getVersion()) };
+  });
+  handle('downloadUpdate', () => shell.openExternal(updateUrl(downloadUrl)));
   handle('exportHistory', async () => {
     const current = await status(true);
     if (current.unavailable) throw new Error('Reconnect Windows protection before exporting your saved history.');

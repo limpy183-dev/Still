@@ -8,6 +8,7 @@
     "demo": "electron . --demo",
     "build:native": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-native.ps1",
     "build": "npm run build:native && electron-builder --win portable --x64",
+    "dist": "npm run build:native && electron-builder --win dir --x64 --publish never && powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-installer.ps1",
     "test": "node --test tests/*.test.cjs",
     "test:policy": "powershell -NoProfile -ExecutionPolicy Bypass -File tests/policy.ps1",
     "test:csp": "powershell -NoProfile -ExecutionPolicy Bypass -File tests/csp-policy.ps1",
@@ -30,6 +31,9 @@
   "build": {
     "appId": "app.still.focus",
     "productName": "Still",
+    "electronLanguages": [
+      "en-US"
+    ],
     "directories": {
       "output": "release"
     },

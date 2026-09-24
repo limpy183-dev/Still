@@ -2,9 +2,19 @@
 
 A local Windows productivity app: choose distracting apps, games, and websites, set a focus duration, and give yourself an optional waiting period before ending early.
 
-## Run the Windows app
+## Install
 
-For fast everyday startup, open **`release/win-unpacked/Still.exe`** or use a shortcut to it. Keep the entire `win-unpacked` folder together. No Node.js or developer tools are needed for the packaged app. **`release/Still-1.0.0-Windows.exe`** is the single-file portable alternative; it extracts the app before launching, so it takes longer.
+1. Download **`Still-Setup-<version>.exe`** from the [latest release](https://github.com/limpy183-dev/Still/releases/latest).
+2. Run it and choose **Install Still**. It installs for your Windows account in `%LOCALAPPDATA%\Programs\Still`, adds a **Still Focus** Start menu shortcut (and optionally a desktop shortcut), and needs no administrator approval.
+3. The build is not code-signed, so Windows SmartScreen may say it "protected your PC". Choose **More info → Run anyway**.
+
+**Updating:** run the newer setup; it detects the installed version, closes Still for a moment, and replaces it while keeping your preferences, alerts, to-dos, and history. Settings → **Check for updates** tells you when a new version is out (it contacts GitHub only when you click it). Windows protection keeps running during updates.
+
+**Uninstalling:** Windows Settings → Apps → Installed apps → Still. You can choose to also remove Still Guard (administrator approval; not possible during an active focus session) and your data.
+
+Already using the portable build? Just run the installer; your data carries over.
+
+## Use the Windows app
 
 1. Choose **Add applications**. Still discovers desktop apps, running windowed apps, and eligible installed Microsoft Store packages. You can also browse directly to one or more `.exe` files. Select a game's executable as well as its launcher.
 2. Set a duration of **1–1,440 minutes** and, optionally, a release delay of **1–120 minutes**. Save app selections as reusable groups in the library.
@@ -69,7 +79,7 @@ This deliberately overrides a session, stops and unregisters Still Guard, and re
 - The Electron renderer is sandboxed, with context isolation, no Node integration, a restrictive Content Security Policy, blocked navigation, and allowlisted IPC methods with sender validation.
 - The service runs as LocalSystem; its named pipe is restricted to its owner, SYSTEM, and administrators, with network access denied. Requests are bounded and validated again in the native service.
 - Guard state is stored atomically in `%ProgramData%\Still\state.json`. Its directory and `%ProgramFiles%\Still Guard` are writable only by administrators and SYSTEM. The installing user receives read access.
-- UI preferences are in Electron's `app.getPath('userData')` (normally `%APPDATA%\Still` in the packaged app). UI preferences do not control an active session. The guard retains up to 500 recent sessions, pruning older entries when the state reaches its 700,000-character budget.
+- UI preferences are in Electron's `app.getPath('userData')` (`%APPDATA%\still-focus`). UI preferences do not control an active session. The guard retains up to 500 recent sessions, pruning older entries when the state reaches its 700,000-character budget.
 
 ## Develop and verify
 
@@ -78,9 +88,10 @@ npm install
 npm run build:native
 npm start
 npm run build
+npm run dist         # release/Still-Setup-<version>.exe (installer, updater and uninstaller)
 ```
 
-The native helper builds with the .NET Framework compiler already included with Windows; no .NET SDK download is required. `npm run build` produces the portable x64 executable in `release/`.
+The native helper builds with the .NET Framework compiler already included with Windows; no .NET SDK download is required. `npm run build` produces the portable x64 executable in `release/`. `npm run dist` packs the app into the installer from `installer/` (a WPF program compiled with the same built-in compiler); regenerate its icon with `python scripts/assets.py`.
 
 ```powershell
 npm test             # IPC validation and preference bounds
@@ -104,6 +115,11 @@ The UI test covers selection, search, saved groups, setup, active-session immuta
 - `native/Session.cs`: session rules and deadlines.
 - `native/policy.ps1`: generation, verification, application, and removal of AppLocker rules.
 - `native/discover.ps1`: read-only desktop and Store app discovery.
+- `installer/`: Still Setup (install, update, uninstall) and its fonts/icon; built by `scripts/build-installer.ps1`.
 - `tests/`: native, JavaScript, policy, and UI checks.
+
+## Releasing
+
+Bump `version` in `package.json`, commit, then push a matching tag (`git tag v1.1.0 && git push origin v1.1.0`). The Release workflow builds the installer on Windows and publishes it as the latest GitHub release.
 
 References: [AppLocker requirements](https://learn.microsoft.com/en-us/windows/security/application-security/application-control/app-control-for-business/applocker/requirements-to-use-applocker), [allow and deny behavior](https://learn.microsoft.com/en-us/windows/security/application-security/application-control/app-control-for-business/applocker/understanding-applocker-allow-and-deny-actions-on-rules), [packaged apps](https://learn.microsoft.com/en-us/windows/security/application-security/application-control/app-control-for-business/applocker/manage-packaged-apps-with-applocker), [Electron security](https://www.electronjs.org/docs/latest/tutorial/security).

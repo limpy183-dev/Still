@@ -43,4 +43,16 @@ function validatePreferences(value) {
     launchAtLogin: value.launchAtLogin === true
   };
 }
-module.exports = { allowedApp, allowedTarget, validateSession, validatePreferences };
+const releases = 'https://github.com/limpy183-dev/Still/releases/';
+// Compares "1.2.10"-style release versions; anything unparseable is never treated as newer.
+function newerVersion(latest, current) {
+  const parse = value => /^v?(\d+)\.(\d+)\.(\d+)$/.exec(String(value))?.slice(1).map(Number);
+  const a = parse(latest), b = parse(current);
+  if (!a || !b) return false;
+  const i = a.findIndex((part, index) => part !== b[index]);
+  return i >= 0 && a[i] > b[i];
+}
+function updateUrl(url) {
+  return typeof url === 'string' && url.startsWith(releases) ? url : releases + 'latest';
+}
+module.exports = { allowedApp, allowedTarget, validateSession, validatePreferences, newerVersion, updateUrl };

@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { allowedApp, validateSession, validatePreferences } = require('../app/domain.cjs');
+const { allowedApp, validateSession, validatePreferences, newerVersion, updateUrl } = require('../app/domain.cjs');
 const game = { name: 'A game', path: 'C:\\Games\\Example\\game.exe' };
 test('accept a desktop executable and reject unsafe targets', () => {
   assert.equal(allowedApp(game), true);
@@ -31,4 +31,12 @@ test('persist bounded to-do text and known formats', () => {
   assert.deepEqual(todos, [{ text: 'x'.repeat(2000), type: 'checkbox', done: false }, { text: 'Read', type: 'circle', done: true }]);
   assert.equal(validatePreferences({ todos: Array(501).fill({ text: '' }) }).todos.length, 500);
   assert.deepEqual(validatePreferences({}).todos, []);
+});
+test('compare release versions and only open Still release downloads', () => {
+  assert.equal(newerVersion('v1.10.0', '1.9.3'), true);
+  assert.equal(newerVersion('1.0.1', '1.0.0'), true);
+  for (const [latest, current] of [['1.0.0', '1.0.0'], ['0.9.9', '1.0.0'], ['1.1.0-beta', '1.0.0'], ['', '1.0.0'], [undefined, '1.0.0']]) assert.equal(newerVersion(latest, current), false, String(latest));
+  const asset = 'https://github.com/limpy183-dev/Still/releases/download/v1.1.0/Still-Setup-1.1.0.exe';
+  assert.equal(updateUrl(asset), asset);
+  for (const url of ['https://example.com/Still-Setup.exe', 'https://github.com/other/Still/releases/latest', 'file:///C:/x.exe', null]) assert.equal(updateUrl(url), 'https://github.com/limpy183-dev/Still/releases/latest');
 });

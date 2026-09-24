@@ -83,7 +83,7 @@ function browserPreview() {
 
     },
 
-    window: async () => {}, exportHistory: async () => { throw Error('History export is available in the Windows app.'); },
+    window: async () => {}, exportHistory: async () => { throw Error('History export is available in the Windows app.'); }, checkForUpdates: async () => { throw Error('Update checks are available in the Windows app.'); },
 
     onStatus: callback => { setInterval(async () => callback(await status()), 2000); }, openGuide: async () => {}
 
@@ -820,6 +820,13 @@ for (const [id, key] of [['notifications', 'notifications'], ['reduced-motion', 
 
 }
 
+$('#check-updates').onclick = () => act(async () => {
+  const button = $('#check-updates');
+  if (button.dataset.latest) return api.downloadUpdate();
+  const { current, latest, newer } = await api.checkForUpdates();
+  $('#update-note').textContent = newer ? `Still ${latest} is ready. Run the downloaded installer to update; your data stays as it is.` : `You're up to date with Still ${current}.`;
+  if (newer) { button.dataset.latest = latest; button.textContent = `Download ${latest} ↗`; }
+}, $('#check-updates'));
 $('#export-history').onclick = () => act(async () => { if (await api.exportHistory()) toast('Your session history has been exported.'); }, $('#export-history'));
 
 function showGuide() {
@@ -847,6 +854,7 @@ async function init() {
 
     $('#duration').value = prefs.duration; $('#delay').value = prefs.delay; $('#delay-enabled').checked = prefs.delayEnabled; $('#intention').value = prefs.intention; $('#history-page-size').value = String(prefs.historyPageSize ?? 10);
 
+    if (initial.version) $('#app-version').textContent = `STILL ${initial.version}`;
     $('#notifications').checked = prefs.notifications; $('#reduced-motion').checked = prefs.reducedMotion; $('#launch-at-login').checked = prefs.launchAtLogin;
 
     document.body.classList.toggle('reduced-motion', prefs.reducedMotion);
