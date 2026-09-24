@@ -13,20 +13,54 @@
     "test:csp": "powershell -NoProfile -ExecutionPolicy Bypass -File tests/csp-policy.ps1",
     "test:packaged": "node tests/packaged.cjs",
     "test:ui": "node tests/ui.cjs",
-    "test:todos": "node tests/todos.cjs"
+    "test:startup": "node tests/startup.cjs",
+    "test:todos": "node tests/todos.cjs",
+    "test:alerts": "node tests/alerts-ui.cjs",
+    "test:websites": "node tests/websites-ui.cjs && node tests/website-browser.cjs && node tests/website-host.cjs && node tests/website-setup.cjs"
   },
   "keywords": [],
   "author": "Still",
   "license": "MIT",
   "type": "commonjs",
-  "devDependencies": { "electron": "44.2.0", "electron-builder": "26.15.3", "playwright": "1.58.2" },
+  "devDependencies": {
+    "electron": "44.2.0",
+    "electron-builder": "26.15.3",
+    "playwright": "1.58.2"
+  },
   "build": {
     "appId": "app.still.focus",
     "productName": "Still",
-    "directories": { "output": "release" },
-    "files": ["app/**/*", "assets/**/*", "package.json", "native/discover.ps1"],
-    "extraResources": [{ "from": "native/bin/Still.Guard.exe", "to": "guard/Still.Guard.exe" }, { "from": "native/policy.ps1", "to": "guard/policy.ps1" }, { "from": "native/discover.ps1", "to": "guard/discover.ps1" }],
-    "win": { "target": "portable", "icon": "assets/still.ico", "signExecutable": false },
-    "portable": { "artifactName": "Still-${version}-Windows.exe", "useZip": true }
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "app/**/*",
+      "assets/**/*",
+      "package.json",
+      "native/discover.ps1"
+    ],
+    "extraResources": [
+      {
+        "from": "native/bin/Still.Guard.exe",
+        "to": "guard/Still.Guard.exe"
+      },
+      {
+        "from": "native/policy.ps1",
+        "to": "guard/policy.ps1"
+      },
+      {
+        "from": "native/discover.ps1",
+        "to": "guard/discover.ps1"
+      }
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "assets/still.ico",
+      "signExecutable": false
+    },
+    "portable": {
+      "artifactName": "Still-${version}-Windows.exe",
+      "useZip": true
+    }
   }
 }

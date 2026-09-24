@@ -16,6 +16,11 @@ class SessionTests {
         s.unlockAt = 0;
         Check(!s.CanEnd(400000), "Cancellation restores lock");
         Check(s.Expired(1000000) && !s.Expired(999999), "Natural expiry boundary");
+        Check(FocusSession.ResolveEnd(50, 0, 1000) == 3001000, "Manual sessions retain duration");
+        Check(FocusSession.ResolveEnd(50, 50000, 1000) == 50000, "Scheduled sessions retain absolute end time");
+        bool expired = false;
+        try { FocusSession.ResolveEnd(50, 1000, 1000); } catch { expired = true; }
+        Check(expired, "Expired scheduled window rejected");
         s.unlockDelayMinutes = 0;
         Check(s.CanEnd(1), "No-delay mode");
         var apps = new List<TargetApp> { new TargetApp { path = @"C:\Games\game.exe" } };

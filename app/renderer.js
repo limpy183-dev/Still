@@ -45,11 +45,19 @@ function browserPreview() {
     onStatus: callback => { setInterval(async () => callback(await status()), 2000); }, openGuide: async () => {}
   };
 }
-const api = window.still || browserPreview();
+const api = window.still || browserPreview();
+let presentationVisible = true, historySignature = '', lastStatsSignature = '';
+function setText(element, value) { const text = String(value); if (element.textContent !== text) element.textContent = text; }
+function setMarkup(element, value) { if (element.innerHTML !== value) element.innerHTML = value; }
+function setPresentationVisible(visible) {
+  presentationVisible = visible;
+  if (visible) { refreshStatus(); renderStats(); }
+}
 let apps = [], selected = new Set(), groups = [], page = 'focus', busy = false, scanning = false, toastTimer, saveQueue = Promise.resolve();
 let state = { installed: false, session: null, history: [], demo: !window.still, error: null, unavailable: false };
 let prefs = { duration: 50, delay: 5, delayEnabled: true, intention: '', notifications: true, reducedMotion: false, launchAtLogin: false };
 let historyFilter = 'active';
+let pickerKind = 'all';
 let offset = 0, lastSignature = '', pickerSelection = new Set(), confirmAction;
 const now = () => Date.now() + offset;
 const formatClock = milliseconds => {
@@ -76,18 +84,21 @@ function showPage(next) {
   page = next;
   $$('.page').forEach(el => el.classList.toggle('active', el.id === `page-${next}`));
   $$('.nav-item[data-page]').forEach(el => { el.classList.toggle('active', el.dataset.page === next); el.setAttribute('aria-current', el.dataset.page === next ? 'page' : 'false'); });
-  $('#page-crumb').textContent = { focus: 'Focus space', todos: 'To-do list', library: 'App library', history: 'Your progress', settings: 'Settings' }[next];
+  $('#page-crumb').textContent = { focus: 'Focus space', todos: 'To-do list', alerts: 'Alerts', library: 'Apps & websites', history: 'Your progress', settings: 'Settings' }[next];
   closeTodoMenu();
-  if (next === 'library') renderLibrary(); if (next === 'history') renderHistory();
+  if (next === 'library') renderLibrary(); if (next === 'history') renderHistory();
+  if (next === 'alerts') renderAlerts();
+  renderStats(); updateTimer();
   window.scrollTo({ top: 0 });
 }
 document.addEventListener('error', event => {
   if (event.target.matches?.('.app-icon img')) event.target.parentElement.innerHTML = icon('grid');
 }, true);
 function appIcon(target, index) {
-  return `<span class="app-icon tone-${index % 5}">${target.icon && /^data:image\//.test(target.icon) ? `<img src="${escapeHtml(target.icon)}" alt="">` : icon('grid')}</span>`;
+  return `<span class="app-icon tone-${index % 5}">${target.icon && /^data:image\//.test(target.icon) ? `<img src="${escapeHtml(target.icon)}" alt="">` : Websites.isWebsite(target) ? `<span class="website-monogram">${escapeHtml(target.name.slice(0, 1).toUpperCase())}</span>` : icon('grid')}</span>`;
 }
 function category(target) {
+  if (Websites.isWebsite(target)) return 'Website · includes subdomains';
   if (target.category) return target.category;
   if (target.path.startsWith('appx:')) return 'Microsoft Store app';
   if (/steam|epic|game|minecraft|riot|battle|ubisoft|xbox/i.test(target.name)) return 'Games & entertainment';
@@ -97,7 +108,7 @@ function category(target) {
   return 'Desktop application';
 }
 function appRow(target, index, checked, context, locked = false) {
-  return `<button class="app-row${checked ? ' selected' : ''}${locked && checked ? ' locked' : ''}" data-app="${escapeHtml(target.path)}" data-context="${context}" ${locked ? 'disabled' : ''} role="checkbox" aria-checked="${checked}" aria-label="${escapeHtml(target.name)}${locked ? checked ? ', blocked for this session' : ', not part of this session' : ''}" title="${escapeHtml(target.path)}">${appIcon(target, index)}<span class="app-info"><span class="app-name">${escapeHtml(target.name)}</span><span class="app-subtitle">${escapeHtml(context === 'selected' ? category(target) : target.path)}</span></span><span class="check-box">${icon(locked && checked ? 'lock' : 'check')}</span></button>`;
+  return `<button class="app-row${checked ? ' selected' : ''}${locked && checked ? ' locked' : ''}" data-app="${escapeHtml(target.path)}" data-context="${context}" ${locked ? 'disabled' : ''} role="checkbox" aria-checked="${checked}" aria-label="${escapeHtml(target.name)}${locked ? checked ? ', blocked for this session' : ', not part of this session' : ''}" title="${escapeHtml(Websites.isWebsite(target) ? target.path.slice(8) : target.path)}">${appIcon(target, index)}<span class="app-info"><span class="app-name">${escapeHtml(target.name)}</span><span class="app-subtitle">${escapeHtml(context === 'selected' ? category(target) : Websites.isWebsite(target) ? target.path.slice(8) : target.path)}</span></span><span class="check-box">${icon(locked && checked ? 'lock' : 'check')}</span></button>`;
 }
 function empty(title, description, symbol = 'leaf') {
   return `<div class="empty-state">${icon(symbol)}<strong>${escapeHtml(title)}</strong><p>${escapeHtml(description)}</p></div>`;
@@ -111,8 +122,8 @@ function renderApps() {
   const visible = state.session ? state.session.apps.map(a => ({ ...apps.find(b => b.path.toLowerCase() === a.path.toLowerCase()), ...a })) : apps.filter(a => selected.has(a.path));
   $('#selected-count').textContent = visible.length;
   $('#library-count').textContent = apps.length;
-  $('#selected-apps').innerHTML = visible.length ? visible.map((a, i) => appRow(a, i, true, 'selected', !!state.session)).join('') : empty('A little less distraction starts here.', 'Choose the apps and games you’d like to put on hold.', 'grid');
-  $('#choose-apps').innerHTML = state.session ? `${icon('lock')} Your selection is fixed for this session` : `${icon('plus')} ${visible.length ? 'Add apps & games' : 'Choose apps & games'}`;
+  $('#selected-apps').innerHTML = visible.length ? visible.map((a, i) => appRow(a, i, true, 'selected', !!state.session)).join('') : empty('A little less distraction starts here.', 'Choose the apps and websites you’d like to put on hold.', 'grid');
+  $('#choose-apps').innerHTML = state.session ? `${icon('lock')} Your selection is fixed for this session` : `${icon('plus')} ${visible.length ? 'Add apps & websites' : 'Choose apps & websites'}`;
   $('#choose-apps').disabled = !!state.session; $('#add-apps').disabled = !!state.session;
   $('#group-row').innerHTML = groups.slice(0, 4).map((g, i) => `<button class="group-chip" data-group="${i}" ${state.session ? 'disabled' : ''}>${icon('folder')}${escapeHtml(g.name)}</button>`).join('');
   if (page === 'library') renderLibrary();
@@ -121,14 +132,14 @@ function renderLibrary() {
   const search = $('#library-search').value.toLowerCase();
   const visible = apps.filter(a => `${a.name} ${a.path}`.toLowerCase().includes(search));
   $('#library-list').innerHTML = visible.length ? visible.map((a, i) => appRow(a, i, state.session ? state.session.apps.some(s => s.path.toLowerCase() === a.path.toLowerCase()) : selected.has(a.path), 'library', !!state.session)).join('') : empty(apps.length ? 'Nothing by that name.' : 'Your collection starts with one app.', apps.length ? 'Try another search, or add the executable yourself.' : 'Add the apps that tend to pull your attention away.', 'grid');
-  $('#saved-groups').innerHTML = groups.map((g, i) => `<div class="saved-group"><button data-group="${i}" ${state.session ? 'disabled' : ''}>${icon('folder')}${escapeHtml(g.name)}<small>${g.paths.length} apps</small></button><button class="icon-button" data-delete-group="${i}" aria-label="Delete group ${escapeHtml(g.name)}" ${state.session ? 'disabled' : ''}>${icon('close')}</button></div>`).join('');
+  $('#saved-groups').innerHTML = groups.map((g, i) => `<div class="saved-group"><button data-group="${i}" ${state.session ? 'disabled' : ''}>${icon('folder')}${escapeHtml(g.name)}<small>${g.paths.length} distractions</small></button><button class="icon-button" data-delete-group="${i}" aria-label="Delete group ${escapeHtml(g.name)}" ${state.session ? 'disabled' : ''}>${icon('close')}</button></div>`).join('');
   $('#library-add').disabled = !!state.session; $('#save-group').disabled = !!state.session;
 }
 function renderPicker() {
   const search = $('#picker-search').value.toLowerCase();
-  const visible = apps.filter(a => `${a.name} ${a.path}`.toLowerCase().includes(search));
+  const visible = apps.filter(a => (pickerKind === 'all' || Websites.isWebsite(a) === (pickerKind === 'websites')) && `${a.name} ${a.path}`.toLowerCase().includes(search));
   $('#picker-list').innerHTML = scanning && !apps.length ? '<div class="empty-state"><span class="spinner"></span><strong>Finding your applications…</strong><p>A little less noise is on its way.</p></div>' : visible.length ? visible.map((a, i) => appRow(a, i, pickerSelection.has(a.path), 'picker')).join('') : empty('Nothing here just yet.', 'Browse to an .exe file, or rescan your installed apps.', 'search');
-  $('#picker-count').textContent = `${pickerSelection.size} application${pickerSelection.size === 1 ? '' : 's'} selected`;
+  $('#picker-count').textContent = `${pickerSelection.size} apps / websites selected`;
   $('#refresh-apps').classList.toggle('busy', scanning);
 }
 async function scan() {
@@ -148,16 +159,28 @@ function confirmation(title, body, label, fn) {
   $('#confirm-cancel').hidden = !fn;
   $('#confirm-dialog').showModal();
 }
-function applyStatus(value) {
+function applyStatus(value) {
+  if (value.historyRevision && !value.history && value.historyRevision !== historySignature && !value.unavailable) {
+    // A bootstrap or busy dialog may have missed the first snapshot of a revision.
+    api.status().then(applyStatus).catch(error => toast(error.message, true));
+    return;
+  }
   if (typeof value.now === 'number') offset = value.now - Date.now();
   if (value.unavailable) {
     state = { ...state, installed: false, unavailable: true, error: value.error };
   } else state = { ...state, ...value, unavailable: false };
-  const signature = JSON.stringify([state.installed, state.unavailable, state.session, state.error, state.history]);
-  if (signature !== lastSignature) { lastSignature = signature; renderSession(); renderApps(); renderStats(); if (page === 'history') renderHistory(); }
+  if (!value.unavailable && value.history) historySignature = value.historyRevision || JSON.stringify(value.history);
+  refreshStatus();
+}
+function refreshStatus() {
+  if (!presentationVisible) return;
+  const signature = JSON.stringify([state.installed, state.unavailable, state.session, state.error, historySignature]);
+  if (signature !== lastSignature) { lastSignature = signature; renderSession(); renderApps(); if (page === 'history') renderHistory(); else renderStats(); }
   updateTimer();
+  if (typeof renderAlerts === 'function') renderAlerts();
 }
-function renderSession() {
+function renderSession() {
+  updateWebsiteLock();
   const session = state.session;
   $('.focus-card').classList.toggle('running', !!session);
   $('#session-setup').hidden = !!session; $('#active-details').hidden = !session;
@@ -165,13 +188,13 @@ function renderSession() {
   $('#session-tag').innerHTML = `<span class="tiny-dot"></span> ${session ? (state.unavailable ? 'CONNECTION LOST' : session.phase === 'releasing' ? 'RELEASING APPS' : 'FOCUS IN PROGRESS') : 'YOUR NEXT SESSION'}`;
   $('#timer-top').textContent = session ? 'ONE THING AT A TIME' : 'TIME FOR YOURSELF';
   $('#timer-bottom').innerHTML = `<span class="tiny-dot"></span> ${session ? 'You’re making room for what matters' : 'A fresh start awaits'}`;
-  $('#start-caption').innerHTML = `${icon(session ? 'shield' : 'lock')} ${session ? 'Closing this window won’t end your session.' : 'Your selected apps will be closed and blocked.'}`;
+  $('#start-caption').innerHTML = `${icon(session ? 'shield' : 'lock')} ${session ? 'Closing this window won’t end your session.' : 'Selected apps close; selected websites go on hold.'}`;
   $('#delay-enabled').disabled = !!session; $('#delay').disabled = !!session || !prefs.delayEnabled;
   if (session) {
     $('#delay-enabled').checked = session.unlockDelayMinutes > 0;
     $('#delay').value = session.unlockDelayMinutes || prefs.delay;
     $('#active-intention').textContent = session.intention || 'Space for what matters.';
-    $('#active-description').textContent = `${session.apps.length} application${session.apps.length === 1 ? '' : 's'} on hold. Your attention is yours again.`;
+    $('#active-description').textContent = `${session.apps.length} apps / websites on hold. Your attention is yours again.`;
     $('#active-end').textContent = `Until ${new Date(session.endsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     $('#unlock-info').hidden = !session.unlockAt;
   } else { $('#delay-enabled').checked = prefs.delayEnabled; $('#delay').value = prefs.delay; }
@@ -188,21 +211,25 @@ function renderSession() {
   $('#start-button').disabled = busy || (!!session && (state.unavailable || session.phase !== 'active'));
   updateTimer();
 }
-function updateTimer() {
+function updateTimer() {
+  if (!presentationVisible) return;
+  setText($('#date-label'), new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }));
+  if (page !== 'focus') return;
   const session = state.session;
   const remaining = session ? session.endsAt - now() : prefs.duration * 60000;
   const [minutes, seconds] = formatClock(remaining).split(':');
-  $('#timer-number').innerHTML = `${minutes}<span>:${seconds}</span>`;
+  setMarkup($('#timer-number'), `${minutes}<span>:${seconds}</span>`);
   const fraction = session ? Math.max(0, Math.min(1, remaining / (session.durationMinutes * 60000))) : 1;
-  $('#ring-progress').style.strokeDashoffset = String(754 * (1 - fraction));
+  const stroke = String(754 * (1 - fraction));
+  if ($('#ring-progress').style.strokeDashoffset !== stroke) $('#ring-progress').style.strokeDashoffset = stroke;
   const label = $('#start-button span');
-  if (!session) label.textContent = 'Start focusing';
-  else if (session.phase === 'releasing') label.textContent = 'Releasing your applications…';
-  else if (session.unlockAt && now() < session.unlockAt) label.textContent = `Release available in ${formatClock(session.unlockAt - now())}`;
-  else if (session.unlockAt || !session.unlockDelayMinutes) label.textContent = 'End focus session';
-  else label.textContent = `Request to end · ${session.unlockDelayMinutes} min wait`;
+  if (!session) setText(label, 'Start focusing');
+  else if (session.phase === 'releasing') setText(label, 'Releasing your distractions…');
+  else if (session.unlockAt && now() < session.unlockAt) setText(label, `Release available in ${formatClock(session.unlockAt - now())}`);
+  else if (session.unlockAt || !session.unlockDelayMinutes) setText(label, 'End focus session');
+  else setText(label, `Request to end · ${session.unlockDelayMinutes} min wait`);
   if (session?.unlockAt) {
-    $('#unlock-countdown').textContent = now() < session.unlockAt ? formatClock(session.unlockAt - now()) : 'You can end your session now.';
+    setText($('#unlock-countdown'), now() < session.unlockAt ? formatClock(session.unlockAt - now()) : 'You can end your session now.');
     $('#start-button').disabled = busy || state.unavailable || session.phase !== 'active' || now() < session.unlockAt;
   }
 }
@@ -210,7 +237,11 @@ function focusMilliseconds(session, from = 0, to = now()) {
   if (!session || ['failed', 'interrupted', 'recovered'].includes(session.outcome)) return 0;
   return Math.max(0, Math.min(session.finishedAt || now(), session.endsAt, to) - Math.max(session.startedAt, from));
 }
-function renderStats() {
+function renderStats() {
+  if (!presentationVisible || !['focus', 'history'].includes(page)) return;
+  const signature = JSON.stringify([page, historySignature, state.session, new Date(now()).toDateString(), new Date(now()).getTimezoneOffset(), state.session ? Math.floor(now() / 30000) : null, prefs.progressDays, prefs.progressMetric, prefs.dailyGoal, prefs.showIntentions]);
+  if (signature === lastStatsSignature) return;
+  lastStatsSignature = signature;
   const records = [...state.history, ...(state.session ? [state.session] : [])];
   const day = new Date(now()); day.setHours(0, 0, 0, 0);
   $('#today-minutes').textContent = Math.floor(records.reduce((sum, s) => sum + focusMilliseconds(s, +day), 0) / 60000);
@@ -254,7 +285,8 @@ for (const [id, offset] of [['calendar-previous', -1], ['calendar-next', 1]]) {
   };
 }
 
-function renderProgress() {
+function renderProgress() {
+  if (!presentationVisible || page !== 'history') return;
   const count = prefs.progressDays || 30, goal = prefs.dailyGoal || 60;
   const today = new Date(now()); today.setHours(0, 0, 0, 0);
   const records = [...state.history, ...(state.session ? [state.session] : [])];
@@ -296,7 +328,7 @@ function renderHistory() {
   renderStats();
   const visible = state.history.filter(s => historyFilter === 'all' || !!s.archived === (historyFilter === 'archived'));
   $('#history-count').textContent = `${visible.length} sessions`;
-  $('#history-list').innerHTML = visible.length ? visible.map(s => `<div class="history-row"><span class="history-symbol">${icon(s.outcome === 'completed' ? 'check' : 'clock')}</span><div><h3>${escapeHtml(s.intention || 'Time to focus')}</h3><p>${new Date(s.startedAt).toLocaleDateString([], { month: 'short', day: 'numeric' })} · ${new Date(s.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · ${s.apps.length} apps put on hold</p></div><strong>${Math.floor(focusMilliseconds(s) / 60000)}m</strong><span class="history-outcome${s.outcome !== 'completed' ? ' early' : ''}">${escapeHtml(({ completed: 'Completed', 'ended-early': 'Ended early', failed: 'Not started', interrupted: 'Interrupted', recovered: 'Recovered' })[s.outcome] || s.outcome)}</span><div class="history-actions"><button class="text-button" data-history-action="${s.archived ? 'restore' : 'archive'}" data-id="${escapeHtml(s.id)}" ${state.unavailable ? 'disabled' : ''}>${s.archived ? 'Restore' : 'Archive'}</button><button class="text-button danger" data-history-action="delete" data-id="${escapeHtml(s.id)}" ${state.unavailable ? 'disabled' : ''}>Delete</button></div></div>`).join('') : empty('No sessions in this view.', 'Your saved sessions will appear here. Try another view to find archived sessions.', 'leaf');
+  $('#history-list').innerHTML = visible.length ? visible.map(s => `<div class="history-row"><span class="history-symbol">${icon(s.outcome === 'completed' ? 'check' : 'clock')}</span><div><h3>${escapeHtml(s.intention || 'Time to focus')}</h3><p>${new Date(s.startedAt).toLocaleDateString([], { month: 'short', day: 'numeric' })} · ${new Date(s.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · ${s.apps.length} apps / websites put on hold</p></div><strong>${Math.floor(focusMilliseconds(s) / 60000)}m</strong><span class="history-outcome${s.outcome !== 'completed' ? ' early' : ''}">${escapeHtml(({ completed: 'Completed', 'ended-early': 'Ended early', failed: 'Not started', interrupted: 'Interrupted', recovered: 'Recovered' })[s.outcome] || s.outcome)}</span><div class="history-actions"><button class="text-button" data-history-action="${s.archived ? 'restore' : 'archive'}" data-id="${escapeHtml(s.id)}" ${state.unavailable ? 'disabled' : ''}>${s.archived ? 'Restore' : 'Archive'}</button><button class="text-button danger" data-history-action="delete" data-id="${escapeHtml(s.id)}" ${state.unavailable ? 'disabled' : ''}>Delete</button></div></div>`).join('') : empty('No sessions in this view.', 'Your saved sessions will appear here. Try another view to find archived sessions.', 'leaf');
 }
 function setupProtection() {
   if (state.installed) { showPage('settings'); return; }
@@ -311,16 +343,16 @@ function startOrEnd() {
   if (session) {
     if (session.unlockAt && now() < session.unlockAt) return;
     if (session.unlockDelayMinutes && !session.unlockAt) {
-      confirmation('Give the urge a little space.', `<p>Your apps will stay blocked for another <strong>${session.unlockDelayMinutes} minutes</strong> before you can end this session early. If your session ends sooner, apps are released at the original end time.</p><p>You can cancel the request and keep focusing at any point.</p>`, 'Start the waiting period', async () => { applyStatus(await api.requestUnlock()); });
-    } else confirmation('Ready to come back?', '<p>Your apps will be available again. The time you made for yourself still counts.</p>', 'End session', async () => { applyStatus(await api.end()); toast('A little focus goes a long way. Welcome back.'); });
+      confirmation('Give the urge a little space.', `<p>Your apps and websites will stay blocked for another <strong>${session.unlockDelayMinutes} minutes</strong> before you can end this session early. If your session ends sooner, apps are released at the original end time.</p><p>You can cancel the request and keep focusing at any point.</p>`, 'Start the waiting period', async () => { applyStatus(await api.requestUnlock()); });
+    } else confirmation('Ready to come back?', '<p>Your apps and websites will be available again. The time you made for yourself still counts.</p>', 'End session', async () => { applyStatus(await api.end()); toast('A little focus goes a long way. Welcome back.'); });
     return;
   }
   if (!selected.size) { openPicker(); return; }
   if (!Number.isInteger(prefs.duration) || prefs.duration < 1 || prefs.duration > 1440) { toast('Choose a whole number from 1 to 1,440 minutes.', true); $('#duration').focus(); return; }
   if (prefs.delayEnabled && (!Number.isInteger(prefs.delay) || prefs.delay < 1 || prefs.delay > 120)) { toast('Choose a waiting period from 1 to 120 minutes.', true); $('#delay').focus(); return; }
   if (!state.installed) { setupProtection(); return; }
-  confirmation('A small commitment to yourself.', `<p>${state.demo ? 'This preview will simulate a focus session. No applications will be closed or blocked.' : 'Save any open work in your selected apps. Still will close them and block them from launching for this session.'}</p><div class="confirm-detail"><span>Time to focus</span><strong>${prefs.duration} minutes</strong></div><div class="confirm-detail"><span>Apps put on hold</span><strong>${selected.size} applications</strong></div><div class="confirm-detail"><span>Wait before ending early</span><strong>${prefs.delayEnabled ? `${prefs.delay} minutes` : 'No waiting period'}</strong></div><p>Closing this window won’t end your session. The duration, selection, and waiting period stay fixed until it ends.</p>`, 'Start my session', async () => {
-    const response = await api.start({ durationMinutes: prefs.duration, unlockDelayMinutes: prefs.delayEnabled ? prefs.delay : 0, intention: prefs.intention || 'Space for what matters.', apps: apps.filter(a => selected.has(a.path)).map(({ name, path }) => ({ name, path })) });
+  confirmation('A small commitment to yourself.', `<p>${state.demo ? 'This preview will simulate a focus session. No apps or websites will be blocked.' : 'Save any open work in your selected apps. Still will close them and block them from launching for this session. Websites and their subdomains are blocked in Chrome and Edge; install the Still companion in every profile for immediate blocking and custom screens. Browser policies are a fallback and may take time to refresh.'}</p><div class="confirm-detail"><span>Time to focus</span><strong>${prefs.duration} minutes</strong></div><div class="confirm-detail"><span>Distractions put on hold</span><strong>${selected.size} apps / websites</strong></div><div class="confirm-detail"><span>Wait before ending early</span><strong>${prefs.delayEnabled ? `${prefs.delay} minutes` : 'No waiting period'}</strong></div><p>Closing this window won’t end your session. The duration, selection, and waiting period stay fixed until it ends.</p>`, 'Start my session', async () => {
+    const response = await api.start({ durationMinutes: prefs.duration, unlockDelayMinutes: prefs.delayEnabled ? prefs.delay : 0, blockScreen: prefs.blockScreen, intention: prefs.intention || 'Space for what matters.', apps: apps.filter(a => selected.has(a.path)).map(({ name, path }) => ({ name, path })) });
     applyStatus(response); toast('Take a breath. You’re right where you need to be.');
   });
 }
@@ -348,7 +380,7 @@ document.addEventListener('click', event => {
     if (collection.has(row.dataset.app)) collection.delete(row.dataset.app);
     else { if (collection.size >= 100) return toast('A session can contain up to 100 applications.', true); collection.add(row.dataset.app); }
     // Keep keyboard focus on the same row when its checked state changes.
-    if (row.dataset.context === 'picker') { row.classList.toggle('selected', collection.has(row.dataset.app)); row.setAttribute('aria-checked', collection.has(row.dataset.app)); $('#picker-count').textContent = `${collection.size} applications selected`; }
+    if (row.dataset.context === 'picker') { row.classList.toggle('selected', collection.has(row.dataset.app)); row.setAttribute('aria-checked', collection.has(row.dataset.app)); $('#picker-count').textContent = `${collection.size} apps / websites selected`; }
     else { const target = row.dataset.app; const context = row.dataset.context; renderApps(); save(); if (context === 'library') $$('#library-list [data-app]').find(el => el.dataset.app === target)?.focus(); }
   }
   const group = event.target.closest('[data-group]'); if (group && !state.session) { selected = new Set(groups[Number(group.dataset.group)].paths.filter(p => apps.some(a => a.path === p))); renderApps(); save(); toast('Your focus group is selected.'); }
@@ -377,7 +409,7 @@ $('#install-guard').onclick = setupProtection;
 $('#remove-guard').onclick = () => confirmation('Remove Windows protection?', '<p>This removes Still Guard and its focus rules. Your preferences and history files stay on this PC. You can enable protection again whenever you’re ready.</p>', 'Remove protection', async () => { applyStatus(await api.uninstall()); toast('The protection service has been removed.'); });
 $('#confirm-accept').onclick = () => { const action = confirmAction; $('#confirm-dialog').close(); if (action) act(action, $('#start-button')); };
 $('#confirm-cancel').onclick = () => $('#confirm-dialog').close();
-$('#save-group').onclick = () => { if (!selected.size) return toast('Select at least one application first.'); if (groups.length >= 20) return toast('You can save up to 20 groups.', true); $('#group-name').value = ''; $('#group-dialog').showModal(); };
+$('#save-group').onclick = () => { if (!selected.size) return toast('Select at least one app or website first.'); if (groups.length >= 20) return toast('You can save up to 20 groups.', true); $('#group-name').value = ''; $('#group-dialog').showModal(); };
 $('#group-save').onclick = () => {
   const name = $('#group-name').value.trim(); if (!name) return $('#group-name').focus();
   groups.push({ name, paths: [...selected] }); $('#group-dialog').close(); renderApps(); save(); toast('A little less setup for next time. Group saved.');
@@ -388,7 +420,7 @@ for (const [id, key] of [['notifications', 'notifications'], ['reduced-motion', 
 }
 $('#export-history').onclick = () => act(async () => { if (await api.exportHistory()) toast('Your session history has been exported.'); }, $('#export-history'));
 function showGuide() {
-  confirmation('A little guidance.', '<p><strong>1. Choose your distractions.</strong> Add desktop apps or game executables. Select each game as well as its launcher.</p><p><strong>2. Set your own pace.</strong> Choose 1–1,440 minutes of focus and an optional 1–120 minute delay before ending early.</p><p><strong>3. Make room.</strong> Enable Windows protection once, save your work, and start. Your selection and delay stay fixed for the session.</p><p>Closing Still or restarting Windows won’t reset the timer. Blocks expire automatically. A release request starts the waiting period; you’ll still choose whether to end when it’s over.</p><p>Protection uses Windows AppLocker for your account. Administrators can override it; other accounts and modified desktop files are outside its coverage. Installed Store apps are protected by package identity. Setup is unavailable on managed PCs or PCs with existing application-control rules.</p>', 'Got it', null);
+  confirmation('A little guidance.', '<p><strong>1. Choose your distractions.</strong> Add desktop apps, game executables, or website domains. Website blocks cover the domain and its subdomains in Chrome and Edge. Set up the browser companion in Settings for immediate blocking and custom screens. Select each game as well as its launcher.</p><p><strong>2. Set your own pace.</strong> Choose 1–1,440 minutes of focus and an optional 1–120 minute delay before ending early.</p><p><strong>3. Make room.</strong> Enable Windows protection once, save your work, and start. Your selection and delay stay fixed for the session.</p><p>Closing Still or restarting Windows won’t reset the timer. Blocks expire automatically. A release request starts the waiting period; you’ll still choose whether to end when it’s over.</p><p>Protection uses Windows AppLocker for your account. Administrators can override it; other accounts and modified desktop files are outside its coverage. Installed Store apps are protected by package identity. Setup is unavailable on managed PCs or PCs with existing application-control rules.</p>', 'Got it', null);
 }
 $('#help-button').onclick = $('#blocking-info').onclick = showGuide;
 document.addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key === 'k') { event.preventDefault(); if (!document.querySelector('dialog[open]')) openPicker(); } });
@@ -407,9 +439,17 @@ async function init() {
     $('#progress-metric').value = prefs.progressMetric || 'minutes';
     $('#daily-goal').value = prefs.dailyGoal || 60;
     $('#show-intentions').checked = prefs.showIntentions !== false;
-    initTodos(); applyStatus(initial); renderApps(); renderStats();
-    api.onStatus(value => { if (!busy) applyStatus(value); });
+    initWebsites(); initTodos(); applyStatus(initial); renderApps(); renderStats(); await initAlerts();
+    api.onStatus(value => { if (!busy) applyStatus(value); });
+    api.onPresentation?.(setPresentationVisible);
     setInterval(updateTimer, 1000); setInterval(renderStats, 30000);
-  } catch (error) { toast('Still could not load: ' + error.message, true); }
+  } catch (error) { toast('Still could not load: ' + error.message, true); }
+  finally { await api.showWindow?.(); }
+  // Artwork is cosmetic: Windows discovery must never hold up the usable UI.
+  api.appIcons?.().then(enriched => {
+    const icons = new Map(enriched.map(target => [target.path, target]));
+    apps = apps.map(target => ({ ...target, ...icons.get(target.path) }));
+    renderApps();
+  }).catch(() => {});
 }
 init();

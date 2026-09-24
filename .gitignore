@@ -3,3 +3,4 @@ release/
 native/bin/
 test-results/
 *.log
+release-*/

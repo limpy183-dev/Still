@@ -16,10 +16,13 @@ using System.Windows.Forms;
 
 namespace Still {
     public class Request {
+        public BlockScreen blockScreen { get; set; }
         public string command { get; set; }
+        public string historyRevision { get; set; }
         public string id { get; set; }
         public string action { get; set; }
         public int durationMinutes { get; set; }
+        public long scheduledEndsAt { get; set; }
         public int unlockDelayMinutes { get; set; }
         public string intention { get; set; }
         public List<TargetApp> apps { get; set; }
@@ -32,7 +35,12 @@ namespace Still {
         static readonly string StatePath = Path.Combine(Data, "state.json");
         static readonly JavaScriptSerializer Json = new JavaScriptSerializer { MaxJsonLength = 1024 * 1024 };
         readonly object gate = new object();
+        readonly ManualResetEvent websiteReady = new ManualResetEvent(false);
+        volatile string websiteAwaitId;
+        bool recoveryPending;
+        long nextRecoveryAt;
         GuardState state = new GuardState();
+        string historyRevision = Guid.NewGuid().ToString();
         string owner;
         System.Threading.Timer timer;
         volatile bool stopping;
@@ -43,6 +51,7 @@ namespace Still {
 
         [STAThread]
         static int Main(string[] args) {
+            if (args.Length > 0 && args[0].StartsWith("chrome-extension://", StringComparison.Ordinal)) { try { return Websites.BrowserHost(); } catch { return 1; } }
             if (args.Length == 0) { ServiceBase.Run(new Guard()); return 0; }
             try {
                 if (!new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator))
@@ -130,7 +139,7 @@ namespace Still {
                 try { if (svc.Status != ServiceControllerStatus.Stopped) { svc.Stop(); svc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(30)); } }
                 catch (InvalidOperationException) { }
             }
-            RunPolicy("clear", null);
+            ClearProtection();
             if (File.Exists(StatePath)) {
                 var saved = Json.Deserialize<GuardState>(File.ReadAllText(StatePath));
                 if (saved.session != null) {
@@ -161,6 +170,7 @@ namespace Still {
             Run(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), @"WindowsPowerShell\v1.0\powershell.exe"),
                 "-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand " + Convert.ToBase64String(Encoding.Unicode.GetBytes(command)));
         }
+        static void ClearProtection() { try { RunPolicy("clear", null); } finally { Websites.Clear(); } }
         static void AtomicWrite(string file, string value) {
             var temp = file + ".tmp";
             using (var stream = new FileStream(temp, FileMode.Create, FileAccess.Write, FileShare.None)) {
@@ -184,14 +194,15 @@ namespace Still {
                         TrimHistory(state);
                     } catch {
                         state = new GuardState(); state.error = "Session data could not be read.";
-                        try { RunPolicy("clear", null); state.error += " Orphaned focus rules have been released."; Save(); }
+                        try { ClearProtection(); state.error += " Orphaned focus rules have been released."; Save(); }
                         catch (Exception ex) { state.error += " Recovery needs attention: " + ex.Message; }
                     }
                     try {
-                        if (state.session == null) RunPolicy("clear", null);
+                        if (state.session == null) ClearProtection();
                         else if (state.session.phase != "active") Finish("interrupted");
                         else if (state.session.Expired(Now())) Finish("completed");
-                    } catch (Exception ex) { state.error = ex.Message; }
+                        Save(); // Publish an authoritative initial snapshot to connected browsers.
+                    } catch (Exception ex) { state.error = ex.Message; recoveryPending = state.session == null; nextRecoveryAt = Now() + 30000; }
                 }
                 timer = new System.Threading.Timer(Tick, null, 1000, 1000);
                 Listen();
@@ -216,22 +227,24 @@ namespace Still {
         void Serve(NamedPipeServerStream pipe) {
             using (pipe) {
                 try {
-                    var buffer = new byte[65536]; int total = 0;
-                    while (total < buffer.Length) {
-                        var read = pipe.ReadAsync(buffer, total, buffer.Length - total);
-                        if (!read.Wait(5000) || read.Result == 0) return;
-                        total += read.Result;
-                        if (Array.IndexOf(buffer, (byte)10, 0, total) >= 0) break;
+                    string input = ReadRequest(pipe);
+                    if (input == null) return;
+                    var incoming = new JavaScriptSerializer { MaxJsonLength = 262144 }.Deserialize<Request>(input);
+                    // Browser acknowledgements must be received while start holds the session lock.
+                    if (incoming != null && incoming.command == "websiteReady") {
+                        bool accepted = incoming.id != null && incoming.id == websiteAwaitId;
+                        if (accepted) websiteReady.Set();
+                        var acknowledgement = Encoding.UTF8.GetBytes(accepted ? "{\"ok\":true}\n" : "{\"ok\":false}\n");
+                        var sent = pipe.WriteAsync(acknowledgement, 0, acknowledgement.Length); sent.Wait(5000);
+                        return;
                     }
-                    int end = Array.IndexOf(buffer, (byte)10, 0, total);
-                    if (end < 0) return;
                     object response;
                     lock (gate) {
                         try {
-                            var request = Json.Deserialize<Request>(Encoding.UTF8.GetString(buffer, 0, end));
+                            var request = incoming;
                             if (request == null) throw new Exception("Invalid request");
                             Handle(request);
-                            response = new { ok = true, installed = true, session = state.session, history = state.history, error = state.error, now = Now() };
+                            response = StatusResponse(request);
                         } catch (Exception ex) { response = new { ok = false, error = ex.Message }; }
                         var bytes = Encoding.UTF8.GetBytes(Json.Serialize(response) + "\n");
                         var write = pipe.WriteAsync(bytes, 0, bytes.Length); write.Wait(5000);
@@ -239,12 +252,39 @@ namespace Still {
                 } catch { /* A disconnected UI never changes the guard state. */ }
             }
         }
+        static string ReadRequest(Stream stream) {
+            var buffer = new byte[1024]; int total = 0;
+            while (total < 262144) {
+                if (total == buffer.Length) Array.Resize(ref buffer, Math.Min(262144, buffer.Length * 2));
+                var read = stream.ReadAsync(buffer, total, buffer.Length - total);
+                if (!read.Wait(5000) || read.Result == 0) return null;
+                int start = total; total += read.Result;
+                int end = Array.IndexOf(buffer, (byte)10, start, read.Result);
+                if (end >= 0) return Encoding.UTF8.GetString(buffer, 0, end);
+            }
+            return null;
+        }
+        object StatusResponse(Request request) {
+            var response = new Dictionary<string, object> {
+                { "ok", true }, { "installed", true }, { "scheduledAlerts", true }, { "snoozeAlerts", true }, { "websiteBlocking", true },
+                { "session", state.session == null ? null : state.session.Summary() }, { "historyRevision", historyRevision },
+                { "error", state.error }, { "now", Now() }
+            };
+            // A new process has a fresh token, so reconnects cannot reuse stale history.
+            if (request.command != "status" || request.historyRevision != historyRevision)
+                response["history"] = state.history;
+            return response;
+        }
         void Tick(object unused) {
             if (!Monitor.TryEnter(gate)) return;
             try {
+                if (recoveryPending && state.session == null && Now() >= nextRecoveryAt) {
+                    nextRecoveryAt = Now() + 30000;
+                    ClearProtection(); state.error = null; Save(); recoveryPending = false;
+                }
                 string recoveryRequest = Path.Combine(Data, "recover-request");
                 if (File.Exists(recoveryRequest)) {
-                    if (state.session != null) Finish("recovered"); else RunPolicy("clear", null);
+                    if (state.session != null) Finish("recovered"); else ClearProtection();
                     File.Delete(recoveryRequest);
                 }
                 if (state.session != null && (state.session.Expired(Now()) || state.session.phase == "releasing"))
@@ -256,10 +296,13 @@ namespace Still {
             state.session.phase = "releasing"; state.session.outcome = outcome;
             // A full disk must not prevent an attempt to release expired rules.
             try { Save(); } catch (IOException) { }
-            RunPolicy("clear", null);
+            ClearProtection();
             state.session.finishedAt = Now();
+            state.session.blockScreen = null; // Artwork belongs to the active session, not every history record.
             state.history.Insert(0, state.session);
+            historyRevision = Guid.NewGuid().ToString();
             state.session = null; state.error = null; TrimHistory(state); Save();
+            websiteAwaitId = null; websiteReady.Reset();
         }
         void Handle(Request request) {
             if (state.session != null && state.session.Expired(Now())) Finish("completed");
@@ -274,22 +317,27 @@ namespace Still {
                     if (request.action == "delete") state.history.Remove(record);
                     else record.archived = request.action == "archive";
                     try { Save(); } catch { state.history = previousHistory; record.archived = wasArchived; throw; }
+                    historyRevision = Guid.NewGuid().ToString();
                     return;
                 case "start":
                     if (state.session != null) throw new Exception("A focus session is already running.");
                     FocusSession.Validate(request.durationMinutes, request.unlockDelayMinutes, request.apps);
                     var apps = request.apps.GroupBy(a => a.path.ToLowerInvariant()).Select(g => g.First()).ToList();
-                    foreach (var target in apps) ValidateTarget(target);
+                    foreach (var target in apps.Where(a => !Websites.IsWebsite(a))) ValidateTarget(target);
+                    var screen = Websites.Validate(request.blockScreen, apps);
                     state.session = new FocusSession {
                         id = Guid.NewGuid().ToString(), intention = (request.intention ?? "Time to focus").Substring(0, Math.Min(120, (request.intention ?? "Time to focus").Length)),
-                        durationMinutes = request.durationMinutes, unlockDelayMinutes = request.unlockDelayMinutes,
-                        apps = apps, startedAt = Now(), endsAt = Now() + request.durationMinutes * 60000L, phase = "applying"
+                        durationMinutes = request.durationMinutes, unlockDelayMinutes = request.unlockDelayMinutes, scheduledEndsAt = request.scheduledEndsAt,
+                        apps = apps, blockScreen = screen, startedAt = Now(), endsAt = FocusSession.ResolveEnd(request.durationMinutes, request.scheduledEndsAt, Now()), phase = "applying"
                     };
                     state.error = null;
+                    websiteReady.Reset(); websiteAwaitId = apps.Any(Websites.IsWebsite) ? state.session.id : null;
                     try { Save(); } catch { state.session = null; throw; }
                     try {
-                        RunPolicy("apply", new { owner = owner, apps = apps });
-                        state.session.startedAt = Now(); state.session.endsAt = Now() + request.durationMinutes * 60000L;
+                        Websites.Apply(apps);
+                        if (apps.Any(a => !Websites.IsWebsite(a))) RunPolicy("apply", new { owner = owner, apps = apps.Where(a => !Websites.IsWebsite(a)).ToList() });
+                        if (websiteAwaitId != null && !websiteReady.WaitOne(15000)) throw new Exception("Open Chrome or Edge with the Still companion connected and incognito / InPrivate access enabled before starting website blocking. Set it up in Settings.");
+                        state.session.startedAt = Now(); state.session.endsAt = FocusSession.ResolveEnd(request.durationMinutes, request.scheduledEndsAt, Now());
                         state.session.phase = "active"; Save();
                     } catch (Exception startError) {
                         try { Finish("failed"); }
@@ -305,6 +353,10 @@ namespace Still {
                     RequireSession();
                     if (!state.session.CanEnd(Now())) throw new Exception("The release waiting period has not finished yet.");
                     Finish("ended-early"); return;
+                case "snooze":
+                    if (state.session == null || state.session.id != request.id) return;
+                    if (state.session.scheduledEndsAt == 0) throw new Exception("Only an alarm session can be snoozed.");
+                    Finish("snoozed"); return;
                 default: throw new Exception("Unknown command.");
             }
         }

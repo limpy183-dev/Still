@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' still-media:; media-src 'self' still-media:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Still · A moment for your attention</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="alerts.css"></head>
+<body class="alarm-body"><main class="alarm-surface">
+<div class="alarm-top"><span>still.</span><button id="alarm-dismiss-top" aria-label="Dismiss alarm">×</button></div>
+<div id="alarm-media" class="alarm-media" hidden></div><div class="alarm-content"><div class="eyebrow" id="alarm-eyebrow">A MOMENT FOR WHAT MATTERS</div>
+<div class="alarm-orbit" aria-hidden="true"><span>◷</span></div><h1 id="alarm-title"></h1><p id="alarm-note"></p><span class="alarm-time" id="alarm-time"></span>
+<p id="alarm-message" role="status"></p><p id="alarm-error" role="alert"></p>
+<div class="alarm-actions"><button id="alarm-open" class="primary-button">Let’s focus</button><button id="alarm-snooze" class="secondary-button">Snooze for 5 min</button><button id="alarm-dismiss" class="text-button">Dismiss</button></div><p class="alarm-footnote" id="alarm-footnote">Snooze unblocks this alarm’s apps for 5 minutes. Dismiss keeps app blocking active.</p></div>
+</main><script src="alert-sound.js"></script><script src="alarm.js"></script></body></html>
