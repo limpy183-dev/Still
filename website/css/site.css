@@ -49,9 +49,11 @@ svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke
 .titlebar .window-dots span:nth-child(3)::after{transform:translate(-50%,-50%) rotate(-45deg)}
 
 /* ——— Header ——— */
-.site-header{position:sticky;top:0;z-index:100;transition:background .35s,box-shadow .35s,backdrop-filter .35s}
+.site-header{position:sticky;top:0;z-index:100;transition:background .35s,box-shadow .35s,backdrop-filter .35s,margin .35s var(--ease)}
 .site-header.scrolled{background:#f5f6f1d9;backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);box-shadow:0 1px 0 var(--line),0 10px 30px -20px #2028181a}
 .site-header .wrap{display:flex;align-items:center;gap:24px;height:78px;transition:height .35s var(--ease)}
+/* Shrink visually only: the margin keeps the in-flow height at 78px, otherwise the 14px change moves scrollY across the threshold (e.g. while zooming) and the header flickers */
+.site-header.scrolled{margin-bottom:14px}
 .site-header.scrolled .wrap{height:64px}
 .brand{display:inline-flex;align-items:center;font-size:31px;font-weight:800;letter-spacing:-1.8px;line-height:1;color:var(--ink)}
 .brand-dot{color:var(--green-3)}
