@@ -56,6 +56,7 @@
 
         <activity
             android:name=".MainActivity"
+            android:theme="@style/Theme.Still.Page"
             android:exported="true"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize">
@@ -73,24 +74,28 @@
 
         <activity
             android:name=".TodosActivity"
+            android:theme="@style/Theme.Still.Page"
             android:exported="false"
             android:label="@string/todos_title"
             android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".HistoryActivity"
+            android:theme="@style/Theme.Still.Page"
             android:exported="false"
             android:label="@string/history_title"
             android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".LimitsActivity"
+            android:theme="@style/Theme.Still.Page"
             android:exported="false"
             android:label="@string/limits_title"
             android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".AlertsActivity"
+            android:theme="@style/Theme.Still.Page"
             android:exported="false"
             android:label="@string/alerts_title" />
 

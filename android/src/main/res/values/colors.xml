@@ -2,12 +2,45 @@
 <!-- Matches the desktop app (app/styles.css). -->
 <resources>
     <color name="bg">#F5F6F1</color>
+    <color name="paper">#FFFFFF</color>
     <color name="ink">#252A27</color>
-    <color name="muted">#6F766D</color>
+    <color name="muted">#68745D</color>
+    <color name="eyebrow">#6E7B61</color>
+    <color name="soft_ink">#7D886E</color>
     <color name="green">#637D33</color>
-    <color name="soft">#EEF3E2</color>
+    <color name="soft">#F2F5E9</color>
     <color name="line">#E9ECE4</color>
+    <color name="field_line">#DFE6D2</color>
     <color name="warn">#A15E43</color>
+    <!-- Selected nav item and preset, like .nav-item.active and .duration-presets .selected. -->
+    <color name="selected">#E1EBCB</color>
+    <color name="selected_ink">#3B5029</color>
+    <color name="nav_bg">#F0F2E9</color>
+    <color name="nav_ink">#7A8274</color>
+    <color name="button">#293126</color>
+    <color name="button_pressed">#3C4932</color>
+    <color name="button_text">#F6F9EE</color>
+    <color name="button_icon">#D7ED9D</color>
+    <color name="switch_on">#99B365</color>
+    <!-- The timer scene. -->
+    <color name="glow">#F4F8E8</color>
+    <color name="glow_edge">#FAFCF5</color>
+    <color name="glow_running">#E9F3D2</color>
+    <color name="orbit">#E4E9D8</color>
+    <color name="orbit_soft">#EEF1E8</color>
+    <color name="ring">#B9CE8E</color>
+    <color name="ring_running">#9FBD62</color>
+    <color name="leaf_bg">#E8F0D3</color>
+    <color name="leaf">#8DA260</color>
+    <!-- "Your pause before the pause" and the small reminder card. -->
+    <color name="warm">#F5F1E4</color>
+    <color name="warm_line">#EBE2C6</color>
+    <color name="warm_ink">#86784F</color>
+    <color name="thought">#EBEFDF</color>
+    <color name="thought_ink">#64734F</color>
+    <color name="thought_line">#D5DDC3</color>
+    <color name="bar">#E9EEDD</color>
+    <color name="bar_today">#B4CA8A</color>
     <!-- The block cover and icon keep these in both themes. -->
     <color name="cover_bg">#252A27</color>
     <color name="cover_text">#FFFFFF</color>

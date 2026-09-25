@@ -1,14 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The desktop app's look (app/styles.css): Manrope, a quiet olive palette, paper panels and a dark primary button. -->
 <resources>
     <style name="Theme.Still" parent="android:Theme.DeviceDefault.DayNight">
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
+        <item name="android:fontFamily">@font/manrope</item>
         <item name="android:colorAccent">@color/green</item>
         <item name="android:colorPrimary">@color/green</item>
+        <item name="android:colorControlActivated">@color/switch_on</item>
         <item name="android:windowBackground">@color/bg</item>
         <item name="android:textColorPrimary">@color/ink</item>
+        <item name="android:textColorHint">@color/muted</item>
+        <item name="android:editTextStyle">@style/Field</item>
+        <item name="android:alertDialogTheme">@style/Theme.Still.Dialog</item>
         <item name="android:windowLightStatusBar">@bool/light_bars</item>
         <item name="android:windowLightNavigationBar">@bool/light_bars</item>
+    </style>
+
+    <!-- The five pages behind the bottom bar: drawn edge to edge, and switched without a window animation
+         (each page fades in by itself, like the pages on Windows). -->
+    <style name="Theme.Still.Page">
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <style name="Theme.Still.Dialog" parent="android:Theme.DeviceDefault.Light.Dialog.Alert">
+        <item name="android:fontFamily">@font/manrope</item>
+        <item name="android:colorAccent">@color/green</item>
+        <item name="android:colorControlActivated">@color/switch_on</item>
+        <item name="android:textColorPrimary">@color/ink</item>
+        <item name="android:editTextStyle">@style/Field</item>
     </style>
 
     <!-- The Focus card: a floating sheet at the bottom, dimming what's behind it. -->
@@ -19,25 +41,143 @@
         <item name="android:windowCloseOnTouchOutside">false</item>
     </style>
 
+    <!-- h1: "Your time." -->
     <style name="Title">
         <item name="android:textSize">28sp</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:textFontWeight">650</item>
+        <item name="android:letterSpacing">-0.035</item>
+        <item name="android:textColor">@color/ink</item>
+    </style>
+    <!-- .card-heading h2 -->
+    <style name="CardTitle">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textFontWeight">700</item>
+        <item name="android:letterSpacing">-0.015</item>
         <item name="android:textColor">@color/ink</item>
     </style>
     <style name="Body">
-        <item name="android:textSize">16sp</item>
+        <item name="android:textSize">15sp</item>
         <item name="android:textColor">@color/ink</item>
+        <item name="android:lineSpacingMultiplier">1.1</item>
     </style>
+    <!-- .eyebrow: small, spaced capitals. -->
     <style name="Label">
-        <item name="android:textSize">13sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">@color/muted</item>
-        <item name="android:letterSpacing">0.08</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:textFontWeight">700</item>
+        <item name="android:textColor">@color/eyebrow</item>
+        <item name="android:letterSpacing">0.12</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+    <!-- .tag: the small capitals beside a card title. -->
+    <style name="Tag" parent="Label">
+        <item name="android:textSize">10sp</item>
+        <item name="android:textColor">@color/green</item>
+        <item name="android:letterSpacing">0.06</item>
+        <item name="android:drawablePadding">5dp</item>
+        <item name="android:drawableTint">@color/ring_running</item>
+        <item name="android:gravity">center_vertical</item>
     </style>
     <style name="Hint">
         <item name="android:textSize">13sp</item>
         <item name="android:textColor">@color/muted</item>
+        <item name="android:lineSpacingMultiplier">1.2</item>
     </style>
-    <style name="Primary" parent="android:Widget.DeviceDefault.Button.Colored" />
-    <style name="Secondary" parent="android:Widget.DeviceDefault.Button.Borderless.Colored" />
+
+    <style name="Primary" parent="android:Widget.DeviceDefault.Button">
+        <item name="android:background">@drawable/button_primary</item>
+        <item name="android:textColor">@color/button_label</item>
+        <item name="android:drawableTint">@color/button_icon</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="android:paddingHorizontal">18dp</item>
+        <item name="android:stateListAnimator">@animator/press</item>
+    </style>
+    <style name="Secondary" parent="android:Widget.DeviceDefault.Button">
+        <item name="android:background">@drawable/button_secondary</item>
+        <item name="android:textColor">@color/secondary_text</item>
+        <item name="android:drawableTint">@color/green</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:paddingHorizontal">14dp</item>
+        <item name="android:stateListAnimator">@animator/press</item>
+    </style>
+    <!-- .text-button -->
+    <style name="TextButton" parent="android:Widget.DeviceDefault.Button.Borderless">
+        <item name="android:textColor">@color/secondary_text</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:paddingHorizontal">8dp</item>
+    </style>
+    <!-- .add-app-button: a dashed "+ add" row. -->
+    <style name="AddButton" parent="Secondary">
+        <item name="android:background">@drawable/dashed</item>
+        <item name="android:drawablePadding">8dp</item>
+        <item name="android:paddingHorizontal">0dp</item>
+        <item name="android:layout_marginVertical">8dp</item>
+    </style>
+    <!-- Text fields: a hairline box, green while focused. -->
+    <style name="Field" parent="android:Widget.DeviceDefault.EditText">
+        <item name="android:background">@drawable/field</item>
+        <item name="android:paddingHorizontal">14dp</item>
+        <item name="android:paddingVertical">11dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:textColorHint">@color/muted</item>
+    </style>
+    <!-- .attention-scopes / .duration-presets: one option of a segmented choice. -->
+    <style name="Segment">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="android:button">@null</item>
+        <item name="android:background">@drawable/segment</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:textColor">@color/nav_item</item>
+    </style>
+    <style name="SegmentTrack">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/segment_track</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:padding">4dp</item>
+    </style>
+    <!-- .panel -->
+    <style name="Panel">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:background">@drawable/card</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:padding">20dp</item>
+    </style>
+    <style name="NavItem">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginHorizontal">3dp</item>
+        <item name="android:background">@drawable/nav_item</item>
+        <item name="android:drawablePadding">2dp</item>
+        <item name="android:drawableTint">@color/nav_item</item>
+        <item name="android:gravity">center</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:paddingVertical">7dp</item>
+        <item name="android:textColor">@color/nav_item</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:textFontWeight">600</item>
+    </style>
 </resources>

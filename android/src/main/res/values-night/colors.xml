@@ -1,10 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The desktop palette at night: the same olive tones, lifted for a dark background. -->
 <resources>
     <color name="bg">#181B19</color>
+    <color name="paper">#1F2320</color>
     <color name="ink">#EEF0E9</color>
     <color name="muted">#A0A69D</color>
+    <color name="eyebrow">#9AA58D</color>
+    <color name="soft_ink">#A6B391</color>
     <color name="green">#B5CF7A</color>
-    <color name="soft">#222720</color>
+    <color name="soft">#252A23</color>
     <color name="line">#2F352F</color>
+    <color name="field_line">#394038</color>
     <color name="warn">#E3A184</color>
+    <color name="selected">#33402A</color>
+    <color name="selected_ink">#D6E8A8</color>
+    <color name="nav_bg">#1C201D</color>
+    <color name="nav_ink">#99A194</color>
+    <color name="button">#DCF78B</color>
+    <color name="button_pressed">#C9E77A</color>
+    <color name="button_text">#1E251B</color>
+    <color name="button_icon">#3B5029</color>
+    <color name="switch_on">#8FAA58</color>
+    <color name="glow">#232A1F</color>
+    <color name="glow_edge">#1D221C</color>
+    <color name="glow_running">#2B3622</color>
+    <color name="orbit">#323A2F</color>
+    <color name="orbit_soft">#282E27</color>
+    <color name="ring">#7F9A4F</color>
+    <color name="ring_running">#A6C46A</color>
+    <color name="leaf_bg">#33402A</color>
+    <color name="leaf">#B5CF7A</color>
+    <color name="warm">#2A271F</color>
+    <color name="warm_line">#3D372A</color>
+    <color name="warm_ink">#D9C79A</color>
+    <color name="thought">#232920</color>
+    <color name="thought_ink">#B3C29A</color>
+    <color name="thought_line">#343D2F</color>
+    <color name="bar">#2C3329</color>
+    <color name="bar_today">#8FAA58</color>
 </resources>

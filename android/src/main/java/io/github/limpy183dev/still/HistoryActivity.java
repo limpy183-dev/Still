@@ -82,6 +82,7 @@ public final class HistoryActivity extends Activity {
         findViewById(R.id.history_export).setOnClickListener(v -> startActivityForResult(
                 new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json")
                         .putExtra(Intent.EXTRA_TITLE, "Still-sessions.json"), EXPORT));
+        Nav.attach(this, Nav.PROGRESS);
     }
 
     @Override
@@ -92,8 +93,24 @@ public final class HistoryActivity extends Activity {
 
     private void render() {
         records = Store.records(this);
+        renderStats();
         renderProgress();
         renderList();
+    }
+
+    /** .stats-row: all focus time, completed sessions, and the last seven days. */
+    private void renderStats() {
+        long now = System.currentTimeMillis(), total = 0;
+        int completed = 0;
+        for (History.Record r : records) {
+            total += History.focusMs(r, 0, now, now);
+            if ("completed".equals(r.outcome)) completed++;
+        }
+        double week = 0;
+        for (History.Day d : History.days(records, 7, LocalDate.now(), ZoneId.systemDefault(), now)) week += d.minutes;
+        ((TextView) findViewById(R.id.stat_total)).setText(History.readable(total / 60000));
+        ((TextView) findViewById(R.id.stat_completed)).setText(String.valueOf(completed));
+        ((TextView) findViewById(R.id.stat_week)).setText(History.readable((long) week));
     }
 
     private void renderProgress() {
@@ -127,6 +144,8 @@ public final class HistoryActivity extends Activity {
             rows.addView(text(R.style.Hint, getResources().getQuantityString(R.plurals.history_intention_meta, g.sessions,
                     g.sessions, shortDate(g.last), History.readable((long) g.minutes))));
             ProgressBar bar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+            bar.setProgressTintList(getColorStateList(R.color.ring_running));
+            bar.setProgressBackgroundTintList(getColorStateList(R.color.line));
             bar.setMax(1000);
             bar.setProgress((int) Math.max(1, g.minutes / top * 1000));
             bar.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
@@ -152,9 +171,10 @@ public final class HistoryActivity extends Activity {
     private View row(History.Record r) {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.VERTICAL);
-        row.setPadding(0, Math.round(12 * dp), 0, 0);
+        row.setPadding(0, Math.round(14 * dp), 0, Math.round(6 * dp));
+        row.setBackgroundResource(R.drawable.row_line);
         TextView title = text(R.style.Body, History.label(r));
-        title.setTypeface(Typeface.DEFAULT_BOLD);
+        title.setTypeface(Typeface.create(title.getTypeface(), 650, false));
         row.addView(title);
         long minutes = History.focusMs(r, 0, Long.MAX_VALUE, System.currentTimeMillis()) / 60000;
         row.addView(text(R.style.Hint, getString(R.string.history_meta, shortDate(r.startedAt), Store.time(this, r.startedAt),
@@ -173,7 +193,7 @@ public final class HistoryActivity extends Activity {
     }
 
     private Button button(int label, History.Record r, View.OnClickListener click) {
-        Button b = new Button(this, null, 0, R.style.Secondary);
+        Button b = new Button(this, null, 0, R.style.TextButton);
         b.setText(label);
         b.setContentDescription(getString(label) + ", " + History.label(r) + ", " + shortDate(r.startedAt));
         b.setOnClickListener(click);
@@ -230,7 +250,7 @@ public final class HistoryActivity extends Activity {
         Chart(Context c) {
             super(c);
             float dp = c.getResources().getDisplayMetrics().density;
-            bar.setColor(c.getColor(R.color.green));
+            bar.setColor(c.getColor(R.color.ring_running)); // .trend-bar
             empty.setColor(c.getColor(R.color.line));
             goalLine.setColor(c.getColor(R.color.muted));
             goalLine.setStyle(Paint.Style.STROKE);
@@ -251,7 +271,8 @@ public final class HistoryActivity extends Activity {
             for (float v : values) max = Math.max(max, v);
             for (int i = 0; i < values.length; i++) {
                 float top = h - Math.max(2, values[i] / max * h), left = i * slot + gap / 2;
-                canvas.drawRect(left, top, left + slot - gap, h, values[i] > 0 ? bar : empty);
+                float r = Math.min(4 * getResources().getDisplayMetrics().density, (slot - gap) / 2);
+                canvas.drawRoundRect(left, top, left + slot - gap, h + r, r, r, values[i] > 0 ? bar : empty); // Rounded top only.
             }
             float y = h - goal / max * h + goalLine.getStrokeWidth() / 2;
             canvas.drawLine(0, y, w, y, goalLine);

@@ -9,6 +9,9 @@ import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.view.Gravity;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -19,7 +22,7 @@ import java.time.LocalTime;
 /** Daily website limits and bedtime. Changes apply at once, whether or not a focus session is running. */
 public final class LimitsActivity extends Activity {
     private Limits limits;
-    private CheckBox bedtimeOn;
+    private CompoundButton bedtimeOn;
     private Button from, to;
     private EditText input;
 
@@ -43,6 +46,7 @@ public final class LimitsActivity extends Activity {
         findViewById(R.id.limit_add).setOnClickListener(v -> addTyped());
         input.setOnEditorActionListener((view, action, event) -> { addTyped(); return true; });
         render();
+        Nav.attach(this, Nav.LIMITS);
     }
 
     @Override
@@ -65,17 +69,15 @@ public final class LimitsActivity extends Activity {
 
         LinearLayout rows = findViewById(R.id.limit_rows);
         rows.removeAllViews();
-        int pad = Math.round(12 * getResources().getDisplayMetrics().density);
+        float dp = getResources().getDisplayMetrics().density;
+        int pad = Math.round(12 * dp);
         for (Limits.Site site : limits.sites()) {
             String summary = site.minutes > 0
                     ? getString(R.string.limit_summary_minutes, site.minutes, LimitStore.secondsUsed(this, site.domain) / 60)
                     : getString(R.string.limit_summary_none);
             if (site.bedtime) summary = getString(R.string.limit_summary_bedtime, summary);
-            TextView row = new TextView(this, null, 0, R.style.Body);
-            row.setText(getString(R.string.limit_row, site.domain, summary));
-            row.setPadding(0, pad, 0, pad);
-            row.setOnClickListener(v -> edit(site.domain, site.minutes, site.bedtime, true));
-            rows.addView(row);
+            rows.addView(row(site.domain, summary, dp));
+            rows.getChildAt(rows.getChildCount() - 1).setOnClickListener(v -> edit(site.domain, site.minutes, site.bedtime, true));
         }
         if (limits.sites().isEmpty()) {
             TextView none = new TextView(this, null, 0, R.style.Hint);
@@ -90,12 +92,48 @@ public final class LimitsActivity extends Activity {
             if (limits.find(domain) != null) continue;
             Button add = new Button(this, null, 0, R.style.Secondary);
             add.setText(getString(R.string.suggest_add, domain));
-            add.setAllCaps(false);
             add.setOnClickListener(v -> edit(domain, 30, true, false));
-            suggestions.addView(add);
+            LinearLayout.LayoutParams gap = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            gap.setMarginEnd(pad / 2);
+            suggestions.addView(add, gap);
         }
         boolean anySuggestion = suggestions.getChildCount() > 0;
         findViewById(R.id.suggestions_label).setVisibility(anySuggestion ? View.VISIBLE : View.GONE);
+    }
+
+    /** A website like .app-row: its initial in a soft tile, the name and today's use, and a chevron to edit. */
+    private View row(String domain, String summary, float dp) {
+        LinearLayout row = new LinearLayout(this);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setBackgroundResource(R.drawable.row_line);
+        int pad = Math.round(12 * dp);
+        row.setPadding(0, pad, 0, pad);
+        TextView tile = new TextView(this, null, 0, R.style.CardTitle);
+        tile.setText(domain.substring(0, 1).toUpperCase(java.util.Locale.ROOT));
+        tile.setTextColor(getColor(R.color.green));
+        tile.setGravity(Gravity.CENTER);
+        tile.setBackgroundResource(R.drawable.soft_box);
+        tile.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        int size = Math.round(38 * dp);
+        row.addView(tile, new LinearLayout.LayoutParams(size, size));
+        LinearLayout text = new LinearLayout(this);
+        text.setOrientation(LinearLayout.VERTICAL);
+        text.setPadding(pad, 0, pad, 0);
+        TextView name = new TextView(this, null, 0, R.style.Body);
+        name.setText(domain);
+        name.setTypeface(android.graphics.Typeface.create(name.getTypeface(), 650, false));
+        TextView detail = new TextView(this, null, 0, R.style.Hint);
+        detail.setText(summary);
+        text.addView(name);
+        text.addView(detail);
+        row.addView(text, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        android.widget.ImageView more = new android.widget.ImageView(this);
+        more.setImageResource(R.drawable.ic_chevron);
+        more.setImageTintList(getColorStateList(R.color.muted));
+        more.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        row.addView(more);
+        row.setContentDescription(getString(R.string.limit_row, domain, summary));
+        return row;
     }
 
     private void addTyped() {

@@ -1,104 +1,182 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:orientation="vertical">
 
-    <LinearLayout
+    <ScrollView
+        android:id="@+id/scroll"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
-
-        <TextView
-            style="@style/Title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/alerts_title" />
-
-        <TextView
-            style="@style/Hint"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/alerts_explain" />
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <LinearLayout
+            android:id="@+id/page"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/card"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="18dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp">
 
-            <TextView
-                style="@style/Label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/alerts_next" />
-
-            <TextView
-                android:id="@+id/alert_next_title"
-                style="@style/Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/alert_next_detail"
-                style="@style/Hint"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/alerts_warning"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/card"
-            android:orientation="vertical"
-            android:padding="16dp"
-            android:visibility="gone">
-
-            <TextView
-                android:id="@+id/alerts_warning_text"
-                style="@style/Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+            <include layout="@layout/page_heading" />
 
             <Button
-                android:id="@+id/alerts_warning_fix"
-                style="@style/Secondary"
-                android:layout_width="wrap_content"
+                android:id="@+id/alert_add"
+                style="@style/Primary"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/alerts_fix" />
+                android:layout_marginTop="16dp"
+                android:drawableStart="@drawable/ic_plus"
+                android:drawableEnd="@drawable/ic_arrow"
+                android:text="@string/alert_add" />
+
+            <!-- .alerts-overview -->
+            <LinearLayout
+                style="@style/Panel"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_gravity="top"
+                    android:background="@drawable/soft_box"
+                    android:importantForAccessibility="no"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_clock"
+                    android:tint="@color/leaf" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/Label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/alerts_next_eyebrow"
+                        android:textSize="10sp" />
+
+                    <TextView
+                        android:id="@+id/alert_next_title"
+                        style="@style/CardTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/alert_next_detail"
+                        style="@style/Hint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- .alert-protection-warning -->
+            <LinearLayout
+                android:id="@+id/alerts_warning"
+                style="@style/Panel"
+                android:background="@drawable/card_warm"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/alerts_warning_text"
+                    style="@style/Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/warm_ink" />
+
+                <Button
+                    android:id="@+id/alerts_warning_fix"
+                    style="@style/Secondary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/alerts_fix" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    style="@style/CardTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/alerts_list_title" />
+
+                <TextView
+                    android:id="@+id/alerts_total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/soft_box"
+                    android:gravity="center"
+                    android:minWidth="24dp"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="1dp"
+                    android:textColor="@color/green"
+                    android:textFontWeight="700"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/alerts_empty"
+                style="@style/Hint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/dashed"
+                android:gravity="center"
+                android:padding="24dp"
+                android:text="@string/alerts_empty" />
+
+            <LinearLayout
+                android:id="@+id/alert_rows"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <!-- .alerts-guidance -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/card_thought"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableStart="@drawable/ic_leaf_small"
+                    android:drawablePadding="8dp"
+                    android:drawableTint="@color/thought_ink"
+                    android:gravity="center_vertical"
+                    android:text="@string/alerts_guidance_title"
+                    android:textColor="@color/thought_ink"
+                    android:textFontWeight="700"
+                    android:textSize="14sp" />
+
+                <TextView
+                    style="@style/Hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/alerts_explain"
+                    android:textColor="@color/thought_ink" />
+            </LinearLayout>
         </LinearLayout>
+    </ScrollView>
 
-        <Button
-            android:id="@+id/alert_add"
-            style="@style/Primary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/alert_add" />
-
-        <TextView
-            android:id="@+id/alerts_empty"
-            style="@style/Hint"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:gravity="center"
-            android:text="@string/alerts_empty" />
-
-        <LinearLayout
-            android:id="@+id/alert_rows"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="vertical" />
-    </LinearLayout>
-</ScrollView>
+    <include layout="@layout/nav_bar" />
+</LinearLayout>
