@@ -11,7 +11,7 @@
     <a href="docs/user-guide.md">User guide</a>
   </p>
   <p>Windows 10 / 11 · x64 · No account required · MIT licensed</p>
-  <p><sub>Android version in preview, not released yet: <a href="docs/android.md">Still for Android</a></sub></p>
+  <p><sub>Also on Android 11+ as an early preview: <a href="https://stillfocus.fyi/download#android">download the APK</a> · <a href="docs/android.md">Still for Android</a></sub></p>
 </div>
 
 [![Still Focus space: a 50-minute timer, selected distractions, and an optional pause before ending early](docs/images/focus-space.png)](docs/images/focus-space.png)
@@ -41,6 +41,16 @@
 > **Windows requirements:** Updated Windows 10 version 2004+ or Windows 11, x64, Windows PowerShell 5.1, and .NET Framework 4.8. Still refuses domain-joined or detected MDM-managed PCs and PCs with existing application-control rules. See [protection and limits](docs/user-guide.md#protection-and-limits).
 
 The build is **not code-signed**, so SmartScreen may show a warning. If you downloaded the release from this repository and want to proceed, choose **More info → Run anyway**. [Installation, updates, and removal →](docs/user-guide.md#install)
+
+### On Android (preview)
+
+An early test build for Android 11 or newer, with sessions, app and website blocking, daily limits and bedtime, block screens, to-dos, history, and alerts. It isn't a finished release yet.
+
+1. Download `Still-Android-preview-<version>.apk` from the [latest release](https://github.com/limpy183-dev/Still/releases/latest) on your phone and open it.
+2. Open **Still Focus**, tap **Turn on app blocking**, and switch Still Focus on under Accessibility. If Android says the setting is restricted, open **App info → ⋮ → Allow restricted settings** and try again.
+3. Choose apps and websites, a duration, and an optional release delay, then tap **Start focus**.
+
+Newer previews install over the top and keep your data. Still refuses work profiles and managed phones, and Safe mode always switches its blocking off. [Still for Android →](docs/android.md)
 
 ## Take a look
 
@@ -141,9 +151,9 @@ Alerts work while Still is open or in the system tray. Quitting Still stops sche
 <details>
 <summary><strong>Is the lock unbreakable?</strong></summary>
 
-No app can guarantee an unbreakable lock against the administrator of the same PC. Administrators can change services, policies, accounts, or the clock. Other browsers, modified executables, and alternative websites can bypass some controls. Still is a focus aid, and its interface makes these limits visible.
+No app can guarantee an unbreakable lock against the administrator of the same PC. Administrators can change services, policies, accounts, or the clock. Other browsers, modified executables, and alternative websites can bypass some controls. Still is a focus aid, and its interface makes these limits visible. The same goes for phones: Safe mode, a factory reset, or USB debugging get around the Android preview.
 
-[Windows protection limits](docs/user-guide.md#protection-and-limits) · [Browser protection limits](docs/website-blocking.md#enforcement-and-recovery) · [Recovery and removal](docs/user-guide.md#recovery-and-removal)
+[Windows protection limits](docs/user-guide.md#protection-and-limits) · [Android limits](docs/android.md#limits) · [Browser protection limits](docs/website-blocking.md#enforcement-and-recovery) · [Recovery and removal](docs/user-guide.md#recovery-and-removal)
 
 </details>
 
