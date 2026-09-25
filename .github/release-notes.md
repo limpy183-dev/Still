@@ -1,3 +1,7 @@
+## What's new in v1.0.4
+
+- **Android preview.** An early test build of Still for Android (Android 11+) is attached below as `Still-Android-preview-1.0.4.apk`. No changes to the Windows app.
+
 ## What's new in v1.0.3
 
 - **Select and move to-dos.** Hold a line in your to-do list (or right-click it) to enter selection mode. Select a few lines, or **Select all**, and delete them together; **Undo delete** puts them back.
