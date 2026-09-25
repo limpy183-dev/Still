@@ -108,7 +108,7 @@
 
     <section class="panel doc-section" id="browser" data-reveal>
       <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-globe"/></svg></span>Browser companion</h2>
-      <p>The companion uses Chrome and Edge’s native request rules. It doesn’t upload browsing history, and its native host waits on filesystem notifications rather than scanning tabs or polling URLs. Time limits count only the active tab of a focused window.</p>
+      <p>The companion uses Chrome and Edge’s native request rules. It doesn’t upload browsing history, and its native host waits on filesystem notifications rather than scanning tabs or polling URLs. For time limits, the companion checks the addresses of your open tabs every 30 seconds, on your PC only, and counts time while a limited website is open in any tab.</p>
       <p>No TLS interception, root certificate, network proxy or DNS change is ever used.</p>
     </section>
 
