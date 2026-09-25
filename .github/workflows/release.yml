@@ -33,13 +33,20 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      # ponytail: debug-signed preview APK; switch to a signed assembleRelease once a release key exists.
       - name: Build Android preview APK
         working-directory: android
+        env:
+          ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+          STILL_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
-          ./gradlew.bat testDebugUnitTest assembleDebug
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Copy-Item build/outputs/apk/debug/Still-debug.apk "../release/Still-Android-preview-$($env:GITHUB_REF_NAME.TrimStart('v')).apk"
+          if (-not $env:ANDROID_KEYSTORE -or -not $env:STILL_KEYSTORE_PASSWORD) { throw "Add the ANDROID_KEYSTORE and ANDROID_KEYSTORE_PASSWORD repository secrets." }
+          $env:STILL_KEYSTORE = "$env:RUNNER_TEMP\still-release.jks"
+          [IO.File]::WriteAllBytes($env:STILL_KEYSTORE, [Convert]::FromBase64String($env:ANDROID_KEYSTORE))
+          ./gradlew.bat testDebugUnitTest assembleRelease
+          $code = $LASTEXITCODE
+          Remove-Item $env:STILL_KEYSTORE
+          if ($code -ne 0) { exit $code }
+          Copy-Item build/outputs/apk/release/Still-release.apk "../release/Still-Android-preview-$($env:GITHUB_REF_NAME.TrimStart('v')).apk"
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}

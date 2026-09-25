@@ -2,7 +2,7 @@
 
 [← Back to the overview](../README.md) · [User guide](user-guide.md) · [Development](development.md)
 
-A native Android version of Still's focus sessions, in [`android/`](../android). So far: sessions, app and website blocking, a release delay, strict protection, the managed-phone check, daily website limits with bedtime, block screens, the to-do list, session history and alerts. There is no release build yet.
+A native Android version of Still's focus sessions, in [`android/`](../android). So far: sessions, app and website blocking, a release delay, strict protection, the managed-phone check, daily website limits with bedtime, block screens, the to-do list, session history and alerts. Each [GitHub release](https://github.com/limpy183-dev/Still/releases/latest) includes a signed preview APK (`Still-Android-preview-X.Y.Z.apk`) for testing; it isn't a finished release.
 
 Android 11 or newer. It is written in plain Java against the Android framework, with no libraries, so the release APK is about 260 KB, most of it the Manrope typeface.
 

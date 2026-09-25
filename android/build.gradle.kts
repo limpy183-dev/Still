@@ -13,8 +13,19 @@ android {
         versionCode = 1
         versionName = "0.1.0"
     }
+    // Release signing comes from the environment (set by the release workflow), so the key never lives in the repo.
+    val keystore = System.getenv("STILL_KEYSTORE")
+    signingConfigs {
+        if (keystore != null) create("release") {
+            storeFile = file(keystore)
+            storePassword = System.getenv("STILL_KEYSTORE_PASSWORD")
+            keyAlias = "still"
+            keyPassword = System.getenv("STILL_KEYSTORE_PASSWORD")
+        }
+    }
     buildTypes {
         release {
+            if (keystore != null) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
