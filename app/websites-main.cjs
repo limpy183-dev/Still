@@ -72,8 +72,10 @@ function setupWebsites({ handle, getWindow }) {
     const hostFile = path.join(directory, 'native-host.json');
     const reg = path.join(process.env.SystemRoot, 'System32', 'reg.exe');
     for (const browser of ['Google\\Chrome', 'Microsoft\\Edge']) await execute(reg, ['add', `HKCU\\Software\\${browser}\\NativeMessagingHosts\\app.still.focus`, '/ve', '/t', 'REG_SZ', '/d', hostFile, '/f'], { windowsHide: true });
-    const error = await shell.openPath(directory); if (error) throw Error(error);
-    return directory;
+    // With a store listing the folder is only a fallback, so don't pop it open.
+    const store = storeIds.length ? `https://chromewebstore.google.com/detail/${storeIds[0]}` : '';
+    if (!store) { const error = await shell.openPath(directory); if (error) throw Error(error); }
+    return { directory, store };
   });
   // After an update, bring an already set-up companion up to date without asking the user to set it up again.
   return fs.access(directory).then(copyCompanion, () => {}).catch(error => console.warn('Browser companion refresh:', error.message));
