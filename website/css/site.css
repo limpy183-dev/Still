@@ -820,8 +820,8 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 /* ——— Screenshot gallery + lightbox ——— */
 .gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
 .shot{display:block;width:100%;padding:12px;text-align:left;cursor:zoom-in}
-.shot .frame{overflow:hidden;border-radius:12px;border:1px solid var(--line);background:var(--bg);aspect-ratio:16/10}
-.shot img{width:100%;height:100%;object-fit:cover;object-position:top left;transition:transform .8s var(--ease-out)}
+.shot .frame{display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:12px;border:1px solid var(--line);background:var(--bg);aspect-ratio:16/10}
+.shot img{width:100%;height:100%;object-fit:contain;object-position:center;transition:transform .8s var(--ease-out)}
 .shot:hover img{transform:scale(1.035)}
 .shot b{display:block;font-size:15.5px;margin:14px 6px 2px}
 .shot small{display:block;font-size:13.5px;color:#8a9281;margin:0 6px 4px}
