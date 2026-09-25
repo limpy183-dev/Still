@@ -4,7 +4,7 @@
   <p><strong>Your time. On purpose.</strong></p>
   <p>A quieter space for your attention.<br />Block distracting apps and websites, make a little plan, and settle into focus.</p>
   <p>
-    <a href="https://limpy183-dev.github.io/Still/">Website</a> ·
+    <a href="https://stillfocus.fyi/home">Website</a> ·
     <a href="https://github.com/limpy183-dev/Still/releases/latest"><strong>Download for Windows</strong></a> ·
     <a href="#get-started">Get started</a> ·
     <a href="#take-a-look">Screenshots</a> ·
@@ -148,7 +148,7 @@ No app can guarantee an unbreakable lock against the administrator of the same P
 
 ## Build and explore
 
-The [Still website](https://limpy183-dev.github.io/Still/) is served from `website/` by GitHub Pages. Changes to that folder on `main` deploy automatically through the **Deploy website** workflow; it can also be run manually from Actions. The site uses plain HTML, CSS, and JavaScript, with no install or build step. In repository **Settings → Pages**, the publishing source must be **GitHub Actions**. The custom 404 page uses the `/Still/` project path; update its links if the repository is renamed or moved to a custom domain.
+The [Still website](https://stillfocus.fyi/home) is served from `website/` by GitHub Pages. Changes to that folder on `main` deploy automatically through the **Deploy website** workflow; it can also be run manually from Actions. The site uses plain HTML, CSS, and JavaScript, with no install or build step. In repository **Settings → Pages**, the publishing source must be **GitHub Actions**. It is served at the custom domain `stillfocus.fyi` with clean URLs (`/home`, `/guide`, `/privacy`, ...): pages are linked without `.html`, and `index.html` only redirects to `/home`.
 
 Still combines an **Electron interface**, a **C# Windows service**, **PowerShell AppLocker integration**, and a **Chrome / Edge companion**.
 
@@ -171,7 +171,7 @@ Free code signing provided by [SignPath.io](https://about.signpath.io), certific
 - Committers and reviewers: [limpy183-dev](https://github.com/limpy183-dev), [adambelalxd](https://github.com/adambelalxd)
 - Approvers: [limpy183-dev](https://github.com/limpy183-dev), [adambelalxd](https://github.com/adambelalxd)
 
-Only Still's own binaries are signed, built by the [release workflow](.github/workflows/release.yml) from this repository, and each release is approved by hand. Privacy: this program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. See the [privacy page](https://limpy183-dev.github.io/Still/privacy.html).
+Only Still's own binaries are signed, built by the [release workflow](.github/workflows/release.yml) from this repository, and each release is approved by hand. Privacy: this program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. See the [privacy page](https://stillfocus.fyi/privacy).
 
 ---
 
