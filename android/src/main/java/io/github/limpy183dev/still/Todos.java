@@ -101,6 +101,12 @@ final class Todos {
         if (items.isEmpty()) items.add(new Item("checkbox", "", false));
     }
 
+    /** Dragging a line's handle: out-of-range moves are ignored, like moveTodo on Windows. */
+    void move(int from, int to) {
+        if (from < 0 || from >= items.size() || to < 0 || to >= items.size()) return;
+        items.add(to, items.remove(from));
+    }
+
     void toggle(int index) {
         Item item = items.get(index);
         if (isTask(item.type)) item.done = !item.done;

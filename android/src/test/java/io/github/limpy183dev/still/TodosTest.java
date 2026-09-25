@@ -94,6 +94,16 @@ public class TodosTest {
         assertEquals(5, cursor);
     }
 
+    @Test public void movingALineKeepsTheOthersInOrder() {
+        Todos t = list(new Todos.Item("note", "a", false), new Todos.Item("note", "b", false), new Todos.Item("note", "c", false));
+        t.move(0, 2);
+        assertEquals("b", t.items.get(0).text);
+        assertEquals("c", t.items.get(1).text);
+        assertEquals("a", t.items.get(2).text);
+        t.move(2, 3); t.move(-1, 0); // Past either end: nothing moves.
+        assertEquals("a", t.items.get(2).text);
+    }
+
     @Test public void theListCapsAt500Lines() {
         Todos t = list();
         while (t.items.size() < Todos.MAX_LINES) assertTrue(t.add(t.items.size(), "checkbox", ""));

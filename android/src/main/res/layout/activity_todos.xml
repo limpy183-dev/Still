@@ -23,8 +23,11 @@
 
             <include layout="@layout/page_heading" />
 
-            <!-- .todo-paper -->
-            <LinearLayout style="@style/Panel">
+            <!-- .todo-paper. Unclipped so a lifted line (a little larger) shows whole, with its shadow. -->
+            <LinearLayout
+                style="@style/Panel"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -56,6 +59,7 @@
                     android:id="@+id/todo_rows"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:clipChildren="false"
                     android:orientation="vertical" />
 
                 <Button

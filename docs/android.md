@@ -69,6 +69,7 @@ Open **To-dos** from the bar at the bottom, during a session or not. It works li
 - **Formats:** type `/` at the start of a line or after a space to turn it into a checkbox, tick circle, bullet, numbered item, heading or note. The menu filters as you type ("/che", "/note"). Choosing a format removes the `/…` you typed.
 - **Enter:** the keyboard's Next key (or Enter on a hardware keyboard) starts a new line with the text after the cursor, in the same format; a heading is followed by a checkbox.
 - **Removing lines:** Backspace on an empty line removes it, and ✕ deletes any line. The list always keeps at least one line.
+- **Moving lines:** drag a line's ⌃⌄ handle up or down. The line lifts and grows a little, the other lines glide out of its way, and it settles back when you let go, like on Windows. With TalkBack, use the handle's **Move up** and **Move down** actions.
 - **Progress and limits:** checkboxes and tick circles count towards "N OF M COMPLETE". The list holds 500 lines of up to 2,000 characters.
 - **Saving:** edits save automatically, at most every 0.4 seconds while typing and when you leave the screen. They use the same JSON shape as `todos` in the Windows preferences.
 
@@ -167,6 +168,7 @@ adb shell settings put secure enabled_accessibility_services io.github.limpy183d
 
 The Android app isn't released yet, so its changes are listed here rather than on the website changelog.
 
+- **Moving to-dos (2026-09-25, v1.0.7).** Drag a line's ⌃⌄ handle to move it, with the same lift, glide and settle animation as the Windows list.
 - **The desktop look, and a bottom bar (2026-09-25).** Every page now uses the Windows app's design and wording: Manrope, the olive palette, paper panels, the timer ring with orbits and a floating leaf, 25/50/90-minute presets, the status pill, *Space you made today* and the reminder card, in light and dark themes. The pages moved from buttons on the main screen to a bar at the bottom (Focus, To-dos, Alerts, Limits, Progress). Progress gained total, completed and this-week figures. Page entrances, the breathing glow, the pulsing status and button presses are animated, and respect *Remove animations*.
 - **Alerts and session history (2026-09-25).** Reminders and full alarms, alert-started sessions, and the Your progress page.
 - **To-do list, block screens, daily limits and bedtime (2026-09-24–25).**

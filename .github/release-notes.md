@@ -1,3 +1,7 @@
+## What's new in v1.0.7
+
+- **Android preview: move your to-dos.** Drag a line's ⌃⌄ handle up or down. It lifts and grows a little, the other lines glide out of its way, and it settles back when you let go, just like on Windows. TalkBack users get **Move up** and **Move down** actions. Download `Still-Android-preview-1.0.7.apk` below. No changes to the Windows app.
+
 ## What's new in v1.0.6
 
 - **Smoother to-do moving.** When you drag a to-do, the line lifts and grows slightly so you can see it's being moved, the other lines glide out of its way, and it settles back to its normal size when you drop it. Moving with the arrow keys glides too. (Turned off when Windows "Animation effects" or Still's reduced motion is on.)

@@ -14,8 +14,12 @@ import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.animation.PathInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
@@ -35,11 +39,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /** The to-do list. Edits save automatically, including during focus sessions, like on Windows. */
 public final class TodosActivity extends Activity {
-    private static final long SAVE_DELAY_MS = 400;
+    private static final long SAVE_DELAY_MS = 400, GLIDE_MS = 200, LIFT_MS = 150;
+    private static final float LIFT_SCALE = 1.03f; // Like .todo-row.dragging on Windows.
+    private static final PathInterpolator GLIDE = new PathInterpolator(.2f, .8f, .2f, 1f); // Windows: cubic-bezier(.2,.8,.2,1).
 
     private final Todos todos = new Todos();
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -51,6 +59,7 @@ public final class TodosActivity extends Activity {
     private EditText menuInput;
     private Todos.Item menuItem;
     private float dp;
+    private View dragRow;
 
     /** Same JSON shape as prefs.todos on Windows, and the same limits as validatePreferences. */
     static List<Todos.Item> load(Context c) {
@@ -134,6 +143,7 @@ public final class TodosActivity extends Activity {
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setMinimumHeight(Math.round(52 * dp));
         row.setBackgroundResource(R.drawable.row_line);
+        row.setTag(item); // Rows are matched to lines by this when they glide.
         boolean task = Todos.isTask(item.type), heading = "heading".equals(item.type);
 
         View mark;
@@ -205,6 +215,8 @@ public final class TodosActivity extends Activity {
         });
         row.addView(input, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
 
+        row.addView(handle(row, item, index), new LinearLayout.LayoutParams(Math.round(36 * dp), Math.round(48 * dp)));
+
         ImageButton delete = new ImageButton(this);
         delete.setImageResource(R.drawable.ic_close);
         delete.setImageTintList(getColorStateList(R.color.muted));
@@ -221,6 +233,121 @@ public final class TodosActivity extends Activity {
         row.addView(delete, new LinearLayout.LayoutParams(Math.round(48 * dp), Math.round(48 * dp)));
         styleDone(row, item);
         return row;
+    }
+
+    /** The ⌃⌄ handle: drag it to move the line, or use the move up/down accessibility actions. */
+    private View handle(LinearLayout row, Todos.Item item, int index) {
+        ImageButton handle = new ImageButton(this);
+        handle.setTag("handle");
+        handle.setImageResource(R.drawable.ic_move);
+        handle.setImageTintList(getColorStateList(R.color.muted));
+        handle.setScaleType(ImageView.ScaleType.CENTER);
+        handle.setBackground(null);
+        handle.setContentDescription(getString(R.string.todo_move, index + 1));
+        handle.setOnTouchListener((v, e) -> {
+            switch (e.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN: lift(row); return true;
+                case MotionEvent.ACTION_MOVE: dragTo(e.getRawY()); return true;
+                case MotionEvent.ACTION_UP: case MotionEvent.ACTION_CANCEL: drop(); return true;
+                default: return false;
+            }
+        });
+        handle.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.addAction(new AccessibilityNodeInfo.AccessibilityAction(R.id.todo_move_up, getString(R.string.todo_move_up)));
+                info.addAction(new AccessibilityNodeInfo.AccessibilityAction(R.id.todo_move_down, getString(R.string.todo_move_down)));
+            }
+            @Override public boolean performAccessibilityAction(View host, int action, Bundle args) {
+                if (action != R.id.todo_move_up && action != R.id.todo_move_down) return super.performAccessibilityAction(host, action, args);
+                int from = todos.items.indexOf(item), to = from + (action == R.id.todo_move_up ? -1 : 1);
+                if (to < 0 || to >= todos.items.size()) return false;
+                glide(() -> { todos.move(from, to); render(-1, 0); });
+                changed();
+                rows.getChildAt(to).findViewWithTag("handle").performAccessibilityAction(AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null);
+                return true;
+            }
+        });
+        return handle;
+    }
+
+    /** Picks a line up: it grows a little and lifts above the others while it's being moved. */
+    private void lift(View row) {
+        if (menu != null) menu.dismiss();
+        View focused = getCurrentFocus();
+        if (focused != null) focused.clearFocus();
+        row.getParent().requestDisallowInterceptTouchEvent(true); // The page doesn't scroll while dragging.
+        dragRow = row;
+        row.setBackgroundColor(getColor(R.color.paper));
+        row.animate().scaleX(LIFT_SCALE).scaleY(LIFT_SCALE).translationZ(8 * dp).setDuration(LIFT_MS);
+    }
+
+    /**
+     * The lifted line goes before the first other line whose middle is below the finger.
+     * Layout positions (getTop) ignore the glide, so lines don't flicker while they move.
+     * ponytail: no auto-scroll at the screen's edge; add it if long lists need it.
+     */
+    private void dragTo(float rawY) {
+        if (dragRow == null) return;
+        int[] at = new int[2];
+        rows.getLocationOnScreen(at);
+        float y = rawY - at[1];
+        int to = 0;
+        for (int i = 0; i < rows.getChildCount(); i++) {
+            View row = rows.getChildAt(i);
+            if (row != dragRow && y > row.getTop() + row.getHeight() / 2f) to++;
+        }
+        int target = to;
+        if (target == rows.indexOfChild(dragRow)) return;
+        // Moves the neighbours rather than the lifted line, which would lose the finger if it were detached.
+        glide(() -> {
+            int from;
+            while ((from = rows.indexOfChild(dragRow)) != target) {
+                View other = rows.getChildAt(from < target ? from + 1 : from - 1);
+                rows.removeView(other);
+                rows.addView(other, from);
+            }
+        });
+    }
+
+    /** Lets go: the line settles back to its normal size in its new place. */
+    private void drop() {
+        if (dragRow == null) return;
+        View dropped = dragRow;
+        dragRow = null;
+        int from = todos.items.indexOf((Todos.Item) dropped.getTag()), to = rows.indexOfChild(dropped);
+        glide(() -> { todos.move(from, to); render(-1, 0); }); // Renumbers the lines.
+        View settled = rows.getChildAt(to);
+        settled.setScaleX(dropped.getScaleX());
+        settled.setScaleY(dropped.getScaleY());
+        settled.setTranslationZ(dropped.getTranslationZ());
+        settled.setBackgroundColor(getColor(R.color.paper)); // Its shadow needs a solid shape until it lands.
+        settled.animate().scaleX(1).scaleY(1).translationZ(0).setDuration(GLIDE_MS)
+            .withEndAction(() -> settled.setBackgroundResource(R.drawable.row_line));
+        if (from != to) changed();
+    }
+
+    /** Rows glide from where they were drawn to their new place (FLIP), even mid-glide, like the Windows list. */
+    private void glide(Runnable change) {
+        Map<Object, Float> before = new HashMap<>();
+        for (int i = 0; i < rows.getChildCount(); i++) {
+            View row = rows.getChildAt(i);
+            before.put(row.getTag(), row.getTop() + row.getTranslationY());
+        }
+        change.run();
+        rows.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override public boolean onPreDraw() {
+                rows.getViewTreeObserver().removeOnPreDrawListener(this);
+                for (int i = 0; i < rows.getChildCount(); i++) {
+                    View row = rows.getChildAt(i);
+                    Float top = before.get(row.getTag());
+                    if (top == null || top == row.getTop()) continue;
+                    row.setTranslationY(top - row.getTop());
+                    row.animate().translationY(0).setDuration(GLIDE_MS).setInterpolator(GLIDE);
+                }
+                return true;
+            }
+        });
     }
 
     /** Enter: the text after the cursor moves to a new line. */
