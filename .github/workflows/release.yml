@@ -20,6 +20,13 @@ jobs:
         run: |
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
           if ("v$version" -ne $env:GITHUB_REF_NAME) { throw "Tag $env:GITHUB_REF_NAME does not match package.json version $version." }
+      - name: Check release notes cover only this version
+        run: |
+          $notes = Get-Content .github/release-notes.md -Raw
+          $headings = @([regex]::Matches($notes, '(?m)^## What''s new in (v[^\r\n]+)\r?$'))
+          if ($headings.Count -ne 1 -or $headings[0].Groups[1].Value -ne $env:GITHUB_REF_NAME) {
+            throw "Release notes must have exactly one 'What's new in $env:GITHUB_REF_NAME' section."
+          }
       - run: npm ci
       - run: npm test
       - run: npm run dist

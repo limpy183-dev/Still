@@ -29,7 +29,7 @@ Still is a Windows 10/11 x64 focus app. It blocks apps (through AppLocker) and w
 ## Releasing a new version
 
 1. Bump `version` in `package.json` (and `package-lock.json`).
-2. **GitHub release notes:** edit `.github/release-notes.md`. The release workflow passes it as the release body, and `--generate-notes` appends the commit list. Add or replace a short "What's new in vX.Y.Z" section at the top and keep the install instructions.
+2. **GitHub release notes:** edit `.github/release-notes.md`. Replace the previous "What's new" section with a short "What's new in vX.Y.Z" section for this release only; keep the install instructions. The release workflow checks that the file has exactly one matching version section, passes it as the release body, and `--generate-notes` appends the commit list.
 3. **Website changelog** (https://stillfocus.fyi/changelog, `website/changelog.html`):
    - Add a new `<article class="panel release latest" data-tag="vX.Y.Z">` at the top of `#releases`, with a date, a plain-language bullet list, and download/GitHub links in the same format as the existing entries.
    - Remove `latest`, the "Latest" pill and the primary download button from the previous entry.
