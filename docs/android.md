@@ -6,6 +6,15 @@ A native Android version of Still's focus sessions, in [`android/`](../android).
 
 Android 11 or newer. It is written in plain Java against the Android framework, with no libraries, so the release APK is about 260 KB, most of it the Manrope typeface.
 
+<p>
+  <img src="images/android-focus.png" alt="The Focus page: a 50-minute timer ring, presets and your intention" width="200" />
+  <img src="images/android-todos.png" alt="The to-do list with a heading, checkboxes, a tick circle and a note" width="200" />
+  <img src="images/android-limits.png" alt="Daily website limits and a 22:30 to 07:00 bedtime" width="200" />
+  <img src="images/android-progress.png" alt="Your progress: total focus, completed sessions and daily focus bars" width="200" />
+</p>
+
+*Screenshots from the Android emulator with sample data.*
+
 ## Look and navigation
 
 The phone app uses the Windows app's design, fitted to a phone: the same Manrope typeface, quiet olive palette, paper panels, dark primary button and wording, with a dark theme that follows the phone's setting. A bar at the bottom holds the pages from the Windows sidebar: **Focus**, **To-dos**, **Alerts**, **Limits** and **Progress**. Back from any page returns to Focus; tapping the page you're on scrolls it to the top. The bar steps aside while the keyboard is open.

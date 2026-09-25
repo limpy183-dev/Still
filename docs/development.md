@@ -50,6 +50,8 @@ The UI test covers selection, search, saved groups, setup, active-session immuta
 
 Run `npm run test:ui`, `npm run test:todos`, and `node tests/websites-ui.cjs` on Windows. These checks use isolated demo data and never block real apps or websites. Inspect the resulting images in `test-results/`, then copy `focus-space.png`, `active-session.png`, `todos.png`, and `website-limits.png` into `docs/images/`. Keep the preview banner visible so screenshots are clearly identified as demo mode.
 
+The Android screenshots (`docs/images/android-*.png`, copied to `website/assets/screens/`) come from the `Still_Pixel` emulator with the debug build and sample data. Back up the app's `files/` and `shared_prefs/` with `adb exec-out run-as io.github.limpy183dev.still tar -cf - files shared_prefs`, write sample `todos.xml`, `prefs.xml`, `limits.xml` and `files/state.json` in the same way, use Android's status-bar demo mode (`sysui_demo_allowed`), capture with `adb exec-out screencap -p`, resize to 540 px wide, then restore the backup.
+
 During the September 24, 2026 documentation refresh, the to-do and website UI checks passed. The focus UI check produced the focus screenshots but timed out waiting for natural session expiry; that run does not establish a passing end-to-end focus workflow.
 
 ## Releasing

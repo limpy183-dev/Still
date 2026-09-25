@@ -46,6 +46,13 @@ The build is **not code-signed**, so SmartScreen may show a warning. If you down
 
 An early test build for Android 11 or newer, with sessions, app and website blocking, daily limits and bedtime, block screens, to-dos, history, and alerts. It isn't a finished release yet.
 
+<p>
+  <a href="docs/images/android-focus.png"><img src="docs/images/android-focus.png" alt="Still for Android: the Focus page" width="180" /></a>
+  <a href="docs/images/android-todos.png"><img src="docs/images/android-todos.png" alt="Still for Android: the to-do list" width="180" /></a>
+  <a href="docs/images/android-limits.png"><img src="docs/images/android-limits.png" alt="Still for Android: daily limits and bedtime" width="180" /></a>
+  <a href="docs/images/android-progress.png"><img src="docs/images/android-progress.png" alt="Still for Android: your progress" width="180" /></a>
+</p>
+
 1. Download `Still-Android-preview-<version>.apk` from the [latest release](https://github.com/limpy183-dev/Still/releases/latest) on your phone and open it.
 2. Open **Still Focus**, tap **Turn on app blocking**, and switch Still Focus on under Accessibility. If Android says the setting is restricted, open **App info → ⋮ → Allow restricted settings** and try again.
 3. Choose apps and websites, a duration, and an optional release delay, then tap **Start focus**.
