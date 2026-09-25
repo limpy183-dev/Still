@@ -51,7 +51,7 @@ function setupWebsites({ handle, getWindow }) {
   });
   const directory = path.join(app.getPath('userData'), 'browser-companion');
   // Store-published companion IDs (npm run build:extension packs it). Add each ID once the store assigns it.
-  const storeIds = [];
+  const storeIds = ['gkkjcgapilgkjafncmbkgcijnoijgejb'];
   async function copyCompanion() {
     await fs.mkdir(path.join(directory, 'icons'), { recursive: true });
     // Copy files individually: Electron's Windows ASAR support cannot recursively cp a directory.
