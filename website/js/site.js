@@ -489,7 +489,11 @@
       if (!e.isIntersecting) return;
       links.forEach(a => a.classList.remove('on'));
       const a = map.get(e.target.id); a?.classList.add('on');
-      if (a && navEl.scrollWidth > navEl.clientWidth) a.scrollIntoView({ block: 'nearest', inline: 'center', behavior: reduced ? 'auto' : 'smooth' });
+      if (a && navEl.scrollWidth > navEl.clientWidth) {
+        // Scroll only the tab strip; scrollIntoView also moves the page vertically.
+        const tab = a.getBoundingClientRect(), nav = navEl.getBoundingClientRect();
+        navEl.scrollBy({ left: tab.left - nav.left + tab.width / 2 - navEl.clientWidth / 2, behavior: reduced ? 'auto' : 'smooth' });
+      }
     }), { rootMargin: '-35% 0px -60% 0px' });
     map.forEach((_, id) => { const s = document.getElementById(id); if (s) spy.observe(s); });
   });
