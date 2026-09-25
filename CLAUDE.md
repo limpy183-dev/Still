@@ -1,6 +1,6 @@
 # Still: notes for agents
 
-Still is a Windows 10/11 x64 focus app. It blocks apps (through AppLocker) and websites (through a Chrome/Edge companion), and it also has to-dos, alerts and session history. Repo: `limpy183-dev/Still`. Website: https://limpy183-dev.github.io/Still/
+Still is a Windows 10/11 x64 focus app. It blocks apps (through AppLocker) and websites (through a Chrome/Edge companion), and it also has to-dos, alerts and session history. Repo: `limpy183-dev/Still`. Website: https://stillfocus.fyi/home
 
 ## The suite
 
@@ -30,7 +30,7 @@ Still is a Windows 10/11 x64 focus app. It blocks apps (through AppLocker) and w
 
 1. Bump `version` in `package.json` (and `package-lock.json`).
 2. **GitHub release notes:** edit `.github/release-notes.md`. The release workflow passes it as the release body, and `--generate-notes` appends the commit list. Add or replace a short "What's new in vX.Y.Z" section at the top and keep the install instructions.
-3. **Website changelog** (https://limpy183-dev.github.io/Still/changelog.html, `website/changelog.html`):
+3. **Website changelog** (https://stillfocus.fyi/changelog, `website/changelog.html`):
    - Add a new `<article class="panel release latest" data-tag="vX.Y.Z">` at the top of `#releases`, with a date, a plain-language bullet list, and download/GitHub links in the same format as the existing entries.
    - Remove `latest`, the "Latest" pill and the primary download button from the previous entry.
 4. **Website version everywhere:** update `FALLBACK` in `website/js/site.js` (version, date, size, url, sha256 of the new `Still-Setup-X.Y.Z.exe`). Also update the hardcoded `data-version` / `data-size` / `data-date` fallback text in every `website/*.html`, including the titlebar on every page and `404.html`. You can find them with `grep -rn "1\.0\.1" website` (swap in the old version). JS refreshes these from the GitHub API at runtime, but the static text has to be right for when it can't reach GitHub.

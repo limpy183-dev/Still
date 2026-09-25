@@ -14,4 +14,4 @@ Still isn't code-signed yet, so Windows SmartScreen may show "Windows protected 
 
 Requires Windows 10 version 2004+ or Windows 11 (x64).
 
-Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org). See the [code signing policy](https://limpy183-dev.github.io/Still/download.html#code-signing).
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org). See the [code signing policy](https://stillfocus.fyi/download#code-signing).
