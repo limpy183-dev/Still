@@ -39,7 +39,14 @@ svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke
 .titlebar a{display:inline-flex;align-items:center;gap:8px;color:#5f6d4c;transition:color .2s}
 .titlebar a:hover{color:var(--ink)}
 .titlebar .tiny-dot{width:5px;height:5px;background:var(--green-2);animation:pulse 2.4s infinite}
-.titlebar .window-dots{display:flex;gap:18px;letter-spacing:0;font-size:14px;color:#9aa096}
+.titlebar .window-dots{display:flex;align-items:center;gap:18px;color:#9aa096}
+/* Glyphs sit at different heights per font, so draw the controls instead */
+.titlebar .window-dots span{position:relative;width:10px;height:10px;font-size:0}
+.titlebar .window-dots span::before,.titlebar .window-dots span::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+.titlebar .window-dots span:nth-child(1)::before{width:10px;height:1.5px;background:currentColor}
+.titlebar .window-dots span:nth-child(2)::before{width:9px;height:9px;border:1.5px solid currentColor;box-sizing:border-box}
+.titlebar .window-dots span:nth-child(3)::before,.titlebar .window-dots span:nth-child(3)::after{width:12px;height:1.5px;background:currentColor;transform:translate(-50%,-50%) rotate(45deg)}
+.titlebar .window-dots span:nth-child(3)::after{transform:translate(-50%,-50%) rotate(-45deg)}
 
 /* ——— Header ——— */
 .site-header{position:sticky;top:0;z-index:100;transition:background .35s,box-shadow .35s,backdrop-filter .35s}
