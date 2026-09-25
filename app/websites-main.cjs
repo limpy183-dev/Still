@@ -50,6 +50,8 @@ function setupWebsites({ handle, getWindow }) {
     throw Error('Choose a smaller image.');
   });
   const directory = path.join(app.getPath('userData'), 'browser-companion');
+  // Store-published companion IDs (npm run build:extension packs it). Add each ID once the store assigns it.
+  const storeIds = [];
   async function copyCompanion() {
     await fs.mkdir(path.join(directory, 'icons'), { recursive: true });
     // Copy files individually: Electron's Windows ASAR support cannot recursively cp a directory.
@@ -60,13 +62,14 @@ function setupWebsites({ handle, getWindow }) {
     const manifest = { ...JSON.parse(await fs.readFile(path.join(source, 'manifest.json'), 'utf8')), version_name: app.getVersion() };
     await fs.writeFile(path.join(directory, 'manifest.json.tmp'), JSON.stringify(manifest, null, 2));
     await fs.rename(path.join(directory, 'manifest.json.tmp'), path.join(directory, 'manifest.json'));
-    return manifest;
+    // Rewritten on every refresh so an update's new store IDs reach users who set up earlier.
+    const id = require('node:crypto').createHash('sha256').update(Buffer.from(manifest.key, 'base64')).digest('hex').slice(0, 32).replace(/[0-9a-f]/g, digit => String.fromCharCode(97 + parseInt(digit, 16)));
+    const origins = [id, ...storeIds].map(extension => `chrome-extension://${extension}/`);
+    await fs.writeFile(path.join(directory, 'native-host.json'), JSON.stringify({ name: 'app.still.focus', description: 'Still focus sessions', path: path.join(process.env.ProgramFiles, 'Still Guard', 'Still.Guard.exe'), type: 'stdio', allowed_origins: origins }));
   }
   handle('websiteSetup', async () => {
-    const manifest = await copyCompanion();
-    const id = require('node:crypto').createHash('sha256').update(Buffer.from(manifest.key, 'base64')).digest('hex').slice(0, 32).replace(/[0-9a-f]/g, digit => String.fromCharCode(97 + parseInt(digit, 16)));
+    await copyCompanion();
     const hostFile = path.join(directory, 'native-host.json');
-    await fs.writeFile(hostFile, JSON.stringify({ name: 'app.still.focus', description: 'Still focus sessions', path: path.join(process.env.ProgramFiles, 'Still Guard', 'Still.Guard.exe'), type: 'stdio', allowed_origins: [`chrome-extension://${id}/`] }));
     const reg = path.join(process.env.SystemRoot, 'System32', 'reg.exe');
     for (const browser of ['Google\\Chrome', 'Microsoft\\Edge']) await execute(reg, ['add', `HKCU\\Software\\${browser}\\NativeMessagingHosts\\app.still.focus`, '/ve', '/t', 'REG_SZ', '/d', hostFile, '/f'], { windowsHide: true });
     const error = await shell.openPath(directory); if (error) throw Error(error);

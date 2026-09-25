@@ -12,9 +12,12 @@ npm run build:native
 npm start
 npm run build
 npm run dist         # release/Still-Setup-<version>.exe (installer, updater and uninstaller)
+npm run build:extension # release/Still-Extension-<version>.zip (browser companion for the Chrome Web Store / Edge Add-ons)
 ```
 
 The native helper builds with the .NET Framework compiler already included with Windows; no .NET SDK download is required. `npm run build` produces the portable x64 executable in `release/`. `npm run dist` packs the app into the installer from `installer/` (a WPF program compiled with the same built-in compiler); regenerate its icon with `python scripts/assets.py`.
+
+`npm run build:extension` packs `app/browser-extension/` plus `app/websites.js` for store upload, without the manifest `key` (the stores assign their own ID). Bump the companion's own `version` in its `manifest.json` for each upload. Once a store assigns the listing's ID, add it to `storeIds` in `app/websites-main.cjs` so Still Guard accepts that extension; the native-host file is rewritten on every app start, so existing users pick it up after updating.
 
 ```powershell
 npm test             # IPC validation and preference bounds
