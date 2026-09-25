@@ -4,6 +4,8 @@ on:
     paths: ['android/**', '.github/workflows/android.yml']
   pull_request:
     paths: ['android/**', '.github/workflows/android.yml']
+  # "Run workflow" on the Actions tab also checks the release signing secrets.
+  workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -13,3 +15,15 @@ jobs:
         with: { distribution: temurin, java-version: 17 }
       - run: chmod +x gradlew && ./gradlew testDebugUnitTest assembleDebug
         working-directory: android
+      - name: Test release signing
+        if: github.event_name == 'workflow_dispatch'
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+          STILL_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          export STILL_KEYSTORE="$RUNNER_TEMP/still-release.jks"
+          echo "$ANDROID_KEYSTORE" | base64 -d > "$STILL_KEYSTORE"
+          trap 'rm -f "$STILL_KEYSTORE"' EXIT
+          ./gradlew assembleRelease
+          "$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/apksigner" verify --print-certs build/outputs/apk/release/Still-release.apk
