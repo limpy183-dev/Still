@@ -82,6 +82,7 @@ async function run() {
     await lines.first().click({ button: 'right' });
     await page.locator('[data-todo-handle]').first().press('ArrowDown');
     assert.deepEqual(await texts(), [original[1], original[0], ...original.slice(2)], 'Arrow keys move a line');
+    await page.waitForTimeout(300); // Let the line finish gliding into place.
     const from = await page.locator('[data-todo-handle]').last().boundingBox(), to = await lines.first().boundingBox();
     await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2); await page.mouse.down();
     await page.mouse.move(from.x + from.width / 2, to.y + 4, { steps: 12 }); await page.mouse.up();

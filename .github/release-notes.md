@@ -1,3 +1,7 @@
+## What's new in v1.0.6
+
+- **Smoother to-do moving.** When you drag a to-do, the line lifts and grows slightly so you can see it's being moved, the other lines glide out of its way, and it settles back to its normal size when you drop it. Moving with the arrow keys glides too. (Turned off when Windows "Animation effects" or Still's reduced motion is on.)
+
 ## What's new in v1.0.5
 
 - **Android preview:** it now shows its real version in App info (1.0.5), and future previews install over it as updates. Download `Still-Android-preview-1.0.5.apk` below. No changes to the Windows app.

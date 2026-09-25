@@ -96,12 +96,24 @@ function startTodoSelection(index) {
   renderTodos(); $$('[data-todo-select]')[index]?.focus();
 }
 
+// Rows glide from where they were drawn to their new place (FLIP), even mid-glide.
+function slideTodoRows(change) {
+  const key = row => prefs.todos[row.dataset.todoIndex];
+  const before = new Map($$('.todo-row').map(row => [key(row), row.getBoundingClientRect().top]));
+  change();
+  const rows = $$('.todo-row').filter(row => before.has(key(row)));
+  const deltas = rows.map(row => { row.style.transition = 'none'; row.style.transform = ''; return before.get(key(row)) - row.getBoundingClientRect().top; });
+  rows.forEach((row, i) => { if (deltas[i]) row.style.transform = `translateY(${deltas[i]}px)`; });
+  document.body.offsetHeight; // Start from the old place before gliding.
+  rows.forEach(row => { row.style.transition = ''; row.style.transform = ''; });
+}
+
 function stopTodoSelection() { todoSelection = null; todoDrag = null; renderTodos(); }
 
 function moveTodo(from, to) {
   if (to < 0 || to >= prefs.todos.length) return;
-  prefs.todos.splice(to, 0, prefs.todos.splice(from, 1)[0]);
-  renderTodos(); $$('[data-todo-handle]')[to].focus(); save();
+  slideTodoRows(() => { prefs.todos.splice(to, 0, prefs.todos.splice(from, 1)[0]); renderTodos(); });
+  $$('[data-todo-handle]')[to].focus(); save();
 }
 
 function deleteSelectedTodos() {
@@ -205,16 +217,20 @@ function initTodos() {
     if (todoHold && Math.hypot(event.clientX - todoHold.x, event.clientY - todoHold.y) > 8) cancelTodoHold();
     if (!todoDrag) return;
     // The dragged line goes before the first other line whose middle is below the pointer.
-    const next = $$('.todo-row').find(row => row !== todoDrag && event.clientY < row.getBoundingClientRect().top + row.offsetHeight / 2);
-    if (next && todoDrag.nextElementSibling !== next) next.before(todoDrag);
-    else if (!next && todoDrag.nextElementSibling) $('#todo-rows').append(todoDrag);
+    // Layout positions (offsetTop) ignore the glide, so lines don't flicker while they move.
+    const list = $('#todo-rows'), y = event.clientY - list.getBoundingClientRect().top + list.offsetTop;
+    const next = $$('.todo-row').find(row => row !== todoDrag && y < row.offsetTop + row.offsetHeight / 2);
+    if (next && todoDrag.nextElementSibling !== next) slideTodoRows(() => next.before(todoDrag));
+    else if (!next && todoDrag.nextElementSibling) slideTodoRows(() => $('#todo-rows').append(todoDrag));
   });
   const endDrag = () => {
     cancelTodoHold();
     if (!todoDrag) return;
     const order = $$('.todo-row').map(row => prefs.todos[row.dataset.todoIndex]), changed = order.some((item, i) => item !== prefs.todos[i]);
+    const dropped = $$('.todo-row').indexOf(todoDrag);
     todoDrag = null; todoSkipClick = true;
-    prefs.todos.splice(0, prefs.todos.length, ...order); renderTodos();
+    slideTodoRows(() => { prefs.todos.splice(0, prefs.todos.length, ...order); renderTodos(); });
+    $$('.todo-row')[dropped]?.classList.add('dropped'); // Settles back to its normal size.
     if (changed) save();
   };
   document.addEventListener('pointerup', endDrag);
