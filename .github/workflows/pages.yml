@@ -6,6 +6,7 @@ on:
     paths:
       - 'website/**'
       - '.github/workflows/pages.yml'
+      - 'tests/social-preview.test.cjs'
   workflow_dispatch:
 
 permissions:
@@ -27,6 +28,8 @@ jobs:
       - uses: actions/checkout@v6
       - name: Check website JavaScript
         run: node --check website/js/site.js
+      - name: Check social previews on every page
+        run: node --test tests/social-preview.test.cjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
