@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support — Still</title>
+<meta name="description" content="Get help with Still and the Website focus extension: browser setup, connection problems, blocked websites, bug reports and feature requests.">
+<meta name="theme-color" content="#f5f6f1">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Still">
+<meta property="og:title" content="Support — Still">
+<meta property="og:description" content="Get help with Still and the Website focus extension: browser setup, connection problems, blocked websites, bug reports and feature requests.">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="assets/still.ico" sizes="any">
+<link rel="icon" href="assets/still.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/still.png">
+<link rel="preload" href="assets/Manrope.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/site.css?v=4">
+<script>document.documentElement.classList.add('js')</script>
+<script src="js/site.js?v=4" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="progress-bar" aria-hidden="true"></div>
+<div class="titlebar"><div class="wrap"><a href="/changelog"><span class="tiny-dot"></span><span>Still <span data-version>1.0.2</span> is here · See what’s new</span></a><span class="window-dots" aria-hidden="true"><span>−</span><span>□</span><span>×</span></span></div></div>
+<header class="site-header"><div class="wrap">
+  <a class="brand" href="/home" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a>
+  <nav class="nav" id="site-nav" aria-label="Main"><a href="/features">Features</a><a href="/guide">Guide</a><a href="/download">Download</a><a href="/privacy">Privacy</a><a href="/faq">FAQ</a><a href="/changelog">Changelog</a></nav>
+  <a class="btn btn-primary btn-sm header-cta" href="/download"><svg aria-hidden="true"><use href="#i-download"/></svg>Download</a>
+  <button class="menu-toggle" type="button" aria-label="Menu" aria-controls="site-nav" aria-expanded="false"><span></span></button>
+</div></header>
+<main id="main">
+<section class="page-hero">
+  <div class="deco" aria-hidden="true"><i></i><i></i><i></i><b></b></div>
+  <div class="wrap"><div class="inner">
+    <nav class="crumbs fade-in" aria-label="Breadcrumb"><a href="/home">Still</a><span>/</span><b>Support</b></nav>
+    <span class="eyebrow fade-in" style="--d:.05s"><span class="tiny-dot"></span>A little help getting back to focus</span>
+    <h1 class="h1 split">Something in the way? <span>Let’s sort it out.</span></h1>
+    <p class="lead fade-in" style="--d:.5s">Help with Still and the Still · Website focus browser extension. Start with a quick fix below, or send us your question.</p>
+    <div class="hero-actions fade-in" style="--d:.65s"><a class="btn btn-primary" href="https://github.com/limpy183-dev/Still/issues/new"><svg aria-hidden="true"><use href="#i-github"/></svg>Ask for help on GitHub</a><a class="btn btn-secondary" href="#quick-help">Try a quick fix<svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+  </div></div>
+</section>
+<div class="wrap" style="max-width:880px">
+  <div class="doc">
+    <section class="panel doc-section" id="quick-help">
+      <h2>Start here</h2>
+      <p>The browser extension is a companion to the <a href="/download">Still Windows app</a>. It needs the desktop app and Still Guard to connect and apply your focus sessions; installing the extension alone is not enough.</p>
+      <h3>The extension isn’t connected, or a website session won’t start</h3>
+      <ol class="olist">
+        <li><span>Install Still on a supported Windows 10 or Windows 11 PC. Finish any active session, then open <b>Settings → Set up browser companion</b> in Still to register the local connection.</span></li>
+        <li><span>In Chrome, open <code>chrome://extensions</code>, find <b>Still · Website focus</b> and choose <b>Details</b>. Check that it is enabled, then turn on <b>Allow in incognito</b>. Still requires private-window access before a website session can start.</span></li>
+        <li><span>Restart Chrome after setup. Check the Still extension’s tooltip for its connection status, and keep a connected browser window open when starting your session.</span></li>
+      </ol>
+      <p>Use the companion in each browser profile you want to protect. For the bundled development extension and Edge setup, follow the <a href="/guide#websites">browser setup guide</a>.</p>
+      <h3>A website is still blocked after my session</h3>
+      <p>Check <b>Time limits</b> in Still: a daily allowance or bedtime can block a site outside a focus session. If the extension lost its connection, it keeps its last confirmed session rules. Restart Windows protection from Still’s Settings so the guard can confirm release. If you’re stuck, follow the <a href="/guide#recovery">recovery steps</a>.</p>
+      <h3>A selected website isn’t blocked</h3>
+      <p>Check that the session is active, the companion is connected in the browser profile you’re using, and the correct domain is selected. A domain includes its subdomains, but a different domain needs its own entry. See <a href="/guide#troubleshooting">more troubleshooting</a>.</p>
+      <h3>I want to remove Still</h3>
+      <p>Finish or release your active session first. Follow the <a href="/guide#updating">removal instructions</a> for the Windows app, and remove the companion from Chrome’s extensions page. Use the recovery guide if protection is stuck.</p>
+    </section>
+    <section class="panel doc-section" id="contact">
+      <h2>Ask a question. Report a problem.</h2>
+      <p>We use GitHub issues for support, bug reports and feature requests. <a href="https://github.com/limpy183-dev/Still/issues">Browse existing reports</a> first, or open a new one. You’ll need a free GitHub account to post and follow replies.</p>
+      <p>For a bug report, please include:</p>
+      <ul class="ulist">
+        <li>Your Still app version and extension version (shown on Chrome’s extensions page).</li>
+        <li>Your Windows and Chrome versions, plus the extension’s connection status.</li>
+        <li>What you were trying to do, the steps that reproduce it, and what happened instead.</li>
+        <li>The exact error message and, if useful, a screenshot with personal details removed.</li>
+      </ul>
+      <div class="note"><svg aria-hidden="true"><use href="#i-info"/></svg><span>GitHub issues are public. Don’t include passwords, private URLs, browsing history or personal information. Only share the details needed to explain the problem.</span></div>
+      <div><a class="btn btn-primary" href="https://github.com/limpy183-dev/Still/issues/new">Open a support request<svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+      <p>Have an idea instead? Use the same link and describe what you’d like Still to do and how it would help.</p>
+    </section>
+    <section class="panel doc-section">
+      <h2>A few useful links</h2>
+      <p><a href="/guide">Read the user guide</a> for setup and recovery, <a href="/faq">browse common questions</a>, or <a href="/changelog">check recent updates</a>.</p>
+      <p>For how Still handles data and the limits of its protection, read <a href="/privacy">Privacy &amp; security</a>.</p>
+    </section>
+  </div>
+</div>
+</main>
+<footer class="site-footer"><div class="foot-orbit" aria-hidden="true"></div><div class="wrap">
+  <div class="foot-grid">
+    <div class="foot-brand"><a class="brand" href="/home" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a><p>Less distraction.<br>More possibility.</p><small>A quieter space for your attention. Free for Windows 10 &amp; 11.</small></div>
+    <div class="foot-col"><strong>STILL</strong><a href="/features">Features</a><a href="/download">Download</a><a href="/changelog">Changelog</a><a href="https://github.com/limpy183-dev/Still/releases">All releases</a></div>
+    <div class="foot-col"><strong>LEARN</strong><a href="/guide">Getting started</a><a href="/guide#websites">Website blocking</a><a href="/guide#recovery">Recovery</a><a href="/faq">FAQ</a><a href="/support">Support</a></div>
+    <div class="foot-col"><strong>TRUST</strong><a href="/privacy">Privacy &amp; security</a><a href="/privacy#limits">Honest limits</a><a href="https://github.com/limpy183-dev/Still">Source code</a><a href="https://github.com/limpy183-dev/Still/blob/main/LICENSE">MIT license</a></div>
+  </div>
+  <div class="foot-bottom"><span><span class="tiny-dot"></span>Just you. Your focus stays yours.</span><span><svg aria-hidden="true"><use href="#i-leaf"/></svg>Small beginnings. Meaningful things. © <span data-year>2026</span> Still</span></div>
+</div></footer>
+</body>
+</html>
