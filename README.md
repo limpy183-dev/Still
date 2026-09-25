@@ -158,7 +158,7 @@ Still combines an **Electron interface**, a **C# Windows service**, **PowerShell
 | Set up browser blocking and time limits | [Website blocking](docs/website-blocking.md) |
 | Run from source, build an installer, or run checks | [Development guide](docs/development.md) |
 | Understand the code layout | [Source map](docs/development.md#source-map) |
-| Try the Android preview (sessions, app and website blocking, daily limits, block screens, to-dos) | [Still for Android](docs/android.md) |
+| Try the Android preview (sessions, app and website blocking, daily limits, block screens, to-dos, history, alerts) | [Still for Android](docs/android.md) |
 | Check enforcement validation limits | [Validation status](docs/development.md#develop-and-verify) |
 | Report a bug or suggest an improvement | [GitHub issues](https://github.com/limpy183-dev/Still/issues) |
 
