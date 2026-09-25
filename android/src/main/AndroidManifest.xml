@@ -64,6 +64,12 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
+            android:name=".TodosActivity"
+            android:exported="false"
+            android:label="@string/todos_title"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
             android:name=".LimitsActivity"
             android:exported="false"
             android:label="@string/limits_title"

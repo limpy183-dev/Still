@@ -108,6 +108,9 @@ public final class MainActivity extends Activity {
         View.OnClickListener openLimits = v -> startActivity(new Intent(this, LimitsActivity.class));
         findViewById(R.id.open_limits).setOnClickListener(openLimits);
         findViewById(R.id.open_limits_active).setOnClickListener(openLimits);
+        View.OnClickListener openTodos = v -> startActivity(new Intent(this, TodosActivity.class));
+        findViewById(R.id.open_todos).setOnClickListener(openTodos);
+        findViewById(R.id.open_todos_active).setOnClickListener(openTodos);
         findViewById(R.id.change_screen).setOnClickListener(v -> startActivity(new Intent(this, BlockScreenActivity.class)));
         siteInput.setOnEditorActionListener((view, action, event) -> { addSite(); return true; });
         renderSites();

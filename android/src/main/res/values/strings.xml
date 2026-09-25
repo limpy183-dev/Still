@@ -72,6 +72,20 @@
 
     <string name="close">Close</string>
 
+    <!-- To-do list, worded like app/todos.js. -->
+    <string name="todos_title">To-do list</string>
+    <string name="todos_open">To-do list</string>
+    <string name="todos_hint">Type / at the start of a line or after a space to choose a checkbox, tick circle, bullet, numbered item, heading or note. Next starts a new line; Backspace on an empty line removes it. Saved automatically, even during a session.</string>
+    <string name="todo_add">+ Add a line</string>
+    <string name="todo_hint">Write something, or type / for formats…</string>
+    <string name="todo_heading_hint">Give this section a name…</string>
+    <string name="todo_complete">Complete line %1$d</string>
+    <string name="todo_delete">Delete line %1$d</string>
+    <string name="todo_line">Line %1$d, %2$s</string>
+    <string name="todo_menu_title">TURN THIS LINE INTO</string>
+    <string name="todo_no_format">No matching formats. Try “check” or “note”.</string>
+    <string name="todo_full">Your list has room for 500 lines. Remove a line to add another.</string>
+
     <!-- Block screens, worded like app/browser-extension/blocked.html and websites.js presets. -->
     <string name="screen_eyebrow">A LITTLE SPACE FOR YOUR ATTENTION</string>
     <string name="screen_footnote">Your focus session is managed by Still. Return there to request an early release.</string>

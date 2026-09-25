@@ -2,9 +2,9 @@
 
 [← Back to the overview](../README.md) · [User guide](user-guide.md) · [Development](development.md)
 
-A native Android version of Still's focus sessions, in [`android/`](../android). So far: sessions, app and website blocking, a release delay, strict protection, the managed-phone check, daily website limits with bedtime, and block screens. To-dos, alerts and a history screen come later. There is no release build yet.
+A native Android version of Still's focus sessions, in [`android/`](../android). So far: sessions, app and website blocking, a release delay, strict protection, the managed-phone check, daily website limits with bedtime, block screens and the to-do list. Alerts and a history screen come later. There is no release build yet.
 
-Android 11 or newer. It is written in plain Java against the Android framework, with no libraries, so the release APK is about 96 KB.
+Android 11 or newer. It is written in plain Java against the Android framework, with no libraries, so the release APK is about 107 KB.
 
 ## How a session works
 
@@ -45,6 +45,16 @@ Open **Time limits** from the main screen, during a session or not. They follow 
 
 Time counts only while a limited website is the page in the browser window you're using, with the screen on. When the allowance is used up, or bedtime starts, the site is stepped back from and a limit page is shown, like on Windows: *"That's enough for today. You've spent your 30 minutes on youtube.com today. It opens again at midnight."* or *"Time to rest. youtube.com is asleep until 7:00 AM."* Counts reset at local midnight. Bedtime and the daily count follow the phone's clock, so changing the date starts a new day, as on Windows. Limits work outside focus sessions and can be changed at any time, so they aren't protected by strict mode, matching Windows.
 
+## To-do list
+
+Open **To-do list** from the main screen, during a session or not. It works like the Windows list:
+
+- **Formats:** type `/` at the start of a line or after a space to turn it into a checkbox, tick circle, bullet, numbered item, heading or note. The menu filters as you type ("/che", "/note"). Choosing a format removes the `/…` you typed.
+- **Enter:** the keyboard's Next key (or Enter on a hardware keyboard) starts a new line with the text after the cursor, in the same format; a heading is followed by a checkbox.
+- **Removing lines:** Backspace on an empty line removes it, and ✕ deletes any line. The list always keeps at least one line.
+- **Progress and limits:** checkboxes and tick circles count towards "N OF M COMPLETE". The list holds 500 lines of up to 2,000 characters.
+- **Saving:** edits save automatically, at most every 0.4 seconds while typing and when you leave the screen. They use the same JSON shape as `todos` in the Windows preferences.
+
 ## Set up
 
 1. Install the APK and open **Still Focus**.
@@ -79,13 +89,14 @@ cd android
 ./gradlew testDebugUnitTest assembleDebug
 ```
 
-Gradle needs a JDK and the Android SDK (`ANDROID_HOME`). Android Studio's bundled JDK works (`JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"`). The rules in `Session.java`, `Websites.java`, `Limits.java` and `BlockScreen.java` are plain Java and are unit-tested on the JVM (`src/test`).
+Gradle needs a JDK and the Android SDK (`ANDROID_HOME`). Android Studio's bundled JDK works (`JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"`). The rules in `Session.java`, `Websites.java`, `Limits.java`, `BlockScreen.java` and `Todos.java` are plain Java and are unit-tested on the JVM (`src/test`).
 
 | File | What it does |
 | --- | --- |
 | `Session.java` | Session rules and deadlines (mirrors `native/Session.cs`) |
 | `Websites.java` | Domain validation and matching (mirrors `app/websites.js`) and reading a host from an address bar |
 | `BlockScreen.java`, `BlockScreenView.java`, `BlockScreenActivity.java` | Block screen rules (mirrors `presets`/`screen()`), drawing them, and the editor with a live preview |
+| `Todos.java`, `TodosActivity.java` | To-do rules (mirrors `app/todos.js`) and the to-do screen |
 | `Limits.java`, `LimitStore.java`, `LimitsActivity.java` | Limit and bedtime rules (mirrors `limits`/`inBedtime`/`limitBlocks`), their storage and today's usage, and the Time limits screen |
 | `Store.java` | Atomic state, history (500 entries), the end alarm and notifications |
 | `BlockService.java` | The accessibility service that blocks apps and websites and protects Still in strict sessions |

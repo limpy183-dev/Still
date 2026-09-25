@@ -111,6 +111,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/limits_open" />
+
+            <Button
+                android:id="@+id/open_todos_active"
+                style="@style/Secondary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/todos_open" />
         </LinearLayout>
     </ScrollView>
 </FrameLayout>
