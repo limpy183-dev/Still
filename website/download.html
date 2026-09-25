@@ -22,11 +22,11 @@
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <div class="progress-bar" aria-hidden="true"></div>
-<div class="titlebar"><div class="wrap"><a href="changelog.html"><span class="tiny-dot"></span><span>Still <span data-version>1.0.2</span> is here · See what’s new</span></a><span class="window-dots" aria-hidden="true"><span>−</span><span>□</span><span>×</span></span></div></div>
+<div class="titlebar"><div class="wrap"><a href="/changelog"><span class="tiny-dot"></span><span>Still <span data-version>1.0.2</span> is here · See what’s new</span></a><span class="window-dots" aria-hidden="true"><span>−</span><span>□</span><span>×</span></span></div></div>
 <header class="site-header"><div class="wrap">
-  <a class="brand" href="index.html" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a>
-  <nav class="nav" id="site-nav" aria-label="Main"><a href="features.html">Features</a><a href="guide.html">Guide</a><a href="download.html" aria-current="page">Download</a><a href="privacy.html">Privacy</a><a href="faq.html">FAQ</a><a href="changelog.html">Changelog</a></nav>
-  <a class="btn btn-primary btn-sm header-cta" href="download.html"><svg aria-hidden="true"><use href="#i-download"/></svg>Download</a>
+  <a class="brand" href="/home" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a>
+  <nav class="nav" id="site-nav" aria-label="Main"><a href="/features">Features</a><a href="/guide">Guide</a><a href="/download" aria-current="page">Download</a><a href="/privacy">Privacy</a><a href="/faq">FAQ</a><a href="/changelog">Changelog</a></nav>
+  <a class="btn btn-primary btn-sm header-cta" href="/download"><svg aria-hidden="true"><use href="#i-download"/></svg>Download</a>
   <button class="menu-toggle" type="button" aria-label="Menu" aria-controls="site-nav" aria-expanded="false"><span></span></button>
 </div></header>
 <main id="main">
@@ -34,7 +34,7 @@
 <section class="page-hero">
   <div class="deco" aria-hidden="true"><i></i><i></i><i></i><b></b></div>
   <div class="wrap"><div class="inner">
-    <nav class="crumbs fade-in" style="--d:0s" aria-label="Breadcrumb"><a href="index.html">Still</a><span>/</span><b>Download</b></nav>
+    <nav class="crumbs fade-in" style="--d:0s" aria-label="Breadcrumb"><a href="/home">Still</a><span>/</span><b>Download</b></nav>
     <span class="eyebrow fade-in" style="--d:.05s"><span class="tiny-dot"></span>Free for Windows</span>
     <h1 class="h1 split">Make room <span>for Still.</span></h1>
     <p class="lead fade-in" style="--d:.5s">One small installer. It sets Still up for your Windows account, updates an existing installation in place, and can remove everything again later.</p>
@@ -50,7 +50,7 @@
           <div><b style="font-size:22px;letter-spacing:-.5px;display:block;line-height:1.2">Still for Windows</b><span class="muted small">Version <span data-version>1.0.2</span> · Released <span data-date>24 September 2026</span></span></div>
           <span class="pill dl-latest" style="margin-left:auto"><span class="tiny-dot"></span>Latest</span>
         </div>
-        <a class="btn btn-primary btn-lg" data-dl href="https://github.com/limpy183-dev/Still/releases/latest" style="justify-content:space-between"><svg aria-hidden="true"><use href="#i-download"/></svg><span class="btn-meta" style="flex:1">Download Still-Setup-<span data-version>1.0.2</span>.exe<small><span data-size>139 MB</span> · Windows 10 &amp; 11 · 64-bit</small></span><svg class="arrow" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn-primary btn-lg" data-dl href="https://github.com/limpy183-dev/releases/latest" style="justify-content:space-between"><svg aria-hidden="true"><use href="#i-download"/></svg><span class="btn-meta" style="flex:1">Download Still-Setup-<span data-version>1.0.2</span>.exe<small><span data-size>139 MB</span> · Windows 10 &amp; 11 · 64-bit</small></span><svg class="arrow" aria-hidden="true"><use href="#i-arrow"/></svg></a>
         <div class="dl-facts">
           <div><small>Installs to</small><b style="font-size:13.5px;font-family:var(--mono)">%LOCALAPPDATA%\Programs\Still</b></div>
           <div><small>Admin approval</small><b>Not needed to install</b></div>
@@ -72,7 +72,7 @@
           <li><svg aria-hidden="true"><use href="#i-globe"/></svg>Chrome or Edge for website blocking and time limits</li>
         </ul>
         <div class="note" style="margin-top:auto"><svg aria-hidden="true"><use href="#i-info"/></svg><span>Domain-joined or MDM-managed PCs, and PCs that already use application-control rules, are intentionally refused so Still never changes an organisation’s security policy.</span></div>
-        <a class="linklike" data-release-page href="https://github.com/limpy183-dev/Still/releases/latest" style="font-size:14px">All files on GitHub →</a>
+        <a class="linklike" data-release-page href="https://github.com/limpy183-dev/releases/latest" style="font-size:14px">All files on GitHub →</a>
       </div>
     </div>
   </div>
@@ -91,7 +91,7 @@
         <h3 class="h2" style="font-size:clamp(28px,3vw,38px)">If Windows says it <span>“protected your PC”.</span></h3>
         <p class="lead">Still isn’t code-signed yet, so Microsoft Defender SmartScreen may pause the installer the first time. That’s expected for new, unsigned apps.</p>
         <ol class="olist"><li><span>Choose <b>More info</b>.</span></li><li><span>Check the app name says <b>Still-Setup</b>, then choose <b>Run anyway</b>.</span></li></ol>
-        <p class="muted small">Prefer to be sure? Compare the SHA-256 checksum above, or <a class="linklike" style="font-size:13.5px;padding:0" href="guide.html#source">build it from source</a>.</p>
+        <p class="muted small">Prefer to be sure? Compare the SHA-256 checksum above, or <a class="linklike" style="font-size:13.5px;padding:0" href="/guide#source">build it from source</a>.</p>
       </div>
       <div data-reveal="right">
         <div class="smart" id="smart-demo" role="img" aria-label="Windows SmartScreen: choose More info, then Run anyway">
@@ -139,7 +139,7 @@
         <span class="num">STEP 3</span>
         <h3 class="h2" style="font-size:clamp(28px,3vw,38px)">Settle <span>into focus.</span></h3>
         <p class="lead">Open Still from the Start menu. When you’re ready to block apps, choose <b>Set up protection</b>; Windows asks for administrator approval once to install Still Guard.</p>
-        <div class="hero-actions" style="justify-content:flex-start"><a class="btn btn-primary" href="guide.html#first-session">Your first session<svg class="arrow" aria-hidden="true"><use href="#i-arrow"/></svg></a><a class="btn btn-secondary" href="guide.html#websites">Set up website blocking</a></div>
+        <div class="hero-actions" style="justify-content:flex-start"><a class="btn btn-primary" href="/guide#first-session">Your first session<svg class="arrow" aria-hidden="true"><use href="#i-arrow"/></svg></a><a class="btn btn-secondary" href="/guide#websites">Set up website blocking</a></div>
       </div>
       <div class="panel mini spot" data-reveal="right" style="justify-content:center">
         <div class="breath" style="max-width:280px" aria-hidden="true"><i></i><i></i><i></i><b><span>TIME FOR YOURSELF</span><span style="font-size:52px;letter-spacing:-2.5px;color:#30382b;font-weight:500;display:block;margin:0">50:00</span></b></div>
@@ -166,9 +166,9 @@
       <p class="lead">Free code signing provided by <a class="linklike" href="https://about.signpath.io">SignPath.io</a>, certificate by <a class="linklike" href="https://signpath.org">SignPath Foundation</a>.</p>
     </div>
     <div class="grid-3" data-stagger>
-      <article class="panel card" data-reveal><h3 class="h3">What gets signed</h3><p>Only Still’s own binaries (the installer, the app and Still Guard), built automatically by <a class="linklike" style="font-size:inherit;padding:0" href="https://github.com/limpy183-dev/Still/blob/main/.github/workflows/release.yml">GitHub Actions</a> from the <a class="linklike" style="font-size:inherit;padding:0" href="https://github.com/limpy183-dev/Still">public repository</a>. Every release is approved by hand before it is signed.</p></article>
+      <article class="panel card" data-reveal><h3 class="h3">What gets signed</h3><p>Only Still’s own binaries (the installer, the app and Still Guard), built automatically by <a class="linklike" style="font-size:inherit;padding:0" href="https://github.com/limpy183-dev/blob/main/.github/workflows/release.yml">GitHub Actions</a> from the <a class="linklike" style="font-size:inherit;padding:0" href="https://github.com/limpy183-dev/Still">public repository</a>. Every release is approved by hand before it is signed.</p></article>
       <article class="panel card" data-reveal><h3 class="h3">Team roles</h3><p>Committers and reviewers: <a class="linklike" style="font-size:inherit;padding:0" href="https://github.com/limpy183-dev">limpy183-dev</a>, <a class="linklike" style="font-size:inherit;padding:0" href="https://github.com/adambelalxd">adambelalxd</a></p><p>Approvers: <a class="linklike" style="font-size:inherit;padding:0" href="https://github.com/limpy183-dev">limpy183-dev</a>, <a class="linklike" style="font-size:inherit;padding:0" href="https://github.com/adambelalxd">adambelalxd</a></p></article>
-      <article class="panel card" data-reveal><h3 class="h3">Privacy</h3><p>This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. See <a class="linklike" style="font-size:inherit;padding:0" href="privacy.html">Privacy &amp; security</a>.</p></article>
+      <article class="panel card" data-reveal><h3 class="h3">Privacy</h3><p>This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. See <a class="linklike" style="font-size:inherit;padding:0" href="/privacy">Privacy &amp; security</a>.</p></article>
     </div>
   </div>
 </section>
@@ -184,17 +184,17 @@
 cd Still
 npm install
 npm run dist    <span class="c"># release/Still-Setup-&lt;version&gt;.exe</span></pre></div>
-    <p class="muted small" style="margin-top:12px">More in the <a class="linklike" style="font-size:13.5px;padding:0" href="guide.html#source">guide</a> and the <a class="linklike" style="font-size:13.5px;padding:0" href="https://github.com/limpy183-dev/Still#readme">README</a>.</p>
+    <p class="muted small" style="margin-top:12px">More in the <a class="linklike" style="font-size:13.5px;padding:0" href="/guide#source">guide</a> and the <a class="linklike" style="font-size:13.5px;padding:0" href="https://github.com/limpy183-dev/Still#readme">README</a>.</p>
   </div>
 </section>
 
 </main>
 <footer class="site-footer"><div class="foot-orbit" aria-hidden="true"></div><div class="wrap">
   <div class="foot-grid">
-    <div class="foot-brand"><a class="brand" href="index.html" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a><p>Less distraction.<br>More possibility.</p><small>A quieter space for your attention. Free for Windows 10 &amp; 11.</small></div>
-    <div class="foot-col"><strong>STILL</strong><a href="features.html">Features</a><a href="download.html">Download</a><a href="changelog.html">Changelog</a><a href="https://github.com/limpy183-dev/Still/releases">All releases</a></div>
-    <div class="foot-col"><strong>LEARN</strong><a href="guide.html">Getting started</a><a href="guide.html#websites">Website blocking</a><a href="guide.html#recovery">Recovery</a><a href="faq.html">FAQ</a></div>
-    <div class="foot-col"><strong>TRUST</strong><a href="privacy.html">Privacy &amp; security</a><a href="privacy.html#limits">Honest limits</a><a href="https://github.com/limpy183-dev/Still">Source code</a><a href="https://github.com/limpy183-dev/Still/blob/main/LICENSE">MIT license</a></div>
+    <div class="foot-brand"><a class="brand" href="/home" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a><p>Less distraction.<br>More possibility.</p><small>A quieter space for your attention. Free for Windows 10 &amp; 11.</small></div>
+    <div class="foot-col"><strong>STILL</strong><a href="/features">Features</a><a href="/download">Download</a><a href="/changelog">Changelog</a><a href="https://github.com/limpy183-dev/releases">All releases</a></div>
+    <div class="foot-col"><strong>LEARN</strong><a href="/guide">Getting started</a><a href="/guide#websites">Website blocking</a><a href="/guide#recovery">Recovery</a><a href="/faq">FAQ</a></div>
+    <div class="foot-col"><strong>TRUST</strong><a href="/privacy">Privacy &amp; security</a><a href="/privacy#limits">Honest limits</a><a href="https://github.com/limpy183-dev/Still">Source code</a><a href="https://github.com/limpy183-dev/blob/main/LICENSE">MIT license</a></div>
   </div>
   <div class="foot-bottom"><span><span class="tiny-dot"></span>Just you. Your focus stays yours.</span><span><svg aria-hidden="true"><use href="#i-leaf"/></svg>Small beginnings. Meaningful things. © <span data-year>2026</span> Still</span></div>
 </div></footer>

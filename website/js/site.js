@@ -199,7 +199,7 @@
     toast('Your download is starting. A fresh start awaits.');
     const after = $('#after');
     if (after) setTimeout(() => after.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }), 900);
-    else setTimeout(() => { location.href = 'download.html#after'; }, 1400);
+    else setTimeout(() => { location.href = '/download#after'; }, 1400);
   }));
 
   /* ——— Changelog ——— */

@@ -22,11 +22,11 @@
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <div class="progress-bar" aria-hidden="true"></div>
-<div class="titlebar"><div class="wrap"><a href="changelog.html"><span class="tiny-dot"></span><span>Still <span data-version>1.0.2</span> is here · See what’s new</span></a><span class="window-dots" aria-hidden="true"><span>−</span><span>□</span><span>×</span></span></div></div>
+<div class="titlebar"><div class="wrap"><a href="/changelog"><span class="tiny-dot"></span><span>Still <span data-version>1.0.2</span> is here · See what’s new</span></a><span class="window-dots" aria-hidden="true"><span>−</span><span>□</span><span>×</span></span></div></div>
 <header class="site-header"><div class="wrap">
-  <a class="brand" href="index.html" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a>
-  <nav class="nav" id="site-nav" aria-label="Main"><a href="features.html">Features</a><a href="guide.html" aria-current="page">Guide</a><a href="download.html">Download</a><a href="privacy.html">Privacy</a><a href="faq.html">FAQ</a><a href="changelog.html">Changelog</a></nav>
-  <a class="btn btn-primary btn-sm header-cta" href="download.html"><svg aria-hidden="true"><use href="#i-download"/></svg>Download</a>
+  <a class="brand" href="/home" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a>
+  <nav class="nav" id="site-nav" aria-label="Main"><a href="/features">Features</a><a href="/guide" aria-current="page">Guide</a><a href="/download">Download</a><a href="/privacy">Privacy</a><a href="/faq">FAQ</a><a href="/changelog">Changelog</a></nav>
+  <a class="btn btn-primary btn-sm header-cta" href="/download"><svg aria-hidden="true"><use href="#i-download"/></svg>Download</a>
   <button class="menu-toggle" type="button" aria-label="Menu" aria-controls="site-nav" aria-expanded="false"><span></span></button>
 </div></header>
 <main id="main">
@@ -34,7 +34,7 @@
 <section class="page-hero">
   <div class="deco" aria-hidden="true"><i></i><i></i><i></i><b></b></div>
   <div class="wrap"><div class="inner">
-    <nav class="crumbs fade-in" style="--d:0s" aria-label="Breadcrumb"><a href="index.html">Still</a><span>/</span><b>Guide</b></nav>
+    <nav class="crumbs fade-in" style="--d:0s" aria-label="Breadcrumb"><a href="/home">Still</a><span>/</span><b>Guide</b></nav>
     <span class="eyebrow fade-in" style="--d:.05s"><span class="tiny-dot"></span>A little guidance</span>
     <h1 class="h1 split">Getting started, <span>one step at a time.</span></h1>
     <p class="lead fade-in" style="--d:.5s">Everything you need to install Still, protect your focus, and put things right if they ever go wrong.</p>
@@ -63,7 +63,7 @@
     <section class="panel doc-section" id="install" data-reveal>
       <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-download"/></svg></span>Install</h2>
       <ol class="olist">
-        <li><span>Download <b>Still-Setup-<span data-version>1.0.2</span>.exe</b> from the <a href="download.html">download page</a>.</span></li>
+        <li><span>Download <b>Still-Setup-<span data-version>1.0.2</span>.exe</b> from the <a href="/download">download page</a>.</span></li>
         <li><span>Run it and choose <b>Install Still</b>. It installs for your Windows account in <code>%LOCALAPPDATA%\Programs\Still</code>, adds a <b>Still Focus</b> Start menu shortcut (and optionally a desktop shortcut), and needs no administrator approval.</span></li>
         <li><span>The build isn’t code-signed, so Windows SmartScreen may say it “protected your PC”. Choose <b>More info → Run anyway</b>.</span></li>
       </ol>
@@ -91,7 +91,7 @@
         <li>Still adds explicit allow rules for everything else before its temporary deny rules, so nothing unrelated is blocked.</li>
       </ul>
       <p>Reopening <b>Enable Windows protection</b> reconnects an existing stopped guard belonging to the same account. To remove it, finish any session and choose <b>Settings → Remove protection service</b>.</p>
-      <div class="note"><svg aria-hidden="true"><use href="#i-alert"/></svg><span>Domain-joined and MDM-managed PCs, and PCs with existing application-control rules, are refused to avoid changing an organisation’s security policy. Read the <a href="privacy.html#limits">honest limits</a>.</span></div>
+      <div class="note"><svg aria-hidden="true"><use href="#i-alert"/></svg><span>Domain-joined and MDM-managed PCs, and PCs with existing application-control rules, are refused to avoid changing an organisation’s security policy. Read the <a href="/privacy#limits">honest limits</a>.</span></div>
     </section>
 
     <section class="panel doc-section" id="ending-early" data-reveal>
@@ -101,7 +101,7 @@
         <li><span>Wait for the release delay you set before starting.</span></li>
         <li><span>Choose <b>End focus session</b>. Waiting alone doesn’t end the session. You decide.</span></li>
       </ol>
-      <p>Choosing <b>Keep focusing</b> cancels the request and restores the lock. A new request starts a new full wait. <a href="index.html#pause">Try the demo</a>.</p>
+      <p>Choosing <b>Keep focusing</b> cancels the request and restores the lock. A new request starts a new full wait. <a href="/home#pause">Try the demo</a>.</p>
     </section>
 
     <section class="panel doc-section" id="websites" data-reveal>
@@ -199,7 +199,7 @@
       <p>The companion keeps its last confirmed rules if its connection is lost, and releases only when the guard confirms. Restart Windows protection from Settings.</p>
       <h3>No alarm after sleep</h3>
       <p>Sleeping PCs aren’t woken. Expired one-time reminders are marked missed; keep the PC awake for important alarms.</p>
-      <p>Still stuck? <a href="https://github.com/limpy183-dev/Still/issues">Open an issue on GitHub</a> or browse the <a href="faq.html">FAQ</a>.</p>
+      <p>Still stuck? <a href="https://github.com/limpy183-dev/issues">Open an issue on GitHub</a> or browse the <a href="/faq">FAQ</a>.</p>
     </section>
 
     <section class="panel doc-section" id="source" data-reveal>
@@ -219,10 +219,10 @@ npm test               <span class="c"># IPC validation and preference bounds</s
 </main>
 <footer class="site-footer"><div class="foot-orbit" aria-hidden="true"></div><div class="wrap">
   <div class="foot-grid">
-    <div class="foot-brand"><a class="brand" href="index.html" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a><p>Less distraction.<br>More possibility.</p><small>A quieter space for your attention. Free for Windows 10 &amp; 11.</small></div>
-    <div class="foot-col"><strong>STILL</strong><a href="features.html">Features</a><a href="download.html">Download</a><a href="changelog.html">Changelog</a><a href="https://github.com/limpy183-dev/Still/releases">All releases</a></div>
-    <div class="foot-col"><strong>LEARN</strong><a href="guide.html">Getting started</a><a href="guide.html#websites">Website blocking</a><a href="guide.html#recovery">Recovery</a><a href="faq.html">FAQ</a></div>
-    <div class="foot-col"><strong>TRUST</strong><a href="privacy.html">Privacy &amp; security</a><a href="privacy.html#limits">Honest limits</a><a href="https://github.com/limpy183-dev/Still">Source code</a><a href="https://github.com/limpy183-dev/Still/blob/main/LICENSE">MIT license</a></div>
+    <div class="foot-brand"><a class="brand" href="/home" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a><p>Less distraction.<br>More possibility.</p><small>A quieter space for your attention. Free for Windows 10 &amp; 11.</small></div>
+    <div class="foot-col"><strong>STILL</strong><a href="/features">Features</a><a href="/download">Download</a><a href="/changelog">Changelog</a><a href="https://github.com/limpy183-dev/releases">All releases</a></div>
+    <div class="foot-col"><strong>LEARN</strong><a href="/guide">Getting started</a><a href="/guide#websites">Website blocking</a><a href="/guide#recovery">Recovery</a><a href="/faq">FAQ</a></div>
+    <div class="foot-col"><strong>TRUST</strong><a href="/privacy">Privacy &amp; security</a><a href="/privacy#limits">Honest limits</a><a href="https://github.com/limpy183-dev/Still">Source code</a><a href="https://github.com/limpy183-dev/blob/main/LICENSE">MIT license</a></div>
   </div>
   <div class="foot-bottom"><span><span class="tiny-dot"></span>Just you. Your focus stays yours.</span><span><svg aria-hidden="true"><use href="#i-leaf"/></svg>Small beginnings. Meaningful things. © <span data-year>2026</span> Still</span></div>
 </div></footer>
