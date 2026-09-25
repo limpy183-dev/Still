@@ -67,6 +67,7 @@
     <a href="#updating">Updating &amp; removing</a>
     <a href="#recovery">Recovery</a>
     <a href="#troubleshooting">Troubleshooting</a>
+          <a href="#android">Android preview</a>
     <a href="#source">Build from source</a>
   </nav>
 
@@ -212,6 +213,26 @@
       <h3>No alarm after sleep</h3>
       <p>Sleeping PCs aren’t woken. Expired one-time reminders are marked missed; keep the PC awake for important alarms.</p>
       <p>Still stuck? <a href="https://github.com/limpy183-dev/Still/issues">Open an issue on GitHub</a> or browse the <a href="/faq">FAQ</a>.</p>
+    </section>
+
+    <section class="panel doc-section" id="android" data-reveal>
+      <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-leaf"/></svg></span>Android preview</h2>
+      <p>Still for Android is an early test build for Android 11 or newer. It isn’t a finished release yet, so expect rough edges and <a href="https://github.com/limpy183-dev/Still/issues">report what you find</a>.</p>
+      <h3>Install and set up</h3>
+      <ol class="olist">
+        <li><span>On your phone, download the APK from the <a href="/download#android">download page</a> and open it. Allow your browser to install apps if Android asks.</span></li>
+        <li><span>Open <b>Still Focus</b> and tap <b>Turn on app blocking</b>, then switch Still Focus on under Accessibility.</span></li>
+        <li><span>If Android says the setting is restricted, open <b>App info → ⋮ → Allow restricted settings</b> and try again.</span></li>
+        <li><span>Choose apps and websites, a duration and an optional release delay, then tap <b>Start focus</b>. Allow notifications to see the countdown.</span></li>
+      </ol>
+      <h3>How it differs from Windows</h3>
+      <p>The bar at the bottom holds the same pages as the Windows sidebar: <b>Focus</b>, <b>To-dos</b>, <b>Alerts</b>, <b>Limits</b> and <b>Progress</b>. Sessions, the release delay, time limits, bedtime, alerts and to-dos follow the same rules. Instead of AppLocker, an accessibility service sends blocked apps back to the home screen. Websites are blocked in Chrome, Edge, Brave, Vivaldi, Firefox, Samsung Internet and DuckDuckGo, and browsers Still can’t read are blocked during sessions with websites. <b>Protect Still during the session</b> keeps Still’s own Settings and uninstall screens closed until the session ends.</p>
+      <h3>Updating and recovery</h3>
+      <p><b>Updating:</b> install the newer APK over the top; your to-dos, alerts, limits and history stay. If you installed an early debug build, uninstall it once first.</p>
+      <p><b>If you’re stuck:</b> restarting the phone in Android’s <b>Safe mode</b> switches off Still’s blocking. With USB debugging, this ends a session straight away and keeps your history:</p>
+      <div class="codeblock"><button class="copy" type="button" data-copy="#android-recover-cmd"><svg aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button><pre id="android-recover-cmd">adb shell am broadcast -n io.github.limpy183dev.still/.Recover</pre></div>
+      <div class="note"><svg aria-hidden="true"><use href="#i-alert"/></svg><span>Still refuses work profiles and phones managed by an organisation. If anything goes wrong while blocking, it stops blocking rather than locking you out.</span></div>
+      <p>More detail: <a href="https://github.com/limpy183-dev/Still/blob/main/docs/android.md">Still for Android</a> on GitHub.</p>
     </section>
 
     <section class="panel doc-section" id="source" data-reveal>
