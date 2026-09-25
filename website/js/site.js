@@ -193,6 +193,11 @@
     if (!r) return;
     const a = setupAsset(r);
     apply({ version: r.tag.replace(/^v/, ''), date: r.date, size: a.size, url: a.url, sha: a.digest.replace(/^sha256:/, ''), page: r.url });
+    const apk = r.assets.find(x => /^Still-Android-.*\.apk$/i.test(x.name));
+    if (apk) {
+      $$('[data-apk]').forEach(e => e.href = apk.url);
+      $$('[data-apk-size]').forEach(e => e.textContent = `(${(apk.size / 1048576).toFixed(1)} MB)`);
+    }
   });
 
   $$('[data-dl]').forEach(a => a.addEventListener('click', () => {
