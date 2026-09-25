@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Privacy & security — Still</title>
-<meta name="description" content="No account, no analytics, no telemetry. How Still keeps your focus data on your PC, how the app and guard are secured, and the honest limits of protection.">
+<meta name="description" content="No account, no analytics, no telemetry. How Still keeps your focus data on your PC or phone, how the app and guard are secured, and the honest limits of protection.">
 <meta name="theme-color" content="#f5f6f1">
 <link rel="canonical" href="https://stillfocus.fyi/privacy">
 <meta property="og:url" content="https://stillfocus.fyi/privacy">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Still">
 <meta property="og:title" content="Privacy & security — Still">
-<meta property="og:description" content="No account, no analytics, no telemetry. How Still keeps your focus data on your PC, how the app and guard are secured, and the honest limits of protection.">
+<meta property="og:description" content="No account, no analytics, no telemetry. How Still keeps your focus data on your PC or phone, how the app and guard are secured, and the honest limits of protection.">
 <meta property="og:image" content="https://stillfocus.fyi/assets/still.png?v=2">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="256">
@@ -20,7 +20,7 @@
 <meta name="twitter:image" content="https://stillfocus.fyi/assets/still.png?v=2">
 <meta name="twitter:image:alt" content="Still logo">
 <meta name="twitter:title" content="Privacy & security — Still">
-<meta name="twitter:description" content="No account, no analytics, no telemetry. How Still keeps your focus data on your PC, how the app and guard are secured, and the honest limits of protection.">
+<meta name="twitter:description" content="No account, no analytics, no telemetry. How Still keeps your focus data on your PC or phone, how the app and guard are secured, and the honest limits of protection.">
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="assets/still.ico" sizes="any">
 <link rel="icon" href="assets/still.png" type="image/png">
@@ -48,7 +48,7 @@
     <nav class="crumbs fade-in" style="--d:0s" aria-label="Breadcrumb"><a href="/home">Still</a><span>/</span><b>Privacy &amp; security</b></nav>
     <span class="eyebrow fade-in" style="--d:.05s"><span class="tiny-dot"></span>Privacy &amp; security</span>
     <h1 class="h1 split">Your attention is yours. <span>So is your data.</span></h1>
-    <p class="lead fade-in" style="--d:.5s">Still has no accounts and no analytics. Your selections, sessions and history stay on your PC, and we’re upfront about what the app can and can’t do.</p>
+    <p class="lead fade-in" style="--d:.5s">Still has no accounts and no analytics. Your selections, sessions and history stay on your PC or phone, and we’re upfront about what the app can and can’t do.</p>
   </div></div>
 </section>
 
@@ -57,7 +57,7 @@
     <div class="promise" data-stagger>
       <div class="panel lift spot" data-reveal><b>0</b><strong>Accounts</strong><p class="muted small">Nothing to sign up for. Nothing to sign in to.</p></div>
       <div class="panel lift spot" data-reveal><b>0</b><strong>Analytics &amp; telemetry</strong><p class="muted small">Still doesn’t report how, when or whether you use it.</p></div>
-      <div class="panel lift spot" data-reveal><b>100%</b><strong>On your PC</strong><p class="muted small">Preferences, alerts, to-dos and history are stored locally.</p></div>
+      <div class="panel lift spot" data-reveal><b>100%</b><strong>On your device</strong><p class="muted small">Preferences, alerts, to-dos and history are stored locally.</p></div>
     </div>
   </div>
 </section>
@@ -70,6 +70,7 @@
     <a href="#app">App security</a>
     <a href="#guard">The guard</a>
     <a href="#browser">Browser companion</a>
+    <a href="#android">Android preview</a>
     <a href="#limits">Honest limits</a>
     <a href="#website">This website</a>
   </nav>
@@ -123,6 +124,19 @@
       <p>No TLS interception, root certificate, network proxy or DNS change is ever used.</p>
     </section>
 
+    <section class="panel doc-section" id="android" data-reveal>
+      <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-leaf"/></svg></span>Android preview</h2>
+      <p><b>The Android app can’t go online at all.</b> It doesn’t ask Android for internet access, so nothing it knows can leave your phone. There are no website logos or update checks on Android.</p>
+      <p>To block apps and websites, Still uses an Android accessibility service. Here’s exactly what it looks at:</p>
+      <ul class="ulist">
+        <li><b>With no session and no limits,</b> it asks Android for nothing and does no work.</li>
+        <li><b>During a session,</b> it’s told only when you open or switch apps, and checks whether that app is blocked. It never reads what you type or what’s on screen in other apps.</li>
+        <li><b>In supported browsers,</b> during website sessions or while you have daily limits, it reads the address bar to see which website is open. Only the website’s name is compared with your list; it doesn’t keep a browsing history.</li>
+        <li><b>With Protect Still on,</b> it checks whether an open Settings screen mentions Still Focus, so it can keep Still’s own settings and uninstall screens closed until the session ends.</li>
+      </ul>
+      <p>Everything is stored in Still’s private app storage on your phone: session state and history (up to 500 sessions), to-dos, alerts, limits and today’s usage. Cloud backup and phone-to-phone transfer are switched off. Images and sounds you pick are copied in through Android’s file picker, so Still never needs access to your photos or files. Uninstalling the app removes all of it. Export your history from <b>Progress</b> any time.</p>
+    </section>
+
     <section class="panel doc-section" id="limits" data-reveal>
       <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-alert"/></svg></span>Honest limits</h2>
       <p><b>Still is a focus aid, not an unbreakable lock.</b> No app can guarantee that against the administrator of the same PC. We’d rather you know exactly where the edges are:</p>
@@ -133,6 +147,7 @@
         <li><svg aria-hidden="true"><use href="#i-alert"/></svg>Website blocking covers Chrome and Edge. Other browsers and proxy/remote sites can bypass it.</li>
         <li><svg aria-hidden="true"><use href="#i-alert"/></svg>The companion is unpacked; removing it bypasses immediate blocks until browser policies refresh.</li>
         <li><svg aria-hidden="true"><use href="#i-alert"/></svg>Alerts need Still open or in the tray, and sleeping PCs aren’t woken.</li>
+        <li><svg aria-hidden="true"><use href="#i-alert"/></svg>On Android, Safe mode, a factory reset, USB debugging or another user profile get around Still, and websites inside other apps’ built-in browsers aren’t seen.</li>
       </ul>
       <p>Still shows these limits in the app, too. Essential Windows components, framework packages and Still itself can never be selected.</p>
     </section>
