@@ -1,8 +1,8 @@
 # Using Still
 
-[← Back to the overview](../README.md) · [Website setup](website-blocking.md) · [Development](development.md)
+[← Back to the overview](../README.md) · [Website setup](website-blocking.md) · [Still for Android](android.md) · [Development](development.md)
 
-Install, focus, schedule reminders, and manage Windows protection.
+Install, focus, schedule reminders, and manage Windows protection. Using a phone? See [Android preview](#android-preview).
 
 ## Install
 
@@ -84,3 +84,30 @@ This deliberately overrides a session, stops and unregisters Still Guard, and re
 - The service runs as LocalSystem; its named pipe is restricted to its owner, SYSTEM, and administrators, with network access denied. Requests are bounded and validated again in the native service.
 - Guard state is stored atomically in `%ProgramData%\Still\state.json`. Its directory and `%ProgramFiles%\Still Guard` are writable only by administrators and SYSTEM. The installing user receives read access.
 - UI preferences are in Electron's `app.getPath('userData')` (`%APPDATA%\still-focus`). UI preferences do not control an active session. The guard retains up to 500 recent sessions, pruning older entries when the state reaches its 700,000-character budget.
+
+## Android preview
+
+Still for Android is an early test build for Android 11 or newer. It isn't a finished release yet. It has the same pages as the Windows sidebar in a bar at the bottom (**Focus**, **To-dos**, **Alerts**, **Limits**, **Progress**), and sessions, release delays, website limits, bedtime, alerts and to-dos follow the same rules as on Windows.
+
+**Install:**
+
+1. On your phone, download `Still-Android-preview-<version>.apk` from the [latest release](https://github.com/limpy183-dev/Still/releases/latest) or the [download page](https://stillfocus.fyi/download#android), and open it. Allow your browser to install apps if Android asks.
+2. Open **Still Focus**, tap **Turn on app blocking**, and switch Still Focus on under Accessibility. If Android says the setting is restricted, open **App info → ⋮ → Allow restricted settings** and try again.
+3. Choose apps and websites, a duration, and an optional release delay, then tap **Start focus**. Allow notifications to see the countdown.
+
+**What's different from Windows:**
+
+- There's no AppLocker or Still Guard. An accessibility service sends blocked apps back to the home screen and shows your block screen.
+- There's no browser companion to set up. Still reads the address bar of Chrome, Edge, Brave, Vivaldi, Firefox, Samsung Internet and DuckDuckGo. Browsers it can't read are blocked during sessions with websites.
+- **Protect Still during the session** (on by default) keeps Still's own Settings and uninstall screens closed until the session ends.
+- Still refuses work profiles and phones managed by an organisation, as it refuses managed PCs.
+
+**Updating:** install the newer APK over the old one. Your to-dos, alerts, limits and history stay. If you installed an early debug build, uninstall it once first.
+
+**Recovery:** if anything goes wrong while blocking, Still stops blocking rather than locking you out. Restarting in Android's **Safe mode** always switches Still's blocking off. With USB debugging, this ends a session straight away and keeps your history:
+
+```bash
+adb shell am broadcast -n io.github.limpy183dev.still/.Recover
+```
+
+**Data:** everything stays on the phone, with no account, cloud backup or phone-to-phone transfer. [Still for Android](android.md) has the full details, including limits, resource use and data files.
