@@ -152,8 +152,8 @@
 
       <Border x:Name="TitleBar" Background="#EEF0E9" CornerRadius="15,15,0,0">
         <DockPanel>
-          <Button x:Name="CloseButton" DockPanel.Dock="Right" Style="{StaticResource CloseButton}" Content="✕" FontSize="11" AutomationProperties.Name="Close"/>
-          <Button x:Name="MinimizeButton" DockPanel.Dock="Right" Style="{StaticResource WindowButton}" Content="–" AutomationProperties.Name="Minimize"/>
+          <Button x:Name="CloseButton" DockPanel.Dock="Right" Style="{StaticResource CloseButton}" AutomationProperties.Name="Close"><Path Data="M0,0 L10,10 M10,0 L0,10" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1" SnapsToDevicePixels="True"/></Button>
+          <Button x:Name="MinimizeButton" DockPanel.Dock="Right" Style="{StaticResource WindowButton}" AutomationProperties.Name="Minimize"><Path Data="M0,0.5 L10,0.5" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1" SnapsToDevicePixels="True"/></Button>
           <TextBlock x:Name="TitleText" Margin="22,0,0,0" VerticalAlignment="Center" FontSize="9" FontWeight="ExtraBold" Foreground="#91978E" Text="STILL · SETUP"/>
         </DockPanel>
       </Border>

@@ -1,3 +1,7 @@
+## What's new in v1.0.8
+
+- **Centred window buttons.** The minimise, maximise and close icons in the title bar now sit exactly in the middle of their buttons, as do the close button on alarm screens and the installer's window buttons. They're drawn as crisp lines instead of text characters.
+
 ## What's new in v1.0.7
 
 - **Android preview: move your to-dos.** Drag a line's ⌃⌄ handle up or down. It lifts and grows a little, the other lines glide out of its way, and it settles back when you let go, just like on Windows. TalkBack users get **Move up** and **Move down** actions. Download `Still-Android-preview-1.0.7.apk` below. No changes to the Windows app.

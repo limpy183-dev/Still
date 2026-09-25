@@ -167,7 +167,8 @@ section{position:relative}
 .win-title{height:2.6em;display:flex;align-items:center;justify-content:space-between;padding-left:1.9em;background:#eef0e9;font-size:1em}
 .win-title b{font-size:.62em;letter-spacing:.24em;font-weight:700;color:#91978e}
 .win-title i{display:flex;height:100%;font-style:normal;color:#767d72}
-.win-title i span{width:3.4em;display:grid;place-items:center;font-size:1.2em}
+.win-title i span{width:3.4em;display:grid;place-items:center}
+.win-title i svg{width:.75em;height:.75em;stroke-width:1;stroke-linecap:square}
 .win-body{display:flex;min-height:44em}
 .win-side{width:17em;flex-shrink:0;background:var(--side);border-right:1px solid #e3e7dc;padding:2em 1.4em 1.2em;display:flex;flex-direction:column}
 .win-side .brand{font-size:2.9em;letter-spacing:-.06em;padding:0 .4em}
@@ -580,7 +581,8 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .setup{max-width:520px;margin:auto;border-radius:16px;background:var(--bg);border:1px solid #e1e5da;box-shadow:0 30px 60px -28px #1b241555;overflow:hidden;text-align:left}
 .setup-top{height:34px;background:#eef0e9;display:flex;align-items:center;justify-content:space-between;padding:0 0 0 18px;font-size:9px;letter-spacing:2px;font-weight:700;color:#91978e}
 .setup-top i{font-style:normal;display:flex}
-.setup-top i span{width:40px;text-align:center;font-size:13px;letter-spacing:0;color:#767d72}
+.setup-top i span{width:40px;display:grid;place-items:center;color:#767d72}
+.setup-top i svg{width:9px;height:9px;stroke-width:1;stroke-linecap:square}
 .setup-body{padding:30px 34px 28px}
 .setup-body .brand{font-size:36px}
 .setup-body .eb{font-size:10px;letter-spacing:2px;font-weight:750;color:#919a84;margin:18px 0 6px}
