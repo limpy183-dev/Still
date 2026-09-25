@@ -39,6 +39,7 @@ public final class AlertsActivity extends Activity {
         setContentView(R.layout.activity_alerts);
         dp = getResources().getDisplayMetrics().density;
         findViewById(R.id.alert_add).setOnClickListener(v -> startActivity(new Intent(this, AlertEditActivity.class)));
+        Nav.attach(this, Nav.ALERTS);
     }
 
     @Override
@@ -77,6 +78,7 @@ public final class AlertsActivity extends Activity {
             refresh = Math.min(refresh, nextAt(a, now, zone));
         }
         findViewById(R.id.alerts_empty).setVisibility(all.isEmpty() ? View.VISIBLE : View.GONE);
+        ((TextView) findViewById(R.id.alerts_total)).setText(String.valueOf(all.size()));
         // Redraw when the next one is due, not on a timer.
         if (refresh != Long.MAX_VALUE) handler.postDelayed(render, Math.max(1000, refresh - now + 1500));
     }
@@ -130,24 +132,29 @@ public final class AlertsActivity extends Activity {
         render();
     }
 
+    /** One alert as a card: its time, repeat and switch, then what it's for and how it will act. */
     private View row(Alerts.Alert a, Session running, long now, ZoneId zone) {
-        LinearLayout row = new LinearLayout(this);
-        row.setGravity(Gravity.CENTER_VERTICAL);
-        int pad = Math.round(12 * dp);
-        row.setPadding(0, pad, 0, pad);
-        row.setMinimumHeight(Math.round(64 * dp));
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setBackgroundResource(R.drawable.card);
+        card.setForeground(getDrawable(android.R.drawable.list_selector_background));
+        card.setPadding(Math.round(18 * dp), Math.round(10 * dp), Math.round(10 * dp), Math.round(18 * dp));
+        LinearLayout.LayoutParams gap = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        gap.topMargin = Math.round(12 * dp);
+        card.setLayoutParams(gap);
 
-        LinearLayout when = new LinearLayout(this);
-        when.setOrientation(LinearLayout.VERTICAL);
-        TextView clock = new TextView(this, null, 0, R.style.Body);
-        clock.setTextSize(24);
+        LinearLayout top = new LinearLayout(this);
+        top.setGravity(Gravity.CENTER_VERTICAL);
+        TextView clock = new TextView(this, null, 0, R.style.Title);
+        clock.setTextSize(26);
         clock.setText(Store.clockText(this, a.time));
-        TextView repeat = new TextView(this, null, 0, R.style.Hint);
-        repeat.setText("once".equals(a.repeat) ? Alerts.date(a.date).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
-                : getString("daily".equals(a.repeat) ? R.string.repeat_daily : R.string.repeat_weekdays));
-        when.addView(clock);
-        when.addView(repeat);
-        row.addView(when, new LinearLayout.LayoutParams(Math.round(108 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
+        TextView repeat = new TextView(this, null, 0, R.style.Tag);
+        repeat.setText(("once".equals(a.repeat) ? Alerts.date(a.date).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
+                : getString("daily".equals(a.repeat) ? R.string.repeat_daily : R.string.repeat_weekdays)).toUpperCase(java.util.Locale.getDefault()));
+        repeat.setPadding(Math.round(10 * dp), Math.round(4 * dp), 0, 0);
+        top.addView(clock);
+        top.addView(repeat, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        card.addView(top);
 
         boolean session = a.sessionId != null && running != null && a.sessionId.equals(running.id);
         String status = a.enabled && a.snoozeAt > 0 ? getString(R.string.alert_status_snoozed, when(a.snoozeAt))
@@ -167,13 +174,18 @@ public final class AlertsActivity extends Activity {
                 : getResources().getQuantityString(R.plurals.alert_blocks, a.apps.size(), a.apps.size());
         String result = session ? "" : a.sessionId != null ? getString(R.string.alert_session_ended) : a.lastResult;
 
-        TextView text = new TextView(this, null, 0, R.style.Body);
-        StringBuilder body = new StringBuilder(a.title).append('\n').append(getString(styleName(a.style))).append(" · ").append(status)
+        TextView title = new TextView(this, null, 0, R.style.CardTitle);
+        title.setText(a.title);
+        title.setPadding(0, 0, Math.round(8 * dp), 0);
+        card.addView(title);
+        TextView text = new TextView(this, null, 0, R.style.Hint);
+        StringBuilder body = new StringBuilder(getString(styleName(a.style))).append(" · ").append(status)
                 .append('\n').append(length).append(" · ").append(blocking);
         if (!result.isEmpty()) body.append('\n').append(result);
         text.setText(body);
-        text.setAlpha(a.enabled ? 1f : 0.6f);
-        row.addView(text, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        text.setPadding(0, Math.round(4 * dp), Math.round(8 * dp), 0);
+        card.addView(text);
+        for (View faded : new View[] { clock, repeat, title, text }) faded.setAlpha(a.enabled ? 1f : 0.6f); // Paused.
 
         Switch toggle = new Switch(this);
         toggle.setChecked(a.enabled);
@@ -186,9 +198,9 @@ public final class AlertsActivity extends Activity {
             }
             render();
         });
-        row.addView(toggle);
-        row.setOnClickListener(v -> startActivity(new Intent(this, AlertEditActivity.class).putExtra(AlertEditActivity.ID, a.id)));
-        return row;
+        top.addView(toggle);
+        card.setOnClickListener(v -> startActivity(new Intent(this, AlertEditActivity.class).putExtra(AlertEditActivity.ID, a.id)));
+        return card;
     }
 
     static int styleName(String style) {

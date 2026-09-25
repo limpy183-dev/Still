@@ -1,48 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:fitsSystemWindows="true">
+    android:orientation="vertical">
 
-    <LinearLayout
+    <ScrollView
+        android:id="@+id/scroll"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
-
-        <TextView
-            style="@style/Title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/todos_title" />
-
-        <TextView
-            android:id="@+id/todo_progress"
-            style="@style/Label"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
 
         <LinearLayout
-            android:id="@+id/todo_rows"
+            android:id="@+id/page"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:orientation="vertical"
+            android:paddingHorizontal="18dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp">
 
-        <Button
-            android:id="@+id/todo_add"
-            style="@style/Secondary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/todo_add" />
+            <include layout="@layout/page_heading" />
 
-        <TextView
-            style="@style/Hint"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/todos_hint" />
-    </LinearLayout>
-</ScrollView>
+            <!-- .todo-paper -->
+            <LinearLayout style="@style/Panel">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:paddingBottom="14dp">
+
+                    <TextView
+                        style="@style/CardTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/todos_card_title" />
+
+                    <TextView
+                        android:id="@+id/todo_progress"
+                        style="@style/Tag"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:accessibilityLiveRegion="polite" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/line" />
+
+                <LinearLayout
+                    android:id="@+id/todo_rows"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <Button
+                    android:id="@+id/todo_add"
+                    style="@style/AddButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="@string/todo_add" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@color/line" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp">
+
+                    <TextView
+                        style="@style/Hint"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/todos_footer"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        style="@style/Hint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/todos_saved"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                style="@style/Hint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:paddingHorizontal="4dp"
+                android:text="@string/todos_hint"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </ScrollView>
+
+    <include layout="@layout/nav_bar" />
+</LinearLayout>

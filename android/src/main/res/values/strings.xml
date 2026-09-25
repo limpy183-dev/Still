@@ -4,7 +4,95 @@
     <string name="app_name">Still Focus</string>
     <string name="service_description">Still uses this during a focus session to see which app is on screen, send the apps you chose to block back to the home screen, and read the address bar of supported browsers to step back from websites you chose to block. It stores nothing about what you do and does nothing when no session is running. During a strict session it also covers the Settings pages that could switch Still off.</string>
 
-    <string name="setup_title">Focus space</string>
+    <!-- The bottom bar and page headings, worded like the desktop sidebar and .page-heading in app/index.html. -->
+    <string name="tab_focus">Focus</string>
+    <string name="tab_todos">To-dos</string>
+    <string name="tab_alerts">Alerts</string>
+    <string name="tab_limits">Limits</string>
+    <string name="tab_progress">Progress</string>
+    <string name="focus_eyebrow">A LITTLE INTENTION GOES A LONG WAY</string>
+    <string name="focus_heading">Your time.</string>
+    <string name="focus_heading_soft">On purpose.</string>
+    <string name="focus_subtitle">Put distractions on hold. Make space for what matters.</string>
+    <string name="todos_eyebrow">ONE SMALL THING AT A TIME</string>
+    <string name="todos_heading">A little list.</string>
+    <string name="todos_heading_soft">A clearer mind.</string>
+    <string name="todos_subtitle">Make room for your next steps. Type / on any line to choose a format.</string>
+    <string name="alerts_eyebrow">MAKE TIME FOR WHAT MATTERS</string>
+    <string name="alerts_heading">A gentle nudge.</string>
+    <string name="alerts_heading_soft">Or a fresh start.</string>
+    <string name="alerts_subtitle">Your reminders, your rhythm. Make a little space in your day.</string>
+    <string name="limits_eyebrow">A LITTLE LESS TIME ONLINE</string>
+    <string name="limits_heading">Enough is</string>
+    <string name="limits_heading_soft">enough.</string>
+    <string name="limits_subtitle">Daily limits and a bedtime for the websites that pull you in.</string>
+    <string name="history_eyebrow">PROGRESS, WITHOUT THE PRESSURE</string>
+    <string name="history_heading">Attention</string>
+    <string name="history_heading_soft">well spent.</string>
+    <string name="history_subtitle">Every session is a little more room for what matters.</string>
+
+    <!-- Focus space, worded like the focus page on Windows. -->
+    <string name="status_setup">Set up protection</string>
+    <string name="status_ready">Protection ready</string>
+    <string name="status_live">Focus protected</string>
+    <string name="session_title">Settle into focus</string>
+    <string name="session_title_active">Right here. Right now.</string>
+    <string name="session_tag">YOUR NEXT SESSION</string>
+    <string name="session_tag_active">FOCUS IN PROGRESS</string>
+    <string name="timer_top">TIME FOR YOURSELF</string>
+    <string name="timer_top_active">ONE THING AT A TIME</string>
+    <string name="timer_bottom">A fresh start awaits</string>
+    <string name="timer_bottom_active">You’re making room for what matters</string>
+    <plurals name="timer_a11y">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <string name="duration_label">Focus duration</string>
+    <string name="minutes_unit">min</string>
+    <string name="preset_25">25 min</string>
+    <string name="preset_25_note">A quick reset</string>
+    <string name="preset_50">50 min</string>
+    <string name="preset_50_note">Find your flow</string>
+    <string name="preset_90">90 min</string>
+    <string name="preset_90_note">Go a little deeper</string>
+    <string name="intention_label">What would you like to make room for?</string>
+    <string name="optional">Optional</string>
+    <string name="start_caption">Selected apps step back; selected websites go on hold.</string>
+    <string name="protection_title">Phone protection</string>
+    <string name="apps_card_title">Quiet the distractions</string>
+    <string name="apps_card_text">Choose what stays out of reach this session.</string>
+    <string name="apps_footer">Stepped back the moment they open. Even from shortcuts.</string>
+    <string name="delay_title">A pause before you quit</string>
+    <string name="delay_text">An urge to scroll doesn’t have to end your session. Give yourself a little time to reconsider.</string>
+    <string name="delay_row">Wait before ending early</string>
+    <string name="delay_note">Set before you start. Fixed while you focus.</string>
+    <string name="unlock_title">Your pause before the pause</string>
+    <string name="screen_card_title">A gentler way back to focus</string>
+    <string name="today_eyebrow">SPACE YOU MADE TODAY</string>
+    <string name="today_unit">minutes of intention</string>
+    <string name="today_bars">Focus minutes over the last seven days: %1$s</string>
+    <string name="thought">You don’t need more time.\nYou need a little less noise.</string>
+    <string name="quote_mark" translatable="false">“</string>
+    <string name="thought_caption">A SMALL REMINDER FROM STILL</string>
+    <string name="release_in">Release available in %1$s</string>
+    <string name="footer">Small beginnings. Meaningful things.</string>
+
+    <!-- Other pages. -->
+    <string name="todos_card_title">Your to-do list</string>
+    <string name="todos_footer">Next for a new line · / for formats</string>
+    <string name="todos_saved">Saved on this phone</string>
+    <string name="alerts_list_title">Your alerts</string>
+    <string name="alerts_next_eyebrow">NEXT MOMENT OF INTENTION</string>
+    <string name="alerts_guidance_title">Ready in the background.</string>
+    <string name="limits_card_title">Your websites, your pace</string>
+    <string name="limits_tag">DAILY LIMITS &amp; BEDTIME</string>
+    <string name="history_total">Total focus</string>
+    <string name="history_completed">Completed</string>
+    <string name="history_week">This week</string>
+    <string name="history_wider">A wider view of your focus</string>
+    <string name="history_sessions_title">Your sessions</string>
+    <string name="history_saved_tag">SAVED ON THIS PHONE</string>
+
     <string name="blocking_explain">To block apps and websites, Still needs its accessibility service. It only checks what is open, and only while a session runs.</string>
     <string name="enable_blocking">Turn on app blocking</string>
     <string name="restricted_hint">If Android says the setting is restricted, open App info, tap ⋮ and choose Allow restricted settings, then try again.</string>
@@ -12,7 +100,6 @@
     <string name="intention_hint">What are you focusing on?</string>
     <string name="duration">Duration (minutes)</string>
     <string name="delay">Release delay (minutes)</string>
-    <string name="delay_label">Minutes</string>
     <string name="strict">Protect Still during the session</string>
     <string name="strict_hint">Settings and uninstall screens that mention Still Focus are closed until the session ends, so Still can\'t be switched off early.</string>
     <string name="apps_loading">Finding apps…</string>
@@ -25,6 +112,7 @@
     <string name="too_many">Select between 1 and 100 apps or websites.</string>
     <string name="apps_none">None selected yet.</string>
     <string name="choose_apps">Choose apps</string>
+    <string name="choose_apps_add">+  Choose apps</string>
     <string name="done">Done</string>
     <string name="start">Start focus</string>
     <string name="need_blocking">Turn on app blocking first.</string>
@@ -32,7 +120,6 @@
     <string name="save_failed">Still couldn\'t save the session. Free some storage and try again.</string>
     <string name="state_reset">Still\'s saved data was damaged, so nothing is blocked. A copy was kept.</string>
 
-    <string name="in_session">Focusing</string>
     <string name="until">Until %1$s</string>
     <string name="blocking_list">Blocked: %1$s</string>
     <string name="release_none">You can end this session at any time.</string>
@@ -50,9 +137,8 @@
     <string name="cover_guard">Still\'s settings are locked until %1$s.</string>
 
     <string name="limits_title">Time limits</string>
-    <string name="limits_open">Time limits</string>
     <string name="limits_explain">Give websites a daily allowance, or rest them at bedtime. Time counts while a site is the page you\'re using in a supported browser with the screen on, and resets at midnight. Limits work outside focus sessions and can be changed at any time.</string>
-    <string name="limits_need_blocking">Turn on app blocking on Still\'s main screen first. Limits use the same service.</string>
+    <string name="limits_need_blocking">Turn on app blocking on the Focus page first. Limits use the same service.</string>
     <string name="bedtime">Bedtime</string>
     <string name="bedtime_dash">–</string>
     <string name="limit_row">%1$s\n%2$s</string>
@@ -74,7 +160,6 @@
 
     <!-- To-do list, worded like app/todos.js. -->
     <string name="todos_title">To-do list</string>
-    <string name="todos_open">To-do list</string>
     <string name="todos_hint">Type / at the start of a line or after a space to choose a checkbox, tick circle, bullet, numbered item, heading or note. Next starts a new line; Backspace on an empty line removes it. Saved automatically, even during a session.</string>
     <string name="todo_add">+ Add a line</string>
     <string name="todo_hint">Write something, or type / for formats…</string>
@@ -88,7 +173,6 @@
 
     <!-- Session history, worded like "Your progress" in app/index.html. -->
     <string name="history_title">Your progress</string>
-    <string name="history_explain">Every session is a little more room for what matters. Saved on this phone; the last 500 sessions are kept.</string>
     <string name="history_export">Export history</string>
     <string name="history_exported">Your session history has been exported.</string>
     <string name="history_export_failed">Still couldn\'t write that file. Try another place.</string>
@@ -110,7 +194,6 @@
         <item quantity="one">%1$d session · last %2$s · %3$s</item>
         <item quantity="other">%1$d sessions · last %2$s · %3$s</item>
     </plurals>
-    <string name="history_sessions">YOUR SESSIONS</string>
     <string name="history_unarchived">Unarchived</string>
     <string name="history_archived">Archived</string>
     <string name="history_all">All</string>
@@ -177,7 +260,6 @@
     <!-- Alerts, worded like app/alerts.js, alerts-main.cjs and alarm.html. -->
     <string name="alerts_title">Alerts</string>
     <string name="alerts_explain">A quiet reminder to stretch. A full-screen call to focus. Alerts can also start a focus session that ends at the time you chose.</string>
-    <string name="alerts_next">NEXT</string>
     <string name="alerts_next_none">A little space in your schedule.</string>
     <string name="alerts_next_none_detail">Create an alert for something that deserves your attention.</string>
     <string name="alerts_next_at">%1$s · %2$s</string>
@@ -237,7 +319,7 @@
     <string name="block_none">No blocking</string>
     <string name="block_current">Use the Focus space selection</string>
     <string name="block_custom">Choose apps and websites</string>
-    <string name="alert_current_note">Uses the apps and websites selected on the main screen when the alert starts.</string>
+    <string name="alert_current_note">Uses the apps and websites selected on the Focus page when the alert starts.</string>
     <string name="alert_copy_apps">Copy Focus space</string>
     <string name="alert_sites_hint">Websites, one per line</string>
     <string name="alert_delay_label">Release delay (minutes, 0 for none)</string>

@@ -22,6 +22,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
@@ -81,6 +82,7 @@ public final class TodosActivity extends Activity {
             changed();
         });
         render(-1, 0);
+        Nav.attach(this, Nav.TODOS);
     }
 
     @Override
@@ -130,7 +132,8 @@ public final class TodosActivity extends Activity {
     private View row(Todos.Item item, int index) {
         LinearLayout row = new LinearLayout(this);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setMinimumHeight(Math.round(48 * dp));
+        row.setMinimumHeight(Math.round(52 * dp));
+        row.setBackgroundResource(R.drawable.row_line);
         boolean task = Todos.isTask(item.type), heading = "heading".equals(item.type);
 
         View mark;
@@ -160,8 +163,10 @@ public final class TodosActivity extends Activity {
         input.setTag("input");
         input.setText(item.text);
         input.setBackground(null);
+        input.setPadding(0, Math.round(12 * dp), 0, Math.round(12 * dp));
         input.setTextSize(heading ? 20 : 16);
-        if (heading) input.setTypeface(Typeface.DEFAULT_BOLD);
+        if (heading) input.setTypeface(Typeface.create(input.getTypeface(), 700, false));
+        if ("note".equals(item.type)) input.setTextColor(getColor(R.color.muted));
         input.setHint(heading ? R.string.todo_heading_hint : R.string.todo_hint);
         input.setFilters(new InputFilter[] { new InputFilter.LengthFilter(Todos.MAX_TEXT) });
         // Wraps like a paragraph, but Enter is an action, so it starts a new line instead of a line break.
@@ -201,9 +206,11 @@ public final class TodosActivity extends Activity {
         row.addView(input, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
 
         ImageButton delete = new ImageButton(this);
-        delete.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+        delete.setImageResource(R.drawable.ic_close);
+        delete.setImageTintList(getColorStateList(R.color.muted));
+        delete.setScaleType(ImageView.ScaleType.CENTER);
         delete.setBackground(null);
-        delete.setAlpha(0.5f);
+        delete.setAlpha(0.6f);
         delete.setContentDescription(getString(R.string.todo_delete, index + 1));
         delete.setOnClickListener(v -> {
             int at = todos.items.indexOf(item);

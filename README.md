@@ -11,6 +11,7 @@
     <a href="docs/user-guide.md">User guide</a>
   </p>
   <p>Windows 10 / 11 · x64 · No account required · MIT licensed</p>
+  <p><sub>Android version in preview, not released yet: <a href="docs/android.md">Still for Android</a></sub></p>
 </div>
 
 [![Still Focus space: a 50-minute timer, selected distractions, and an optional pause before ending early](docs/images/focus-space.png)](docs/images/focus-space.png)

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The bottom bar: the desktop sidebar's pages, one tap away. See Nav.java. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/nav"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/nav_bar"
+    android:orientation="horizontal"
+    android:paddingHorizontal="6dp"
+    android:paddingTop="7dp"
+    android:paddingBottom="7dp">
+
+    <TextView
+        android:id="@+id/tab_focus"
+        style="@style/NavItem"
+        android:drawableTop="@drawable/ic_focus"
+        android:text="@string/tab_focus" />
+
+    <TextView
+        android:id="@+id/tab_todos"
+        style="@style/NavItem"
+        android:drawableTop="@drawable/ic_check"
+        android:text="@string/tab_todos" />
+
+    <TextView
+        android:id="@+id/tab_alerts"
+        style="@style/NavItem"
+        android:drawableTop="@drawable/ic_clock"
+        android:text="@string/tab_alerts" />
+
+    <TextView
+        android:id="@+id/tab_limits"
+        style="@style/NavItem"
+        android:drawableTop="@drawable/ic_hourglass"
+        android:text="@string/tab_limits" />
+
+    <TextView
+        android:id="@+id/tab_progress"
+        style="@style/NavItem"
+        android:drawableTop="@drawable/ic_chart"
+        android:text="@string/tab_progress" />
+</LinearLayout>

@@ -1,137 +1,859 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Focus space, laid out like the desktop focus page in one column: the timer card, then the side cards below it. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/refused"
-        style="@style/Body"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:padding="32dp"
-        android:visibility="gone" />
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-    <LinearLayout
-        android:id="@+id/setup"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:visibility="gone">
+        <TextView
+            android:id="@+id/refused"
+            style="@style/Body"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone" />
 
         <ScrollView
+            android:id="@+id/scroll"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_height="match_parent"
+            android:clipToPadding="false">
 
-            <include layout="@layout/setup_form" />
+            <LinearLayout
+                android:id="@+id/page"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="18dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="16dp">
+
+                <include layout="@layout/page_heading" />
+
+                <TextView
+                    android:id="@+id/status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/pill"
+                    android:drawableStart="@drawable/dot"
+                    android:drawablePadding="8dp"
+                    android:drawableTint="@color/ring_running"
+                    android:gravity="center_vertical"
+                    android:minHeight="36dp"
+                    android:paddingHorizontal="14dp"
+                    android:textColor="@color/green"
+                    android:textFontWeight="600"
+                    android:textSize="13sp" />
+
+                <!-- .focus-card -->
+                <LinearLayout
+                    android:id="@+id/focus_card"
+                    style="@style/Panel">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/session_title"
+                            style="@style/CardTitle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/session_title" />
+
+                        <TextView
+                            android:id="@+id/session_tag"
+                            style="@style/Tag"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:drawableStart="@drawable/dot"
+                            android:text="@string/session_tag" />
+                    </LinearLayout>
+
+                    <!-- .timer-scene: glow, orbits, the ring and the floating leaf. -->
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="262dp"
+                        android:clipChildren="false"
+                        android:importantForAccessibility="no">
+
+                        <View
+                            android:id="@+id/glow"
+                            android:layout_width="250dp"
+                            android:layout_height="250dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/glow" />
+
+                        <View
+                            android:layout_width="252dp"
+                            android:layout_height="204dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/orbit_dashed"
+                            android:rotation="-27" />
+
+                        <View
+                            android:layout_width="236dp"
+                            android:layout_height="229dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/orbit_line"
+                            android:rotation="38" />
+
+                        <view
+                            android:id="@+id/ring"
+                            class="io.github.limpy183dev.still.MainActivity$Ring"
+                            android:layout_width="224dp"
+                            android:layout_height="224dp"
+                            android:layout_gravity="center" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/timer_top"
+                                style="@style/Label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:letterSpacing="0.2"
+                                android:textSize="10sp"
+                                android:text="@string/timer_top" />
+
+                            <TextView
+                                android:id="@+id/timer_number"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFeatureSettings="tnum"
+                                android:includeFontPadding="false"
+                                android:letterSpacing="-0.05"
+                                android:paddingVertical="4dp"
+                                android:textColor="@color/ink"
+                                android:textFontWeight="500"
+                                android:textSize="54sp" />
+
+                            <TextView
+                                android:id="@+id/timer_bottom"
+                                style="@style/Hint"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:drawableStart="@drawable/dot"
+                                android:drawablePadding="6dp"
+                                android:drawableTint="@color/ring"
+                                android:gravity="center"
+                                android:maxWidth="190dp"
+                                android:textAlignment="center"
+                                android:textSize="11sp"
+                                android:text="@string/timer_bottom" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/leaf"
+                            android:importantForAccessibility="no"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:layout_gravity="top|center_horizontal"
+                            android:layout_marginTop="34dp"
+                            android:background="@drawable/leaf_badge"
+                            android:padding="10dp"
+                            android:src="@drawable/ic_leaf"
+                            android:tint="@color/leaf"
+                            android:translationX="86dp" />
+                    </FrameLayout>
+
+                    <!-- Setting up the next session. -->
+                    <LinearLayout
+                        android:id="@+id/setup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                style="@style/Body"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:labelFor="@+id/duration"
+                                android:text="@string/duration_label"
+                                android:textFontWeight="650" />
+
+                            <EditText
+                                android:id="@id/duration"
+                                android:layout_width="68dp"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:importantForAutofill="no"
+                                android:inputType="number"
+                                android:maxLength="4"
+                                android:minHeight="42dp"
+                                android:paddingHorizontal="8dp"
+                                android:paddingVertical="6dp"
+                                android:selectAllOnFocus="true"
+                                android:textFontWeight="650" />
+
+                            <TextView
+                                style="@style/Hint"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="@string/minutes_unit" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            style="@style/SegmentTrack"
+                            android:layout_marginTop="12dp">
+
+                            <TextView
+                                android:id="@+id/preset_25"
+                                style="@style/Segment"
+                                android:paddingVertical="8dp"
+                                android:text="@string/preset_25" />
+
+                            <TextView
+                                android:id="@+id/preset_50"
+                                style="@style/Segment"
+                                android:paddingVertical="8dp"
+                                android:text="@string/preset_50" />
+
+                            <TextView
+                                android:id="@+id/preset_90"
+                                style="@style/Segment"
+                                android:paddingVertical="8dp"
+                                android:text="@string/preset_90" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="18dp">
+
+                            <TextView
+                                style="@style/Body"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:labelFor="@+id/intention_input"
+                                android:text="@string/intention_label"
+                                android:textFontWeight="650"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                style="@style/Hint"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="@string/optional"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <EditText
+                            android:id="@id/intention_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:drawableStart="@drawable/ic_leaf_small"
+                            android:drawablePadding="10dp"
+                            android:drawableTint="@color/ring"
+                            android:hint="@string/intention_hint"
+                            android:importantForAutofill="no"
+                            android:inputType="textCapSentences"
+                            android:maxLength="120" />
+                    </LinearLayout>
+
+                    <!-- While a session runs: .active-details and .unlock-info. -->
+                    <LinearLayout
+                        android:id="@+id/active"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/intention"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAlignment="center"
+                            android:textColor="@color/ink"
+                            android:textFontWeight="600"
+                            android:letterSpacing="-0.02"
+                            android:textSize="20sp" />
+
+                        <TextView
+                            android:id="@+id/until"
+                            style="@style/Hint"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:drawableStart="@drawable/ic_clock_small"
+                            android:drawablePadding="6dp"
+                            android:drawableTint="@color/leaf"
+                            android:gravity="center_vertical"
+                            android:textColor="@color/green" />
+
+                        <TextView
+                            android:id="@+id/blocking"
+                            style="@style/Hint"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:textAlignment="center" />
+
+                        <LinearLayout
+                            android:id="@+id/unlock_box"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:background="@drawable/card_warm"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/unlock_title"
+                                android:textColor="@color/warm_ink"
+                                android:textFontWeight="700"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:id="@+id/release"
+                                style="@style/Hint"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:accessibilityLiveRegion="polite"
+                                android:textColor="@color/warm_ink" />
+
+                            <Button
+                                android:id="@+id/request"
+                                style="@style/TextButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="end"
+                                android:layout_marginTop="4dp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/start"
+                        style="@style/Primary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:drawableStart="@drawable/ic_focus"
+                        android:drawableEnd="@drawable/ic_arrow"
+                        android:text="@string/start" />
+
+                    <Button
+                        android:id="@+id/end"
+                        style="@style/Primary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:drawableStart="@drawable/ic_leaf"
+                        android:drawableEnd="@drawable/ic_arrow"
+                        android:text="@string/end"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/start_caption"
+                        style="@style/Hint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:drawableStart="@drawable/ic_lock_small"
+                        android:drawablePadding="6dp"
+                        android:drawableTint="@color/muted"
+                        android:gravity="center_vertical"
+                        android:text="@string/start_caption"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <!-- Turning on the accessibility service (Windows protection on the desktop). -->
+                <LinearLayout
+                    android:id="@+id/blocking_card"
+                    style="@style/Panel">
+
+                    <TextView
+                        style="@style/CardTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:drawableStart="@drawable/ic_shield"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="@color/leaf"
+                        android:gravity="center_vertical"
+                        android:text="@string/protection_title" />
+
+                    <TextView
+                        style="@style/Hint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/blocking_explain" />
+
+                    <Button
+                        android:id="@+id/enable_blocking"
+                        style="@style/Primary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:drawableEnd="@drawable/ic_arrow"
+                        android:text="@string/enable_blocking" />
+
+                    <TextView
+                        style="@style/Hint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/soft_box"
+                        android:padding="12dp"
+                        android:text="@string/restricted_hint"
+                        android:textSize="12sp" />
+
+                    <Button
+                        android:id="@+id/app_info"
+                        style="@style/TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/app_info" />
+                </LinearLayout>
+
+                <!-- .apps-card -->
+                <LinearLayout
+                    android:id="@+id/apps_card"
+                    style="@style/Panel">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            style="@style/CardTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/apps_card_title" />
+
+                        <TextView
+                            android:id="@+id/selected_count"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:background="@drawable/soft_box"
+                            android:gravity="center"
+                            android:minWidth="24dp"
+                            android:paddingHorizontal="6dp"
+                            android:paddingVertical="1dp"
+                            android:textColor="@color/green"
+                            android:textFontWeight="700"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        style="@style/Hint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/apps_card_text" />
+
+                    <TextView
+                        style="@style/Label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="18dp"
+                        android:text="@string/apps_title" />
+
+                    <TextView
+                        android:id="@+id/apps_label"
+                        style="@style/Body"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp" />
+
+                    <Button
+                        android:id="@+id/choose_apps"
+                        style="@style/AddButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/choose_apps_add" />
+
+                    <TextView
+                        style="@style/Label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/sites_title" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical">
+
+                        <EditText
+                            android:id="@+id/site_input"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="@string/site_hint"
+                            android:imeOptions="actionDone"
+                            android:importantForAutofill="no"
+                            android:inputType="textUri"
+                            android:maxLength="2048" />
+
+                        <Button
+                            android:id="@+id/add_site"
+                            style="@style/Secondary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:minHeight="48dp"
+                            android:text="@string/add_site" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/site_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:orientation="vertical" />
+
+                    <TextView
+                        style="@style/Hint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/sites_note"
+                        android:textSize="12sp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="14dp"
+                        android:background="@color/line" />
+
+                    <TextView
+                        style="@style/Hint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:drawableStart="@drawable/ic_shield_small"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="@color/leaf"
+                        android:gravity="center_vertical"
+                        android:text="@string/apps_footer"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <!-- .delay-card, with strict mode beside it. -->
+                <LinearLayout
+                    android:id="@+id/delay_card"
+                    style="@style/Panel">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:background="@drawable/soft_box"
+                            android:importantForAccessibility="no"
+                            android:padding="7dp"
+                            android:src="@drawable/ic_clock"
+                            android:tint="@color/leaf" />
+
+                        <TextView
+                            style="@style/CardTitle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1"
+                            android:text="@string/delay_title" />
+
+                        <Switch
+                            android:id="@+id/delay_enabled"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="@string/delay"
+                            android:minHeight="48dp" />
+                    </LinearLayout>
+
+                    <TextView
+                        style="@style/Hint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/delay_text" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            style="@style/Body"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:labelFor="@+id/delay"
+                            android:text="@string/delay_row"
+                            android:textSize="14sp" />
+
+                        <EditText
+                            android:id="@id/delay"
+                            android:layout_width="68dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:importantForAutofill="no"
+                            android:inputType="number"
+                            android:maxLength="3"
+                            android:minHeight="42dp"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="6dp"
+                            android:selectAllOnFocus="true"
+                            android:textFontWeight="650" />
+
+                        <TextView
+                            style="@style/Hint"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/minutes_unit" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="14dp"
+                        android:background="@color/line" />
+
+                    <Switch
+                        android:id="@+id/strict"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:minHeight="48dp"
+                        android:text="@string/strict"
+                        android:textColor="@color/ink"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        style="@style/Hint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/strict_hint"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        style="@style/Hint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:drawableStart="@drawable/ic_lock_small"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="@color/leaf"
+                        android:gravity="center_vertical"
+                        android:text="@string/delay_note"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <!-- The block screen (Settings on Windows). -->
+                <LinearLayout
+                    android:id="@+id/screen_card"
+                    style="@style/Panel">
+
+                    <TextView
+                        style="@style/CardTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/screen_card_title" />
+
+                    <TextView
+                        android:id="@+id/screen_summary"
+                        style="@style/Hint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp" />
+
+                    <Button
+                        android:id="@+id/change_screen"
+                        style="@style/Secondary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/screen_change" />
+                </LinearLayout>
+
+                <!-- .today-card -->
+                <LinearLayout
+                    style="@style/Panel"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="16dp">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/soft_box"
+                        android:importantForAccessibility="no"
+                        android:padding="10dp"
+                        android:src="@drawable/ic_sun"
+                        android:tint="@color/bar_today" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/Label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/today_eyebrow"
+                            android:textSize="10sp" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:baselineAligned="true">
+
+                            <TextView
+                                android:id="@+id/today_minutes"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:letterSpacing="-0.04"
+                                android:textColor="@color/ink"
+                                android:textFontWeight="650"
+                                android:textSize="26sp" />
+
+                            <TextView
+                                style="@style/Hint"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:text="@string/today_unit"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/week_bars"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:gravity="bottom"
+                        android:orientation="horizontal" />
+                </LinearLayout>
+
+                <!-- .thought-card -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/card_thought"
+                    android:clipChildren="true">
+
+                    <FrameLayout
+                        android:layout_width="140dp"
+                        android:layout_height="100dp"
+                        android:layout_gravity="end|center_vertical"
+                        android:layout_marginEnd="-30dp"
+                        android:importantForAccessibility="no"
+                        android:rotation="-20">
+
+                        <View
+                            android:layout_width="90dp"
+                            android:layout_height="90dp"
+                            android:background="@drawable/thought_circle" />
+
+                        <View
+                            android:layout_width="90dp"
+                            android:layout_height="90dp"
+                            android:layout_marginStart="20dp"
+                            android:background="@drawable/thought_circle" />
+
+                        <View
+                            android:layout_width="90dp"
+                            android:layout_height="90dp"
+                            android:layout_marginStart="40dp"
+                            android:background="@drawable/thought_circle" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="22dp"
+                        android:paddingVertical="20dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="serif"
+                            android:importantForAccessibility="no"
+                            android:includeFontPadding="false"
+                            android:text="@string/quote_mark"
+                            android:textColor="@color/ring"
+                            android:textSize="32sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
+                            android:lineSpacingMultiplier="1.15"
+                            android:text="@string/thought"
+                            android:textColor="@color/thought_ink"
+                            android:textFontWeight="500"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            style="@style/Label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/thought_caption"
+                            android:textColor="@color/thought_ink"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <TextView
+                    style="@style/Hint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:drawableStart="@drawable/ic_leaf_small"
+                    android:drawablePadding="6dp"
+                    android:drawableTint="@color/ring"
+                    android:gravity="center_vertical"
+                    android:text="@string/footer"
+                    android:textSize="11sp" />
+            </LinearLayout>
         </ScrollView>
+    </FrameLayout>
 
-        <Button
-            android:id="@+id/start"
-            style="@style/Primary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:text="@string/start" />
-    </LinearLayout>
-
-    <ScrollView
-        android:id="@+id/active"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp">
-
-            <TextView
-                style="@style/Label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/in_session" />
-
-            <TextView
-                android:id="@+id/intention"
-                style="@style/Title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <Chronometer
-                android:id="@+id/countdown"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:countDown="true"
-                android:textColor="@color/ink"
-                android:textSize="56sp" />
-
-            <TextView
-                android:id="@+id/until"
-                style="@style/Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:id="@+id/blocking"
-                style="@style/Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp" />
-
-            <TextView
-                android:id="@+id/release"
-                style="@style/Body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp" />
-
-            <Button
-                android:id="@+id/request"
-                style="@style/Secondary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp" />
-
-            <Button
-                android:id="@+id/end"
-                style="@style/Primary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/end" />
-
-            <Button
-                android:id="@+id/open_limits_active"
-                style="@style/Secondary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/limits_open" />
-
-            <Button
-                android:id="@+id/open_alerts_active"
-                style="@style/Secondary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/alerts_title" />
-
-            <Button
-                android:id="@+id/open_todos_active"
-                style="@style/Secondary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/todos_open" />
-
-            <Button
-                android:id="@+id/open_history_active"
-                style="@style/Secondary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/history_title" />
-        </LinearLayout>
-    </ScrollView>
-</FrameLayout>
+    <include layout="@layout/nav_bar" />
+</LinearLayout>
