@@ -29,7 +29,18 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           powershell -NoProfile -ExecutionPolicy Bypass -File tests/installer.ps1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      # ponytail: debug-signed preview APK; switch to a signed assembleRelease once a release key exists.
+      - name: Build Android preview APK
+        working-directory: android
+        run: |
+          ./gradlew.bat testDebugUnitTest assembleDebug
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Copy-Item build/outputs/apk/debug/Still-debug.apk "../release/Still-Android-preview-$($env:GITHUB_REF_NAME.TrimStart('v')).apk"
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:GITHUB_REF_NAME "release/Still-Setup-$($env:GITHUB_REF_NAME.TrimStart('v')).exe" --title "Still $env:GITHUB_REF_NAME" --notes-file .github/release-notes.md --generate-notes --latest
+        run: gh release create $env:GITHUB_REF_NAME "release/Still-Setup-$($env:GITHUB_REF_NAME.TrimStart('v')).exe" "release/Still-Android-preview-$($env:GITHUB_REF_NAME.TrimStart('v')).apk" --title "Still $env:GITHUB_REF_NAME" --notes-file .github/release-notes.md --generate-notes --latest

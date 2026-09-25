@@ -19,4 +19,6 @@ Still isn't code-signed yet, so Windows SmartScreen may show "Windows protected 
 
 Requires Windows 10 version 2004+ or Windows 11 (x64).
 
+**Android preview (for testing):** `Still-Android-preview` is an early test build for Android 11+. It isn't a finished release, and each preview may need uninstalling before the next one will install. See [Still for Android](https://github.com/limpy183-dev/Still/blob/main/docs/android.md) for setup.
+
 Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org). See the [code signing policy](https://stillfocus.fyi/download#code-signing).
