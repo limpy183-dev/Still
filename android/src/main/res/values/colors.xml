@@ -7,6 +7,7 @@
     <color name="green">#637D33</color>
     <color name="soft">#EEF3E2</color>
     <color name="line">#E9ECE4</color>
+    <color name="warn">#A15E43</color>
     <!-- The block cover and icon keep these in both themes. -->
     <color name="cover_bg">#252A27</color>
     <color name="cover_text">#FFFFFF</color>

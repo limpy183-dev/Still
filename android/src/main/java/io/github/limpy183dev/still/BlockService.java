@@ -49,7 +49,7 @@ import java.util.Set;
  */
 public final class BlockService extends AccessibilityService {
     private static final long SETTLE_MS = 80, RECHECK_MS = 700, LIMIT_RECHECK_MS = 1000, MAX_COUNT_STEP_MS = 2000,
-            BACK_GAP_MS = 1500;
+            BACK_GAP_MS = 1500, ALARM_RETURN_MS = 300;
     private static final int MAX_NODES = 400;
     private static BlockService instance;
 
@@ -89,6 +89,7 @@ public final class BlockService extends AccessibilityService {
         registerReceiver(screen, filter);
         // Runs after every boot too: restores the end alarm and notification, and re-reads the clocks.
         Store.reanchor(this);
+        AlertStore.tick(this); // An alert waiting for blocking to be switched on can start now.
         refresh();
     }
 
@@ -213,6 +214,15 @@ public final class BlockService extends AccessibilityService {
         if (pip != null) showCover(pip, pipText); else hideCover();
         if (sendHome) {
             performGlobalAction(GLOBAL_ACTION_HOME);
+            Intent alarm = AlarmActivity.ringing;
+            if (alarm != null) {
+                // Home also sends away an alarm that just opened over the blocked app, so bring it back.
+                // The alarm explains what happened, so no block screen goes over it.
+                handler.postDelayed(() -> {
+                    try { startActivity(alarm); } catch (RuntimeException ignored) { }
+                }, ALARM_RETURN_MS);
+                shown = null;
+            }
         } else if (sendBack && t - lastBack > BACK_GAP_MS) {
             // A blocked website steps back a page, leaving the browser usable for everything else.
             lastBack = t;

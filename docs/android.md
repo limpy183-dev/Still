@@ -2,9 +2,9 @@
 
 [← Back to the overview](../README.md) · [User guide](user-guide.md) · [Development](development.md)
 
-A native Android version of Still's focus sessions, in [`android/`](../android). So far: sessions, app and website blocking, a release delay, strict protection, the managed-phone check, daily website limits with bedtime, block screens and the to-do list. Alerts and a history screen come later. There is no release build yet.
+A native Android version of Still's focus sessions, in [`android/`](../android). So far: sessions, app and website blocking, a release delay, strict protection, the managed-phone check, daily website limits with bedtime, block screens, the to-do list, session history and alerts. There is no release build yet.
 
-Android 11 or newer. It is written in plain Java against the Android framework, with no libraries, so the release APK is about 107 KB.
+Android 11 or newer. It is written in plain Java against the Android framework, with no libraries, so the release APK is about 180 KB.
 
 ## How a session works
 
@@ -55,6 +55,33 @@ Open **To-do list** from the main screen, during a session or not. It works like
 - **Progress and limits:** checkboxes and tick circles count towards "N OF M COMPLETE". The list holds 500 lines of up to 2,000 characters.
 - **Saving:** edits save automatically, at most every 0.4 seconds while typing and when you leave the screen. They use the same JSON shape as `todos` in the Windows preferences.
 
+## Your progress
+
+Open **Your progress** from the main screen, during a session or not. It follows the Windows page:
+
+- **Daily focus:** the last 7, 30 or 90 days as bars, with your daily goal (1–1,440 minutes, default 60) as a dashed line, plus days with focus, daily goals met, completion rate and the average finished session. Time is split across local calendar days, completed sessions count on the day they finish, and recovered sessions add no focus time. The running session counts up to now.
+- **Where your attention went:** focus time per intention over the chosen range, most time first.
+- **Your sessions:** Unarchived, Archived or All, newest first, 20 at a time. **Archive** hides a session but keeps it in every figure; **Restore** brings it back; **Delete** asks first and removes it and its contribution for good. A change that can't be saved is undone.
+- **Export history** saves `Still-sessions.json` wherever you choose, in the same shape as the Windows export.
+
+Still keeps the last 500 sessions. The range and goal are saved as `progressDays` and `dailyGoal`, like the Windows preferences.
+
+## Alerts
+
+Open **Alerts** from the main screen, during a session or not. They follow the Windows rules and wording:
+
+- **When:** once, every day or on weekdays, from a start date. An alert lasts a duration (1–1,440 minutes) or until an end time; an end time before the start time ends the next day, so it can cross midnight.
+- **Styles:** **Full attention** fills the screen, over the lock screen, and turns the screen on. **Focus card** is a floating card at the bottom of the screen. Both play a sound on the alarm volume for up to a minute and close themselves after five minutes. **Quiet reminder** is a notification with your task and note, using the phone's notification sound (or none with **Silent**).
+- **Sound and media:** Chime, Bloom, Bell and Pulse are the Windows sounds, or choose your own audio file. Alarm screens can show an image, animated GIF/WebP or a muted looping video. Files are picked with Android's file picker (no storage permission) and copied into Still, up to 200 MB each. Copies no alert uses are deleted a day later.
+- **Snooze and Dismiss:** snooze for 5 minutes, as many times as you allow (0–100, or unlimited). **Show Dismiss** can be switched off, so the alarm needs **Let's focus** or a snooze. Back works like Dismiss.
+- **Blocking:** an alert can block nothing, the apps and websites selected on the main screen at the time it starts, or its own list. It starts a focus session that ends at the alert's end time, with the alert's release delay and the main screen's strict setting. **Snooze releases the apps for 5 minutes** (the session is saved as *Snoozed*), then blocks them again until the end time if any remains. If another session is running, or app blocking is off, blocking starts as soon as that changes, if time remains.
+- **Missed alerts:** if the phone was off for a whole alert, it's marked *Missed* instead of ringing late. If Still catches up while an alert's time is still running (after a restart, say), it rings with the time that's left.
+- **Daylight saving and time zones:** times are local. A start time that doesn't exist on the night clocks go forward (02:30, say) rings at the same distance past the change (03:30); a time that happens twice when clocks go back rings once, at the first. A range across the change lasts an hour less or more, up to 25 hours. Changing time zone moves alerts to the new local time.
+
+Still keeps 100 alerts. They are saved in `alerts.json` with the same fields as the Windows `alerts.json`.
+
+Android shows alarm screens through a full-screen notification. With the screen off or locked, the screen opens at once. While you're using the phone, Android may show a heads-up notification instead (tap it to open the alarm); with app blocking switched on, Still can open the alarm screen directly. The notification has Snooze and Dismiss too. If notifications or full-screen notifications are switched off, the Alerts screen says so and links to the setting.
+
 ## Set up
 
 1. Install the APK and open **Still Focus**.
@@ -68,6 +95,7 @@ Open **To-do list** from the main screen, during a session or not. It works like
 - **Never locked out.** A block screen appears only after the blocked app or page has been sent away, and **Close** always dismisses it. It is removed when the session ends, when the screen turns off and on any error. Protected apps (home screen, phone, Settings pages that don't mention Still) are never blocked.
 - **Clock changes don't count.** Within one boot, deadlines use the uptime clock, so changing the date or time neither ends nor extends a session. After a reboot the wall clock is used again, capped at the session's own length.
 - **Emergency release (USB debugging):** `adb shell am broadcast -n io.github.limpy183dev.still/.Recover` ends the session as *recovered* and keeps history. The receiver requires `android.permission.DUMP`, which only the system and the adb shell hold, so other apps can't send it.
+- **Alerts can't lock you in.** A session an alert starts has a fixed end, capped at the alert's own window (25 hours at most), and the release delay and emergency release work as usual. Snooze and Dismiss can only be sent by Still's own notifications, and only for the alarm they belong to. Alerts are claimed and saved before anything rings or blocks, so a crash never repeats one. A damaged `alerts.json` is kept as `alerts.corrupt.json` and Still starts with no alerts.
 - **Last resort: Safe mode.** Rebooting into Android's Safe mode switches off every downloaded app, including Still's blocking, without any help from Still.
 - No cloud backup or phone-to-phone transfer (`allowBackup="false"` plus data extraction rules), so a running session is never restored onto another phone.
 
@@ -76,7 +104,8 @@ Open **To-do list** from the main screen, during a session or not. It works like
 - **No session and no limits:** the accessibility service asks Android for no events at all, so it does no work. The process measured about 22 MB PSS and 0% CPU on a Pixel emulator.
 - **During a session:** it receives only window changes (opening or switching apps), never content changes. It checks each change once, after an 80 ms settle. It re-checks every 0.7 s only while a supported browser is on screen during a website session (one address-bar lookup, measured at about 0.3% of one core), or while a Settings screen is open in a strict session (at most 400 items read). With no browser or Settings screen open, a session measured 0 CPU ticks over 10 s. With limits set and no session, a supported browser is checked once a second. Nothing is checked or counted while the screen is off.
 - Limit usage is kept in memory and saved at most every 30 seconds, and when you leave the site or the screen turns off, so counting adds no disk work to each check.
-- The countdown in the notification is drawn by the system, so Still does no per-second work. There is one inexact alarm at the end time and no exact-alarm permission. Blocking checks the clock itself, so a late alarm never delays release.
+- The countdown in the notification is drawn by the system, so Still does no per-second work. The session end uses one inexact alarm. Blocking checks the clock itself, so a late alarm never delays release.
+- Alerts use one exact alarm for the next thing due (a start, a snooze returning, or blocking to give up on) and nothing else: no polling and no background service. With no alerts there is no alarm. They are also checked when a session ends, blocking is switched on, the phone boots, the date, time or time zone changes, and Still is opened. Alarm sounds are synthesised once into a 3-second buffer the audio hardware loops. `USE_EXACT_ALARM` is granted at install on Android 13+; if exact alarms are ever denied, Still falls back to an inexact one.
 
 ## Limits
 
@@ -89,7 +118,7 @@ cd android
 ./gradlew testDebugUnitTest assembleDebug
 ```
 
-Gradle needs a JDK and the Android SDK (`ANDROID_HOME`). Android Studio's bundled JDK works (`JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"`). The rules in `Session.java`, `Websites.java`, `Limits.java`, `BlockScreen.java` and `Todos.java` are plain Java and are unit-tested on the JVM (`src/test`).
+Gradle needs a JDK and the Android SDK (`ANDROID_HOME`). Android Studio's bundled JDK works (`JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"`). The rules in `Session.java`, `Websites.java`, `Limits.java`, `BlockScreen.java`, `Todos.java`, `History.java` and `Alerts.java` are plain Java and are unit-tested on the JVM (`src/test`).
 
 | File | What it does |
 | --- | --- |
@@ -97,12 +126,16 @@ Gradle needs a JDK and the Android SDK (`ANDROID_HOME`). Android Studio's bundle
 | `Websites.java` | Domain validation and matching (mirrors `app/websites.js`) and reading a host from an address bar |
 | `BlockScreen.java`, `BlockScreenView.java`, `BlockScreenActivity.java` | Block screen rules (mirrors `presets`/`screen()`), drawing them, and the editor with a live preview |
 | `Todos.java`, `TodosActivity.java` | To-do rules (mirrors `app/todos.js`) and the to-do screen |
+| `History.java`, `HistoryActivity.java` | Progress figures (mirrors `focusMilliseconds`/`renderProgress`/`renderIntentions`) and the Your progress screen |
 | `Limits.java`, `LimitStore.java`, `LimitsActivity.java` | Limit and bedtime rules (mirrors `limits`/`inBedtime`/`limitBlocks`), their storage and today's usage, and the Time limits screen |
-| `Store.java` | Atomic state, history (500 entries), the end alarm and notifications |
+| `Store.java` | Atomic state, history (500 entries) with archive/restore/delete, the end alarm and notifications |
 | `BlockService.java` | The accessibility service that blocks apps and websites and protects Still in strict sessions |
 | `Device.java` | Protected apps, supported browsers, the managed-phone check, whether blocking is switched on |
 | `MainActivity.java` | The one screen: set up a session, or watch and end the running one |
-| `Events.java`, `Recover.java` | End alarm and date/time changes; emergency release |
+| `Alerts.java`, `AlertStore.java`, `AlertsActivity.java`, `AlertEditActivity.java` | Alert rules and times (mirrors `alert-domain.cjs`), storage and what happens when one is due (mirrors `alerts-main.cjs`), the list and the editor |
+| `AlarmActivity.java`, `AlarmSound.java` | The alarm screens, notifications, Snooze/Dismiss, and the sounds (mirrors `alarm.html`/`alert-sound.js`) |
+| `AppPicker.java` | The app list and picker shared by the main screen and the alert editor |
+| `Events.java`, `Recover.java` | End and alert alarms, boot, date/time/time-zone changes; emergency release |
 
 Try it on an emulator with `adb install -r build/outputs/apk/debug/Still-debug.apk`. You can switch the service on without tapping through Settings:
 

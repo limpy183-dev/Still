@@ -11,6 +11,14 @@
         <item name="android:windowLightNavigationBar">@bool/light_bars</item>
     </style>
 
+    <!-- The Focus card: a floating sheet at the bottom, dimming what's behind it. -->
+    <style name="Theme.Still.Card">
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowBackground">@drawable/alarm_card</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowCloseOnTouchOutside">false</item>
+    </style>
+
     <style name="Title">
         <item name="android:textSize">28sp</item>
         <item name="android:textStyle">bold</item>

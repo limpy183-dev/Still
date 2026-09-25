@@ -195,11 +195,25 @@
         android:text="@string/limits_open" />
 
     <Button
+        android:id="@+id/open_alerts"
+        style="@style/Secondary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/alerts_title" />
+
+    <Button
         android:id="@+id/open_todos"
         style="@style/Secondary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/todos_open" />
+
+    <Button
+        android:id="@+id/open_history"
+        style="@style/Secondary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/history_title" />
 
     <TextView
         android:id="@+id/screen_summary"

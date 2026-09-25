@@ -2,12 +2,9 @@ package io.github.limpy183dev.still;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,50 +13,35 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 public final class MainActivity extends Activity {
-    private static final class App {
-        final String pkg, label;
-        final ResolveInfo info;
-        Drawable icon;
-        App(String pkg, String label, ResolveInfo info) { this.pkg = pkg; this.label = label; this.info = info; }
-    }
-
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable render = this::render;
     private final Set<String> selected = new HashSet<>();
     private final List<String> sites = new ArrayList<>();
     private SharedPreferences prefs;
-    private ArrayAdapter<App> apps;
+    private AppPicker apps;
     private View blockingCard;
     private EditText intentionInput, durationInput, delayInput;
     private CheckBox delayEnabled, strict;
     private TextView appsLabel;
     private EditText siteInput;
     private LinearLayout siteList;
-    private boolean appsLoading;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -87,22 +69,7 @@ public final class MainActivity extends Activity {
         delayInput.setEnabled(delayEnabled.isChecked());
         delayEnabled.setOnCheckedChangeListener((box, on) -> delayInput.setEnabled(on));
 
-        apps = new ArrayAdapter<App>(this, android.R.layout.simple_list_item_multiple_choice) {
-            @Override
-            public View getView(int position, View convert, ViewGroup parent) {
-                TextView row = (TextView) super.getView(position, convert, parent);
-                App app = getItem(position);
-                row.setText(app.label);
-                if (app.icon == null) {
-                    app.icon = app.info.loadIcon(getPackageManager());
-                    int size = Math.round(36 * getResources().getDisplayMetrics().density);
-                    app.icon.setBounds(0, 0, size, size);
-                }
-                row.setCompoundDrawablesRelative(app.icon, null, null, null);
-                row.setCompoundDrawablePadding(Math.round(16 * getResources().getDisplayMetrics().density));
-                return row;
-            }
-        };
+        apps = new AppPicker(this);
         findViewById(R.id.choose_apps).setOnClickListener(v -> chooseApps());
         findViewById(R.id.add_site).setOnClickListener(v -> addSite());
         View.OnClickListener openLimits = v -> startActivity(new Intent(this, LimitsActivity.class));
@@ -111,6 +78,12 @@ public final class MainActivity extends Activity {
         View.OnClickListener openTodos = v -> startActivity(new Intent(this, TodosActivity.class));
         findViewById(R.id.open_todos).setOnClickListener(openTodos);
         findViewById(R.id.open_todos_active).setOnClickListener(openTodos);
+        View.OnClickListener openHistory = v -> startActivity(new Intent(this, HistoryActivity.class));
+        findViewById(R.id.open_history).setOnClickListener(openHistory);
+        findViewById(R.id.open_history_active).setOnClickListener(openHistory);
+        View.OnClickListener openAlerts = v -> startActivity(new Intent(this, AlertsActivity.class));
+        findViewById(R.id.open_alerts).setOnClickListener(openAlerts);
+        findViewById(R.id.open_alerts_active).setOnClickListener(openAlerts);
         findViewById(R.id.change_screen).setOnClickListener(v -> startActivity(new Intent(this, BlockScreenActivity.class)));
         siteInput.setOnEditorActionListener((view, action, event) -> { addSite(); return true; });
         renderSites();
@@ -122,12 +95,13 @@ public final class MainActivity extends Activity {
         findViewById(R.id.request).setOnClickListener(v -> toggleRelease());
         findViewById(R.id.end).setOnClickListener(v -> end());
 
-        if (Store.loadError != null) Toast.makeText(this, R.string.state_reset, Toast.LENGTH_LONG).show();
+        if (Store.loadError != null || AlertStore.loadError != null) Toast.makeText(this, R.string.state_reset, Toast.LENGTH_LONG).show();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        AlertStore.tick(this); // Catches up on anything due, e.g. after an update.
         render();
     }
 
@@ -162,52 +136,14 @@ public final class MainActivity extends Activity {
         blockingCard.setVisibility(Device.blockingEnabled(this) ? View.GONE : View.VISIBLE);
         ((TextView) findViewById(R.id.screen_summary)).setText(getString(R.string.screen_label,
                 getString(BlockScreenActivity.name(BlockScreenActivity.saved(this).mode))));
-        if (apps.isEmpty() && !appsLoading) loadApps();
+        if (!apps.loaded()) {
+            appsLabel.setText(R.string.apps_loading);
+            apps.load(selected, this::updateSetup);
+        }
         updateSetup();
     }
 
-    /** Lists launchable apps off the main thread; protected apps are left out. */
-    private void loadApps() {
-        appsLoading = true;
-        appsLabel.setText(R.string.apps_loading);
-        new Thread(() -> {
-            PackageManager pm = getPackageManager();
-            Set<String> skip = Device.protectedPackages(this);
-            Map<String, App> found = new LinkedHashMap<>();
-            Intent launcher = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
-            for (ResolveInfo info : pm.queryIntentActivities(launcher, 0)) {
-                String pkg = info.activityInfo.packageName;
-                if (!skip.contains(pkg) && !found.containsKey(pkg)) found.put(pkg, new App(pkg, String.valueOf(info.loadLabel(pm)), info));
-            }
-            List<App> sorted = new ArrayList<>(found.values());
-            sorted.sort((a, b) -> a.label.compareToIgnoreCase(b.label));
-            runOnUiThread(() -> {
-                if (isDestroyed()) return;
-                appsLoading = false;
-                apps.addAll(sorted);
-                selected.retainAll(found.keySet());
-                updateSetup();
-            });
-        }).start();
-    }
-
-    /** The picker is a dialog so the list only exists (and loads icons) while it is open. */
-    private void chooseApps() {
-        if (appsLoading) return;
-        ListView list = new ListView(this);
-        list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-        list.setAdapter(apps);
-        for (int i = 0; i < apps.getCount(); i++) list.setItemChecked(i, selected.contains(apps.getItem(i).pkg));
-        list.setOnItemClickListener((parent, view, position, id) -> {
-            App app = apps.getItem(position);
-            if (list.isItemChecked(position)) selected.add(app.pkg); else selected.remove(app.pkg);
-            updateSetup();
-        });
-        new AlertDialog.Builder(this).setTitle(R.string.apps_title).setView(list)
-                .setPositiveButton(R.string.done, null)
-                .setOnDismissListener(d -> { for (int i = 0; i < apps.getCount(); i++) apps.getItem(i).icon = null; })
-                .show();
-    }
+    private void chooseApps() { apps.choose(selected, this::updateSetup); }
 
     private void addSite() {
         String text = siteInput.getText().toString().trim();
@@ -245,13 +181,12 @@ public final class MainActivity extends Activity {
     }
 
     private void updateSetup() {
-        if (!appsLoading) {
-            List<String> names = new ArrayList<>();
-            for (int i = 0; i < apps.getCount(); i++) if (selected.contains(apps.getItem(i).pkg)) names.add(apps.getItem(i).label);
-            appsLabel.setText(names.isEmpty() ? getString(R.string.apps_none) : String.join(", ", names));
+        if (!apps.loading) {
+            Map<String, String> names = apps.chosen(selected);
+            appsLabel.setText(names.isEmpty() ? getString(R.string.apps_none) : String.join(", ", names.values()));
         }
-        findViewById(R.id.start).setEnabled((!selected.isEmpty() || !sites.isEmpty()) && !appsLoading);
-        findViewById(R.id.choose_apps).setEnabled(!appsLoading);
+        findViewById(R.id.start).setEnabled((!selected.isEmpty() || !sites.isEmpty()) && !apps.loading);
+        findViewById(R.id.choose_apps).setEnabled(!apps.loading);
     }
 
     private void start() {
@@ -262,20 +197,13 @@ public final class MainActivity extends Activity {
             }
             int minutes = number(durationInput), delay = delayEnabled.isChecked() ? number(delayInput) : 0;
             if (delayEnabled.isChecked() && delay < 1) throw new IllegalArgumentException(getString(R.string.delay_range));
-            Map<String, String> chosen = new LinkedHashMap<>();
-            for (int i = 0; i < apps.getCount(); i++) {
-                App app = apps.getItem(i);
-                if (selected.contains(app.pkg)) chosen.put(app.pkg, app.label);
-            }
+            Map<String, String> chosen = apps.chosen(selected);
             // Browsers whose address bar Still can't read would let blocked websites through, so they wait too.
             if (!sites.isEmpty()) for (Map.Entry<String, String> browser : Device.otherBrowsers(this).entrySet())
                 chosen.putIfAbsent(browser.getKey(), browser.getValue());
-            // The screen is re-checked against this session's websites, then frozen into it (as on Windows).
-            BlockScreen saved = BlockScreenActivity.saved(this);
-            BlockScreen screen = BlockScreen.of(saved.mode, saved.title, saved.text, saved.redirect, saved.image, sites);
             Session s = Session.start(UUID.randomUUID().toString(), intentionInput.getText().toString(), minutes, delay,
                     strict.isChecked(), chosen, sites, Store.clock(this));
-            s.screen = screen.image ? withImage(screen) : screen;
+            s.screen = Store.frozenScreen(this, s.websites);
             savePrefs();
             Store.start(this, s);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
@@ -287,17 +215,6 @@ public final class MainActivity extends Activity {
             Toast.makeText(this, R.string.save_failed, Toast.LENGTH_LONG).show();
         }
         render();
-    }
-
-    /** Copies the image, so changing it later can't change a running session. Without it, the text still shows. */
-    private BlockScreen withImage(BlockScreen screen) {
-        try {
-            Files.copy(new File(getFilesDir(), BlockScreenActivity.IMAGE).toPath(),
-                    new File(getFilesDir(), Store.SESSION_IMAGE).toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return screen;
-        } catch (IOException | RuntimeException e) {
-            return BlockScreen.of(screen.mode, screen.title, screen.text, screen.redirect, false, new ArrayList<>());
-        }
     }
 
     private static int number(EditText input) {

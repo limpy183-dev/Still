@@ -86,6 +86,56 @@
     <string name="todo_no_format">No matching formats. Try “check” or “note”.</string>
     <string name="todo_full">Your list has room for 500 lines. Remove a line to add another.</string>
 
+    <!-- Session history, worded like "Your progress" in app/index.html. -->
+    <string name="history_title">Your progress</string>
+    <string name="history_explain">Every session is a little more room for what matters. Saved on this phone; the last 500 sessions are kept.</string>
+    <string name="history_export">Export history</string>
+    <string name="history_exported">Your session history has been exported.</string>
+    <string name="history_export_failed">Still couldn\'t write that file. Try another place.</string>
+    <string name="history_daily">DAILY FOCUS</string>
+    <string name="history_range_7">7 days</string>
+    <string name="history_range_30">30 days</string>
+    <string name="history_range_90">90 days</string>
+    <string name="history_goal">Daily goal (minutes)</string>
+    <string name="history_summary">%1$d/%2$d days with focus\n%3$d daily goals met\n%4$s completion rate\n%5$s average finished session</string>
+    <string name="history_chart">Daily focus minutes over the last %1$d days. Today: %2$d minutes. Goal: %3$d minutes.</string>
+    <string name="history_scale">0–%1$d minutes · %2$s – %3$s · dashed line: daily goal</string>
+    <string name="history_intentions">WHERE YOUR ATTENTION WENT</string>
+    <string name="history_no_intentions">Give your next session an intention to see your focus take shape here.</string>
+    <plurals name="history_intentions_total">
+        <item quantity="one">%1$s across %2$d focus task</item>
+        <item quantity="other">%1$s across %2$d focus tasks</item>
+    </plurals>
+    <plurals name="history_intention_meta">
+        <item quantity="one">%1$d session · last %2$s · %3$s</item>
+        <item quantity="other">%1$d sessions · last %2$s · %3$s</item>
+    </plurals>
+    <string name="history_sessions">YOUR SESSIONS</string>
+    <string name="history_unarchived">Unarchived</string>
+    <string name="history_archived">Archived</string>
+    <string name="history_all">All</string>
+    <string name="history_archive_note">Archived sessions still count toward all progress. Permanent deletion removes their contribution.</string>
+    <string name="history_empty">No sessions in this view. Your saved sessions will appear here.</string>
+    <string name="history_more">Show more</string>
+    <string name="history_meta">%1$s · %2$s · %3$s · %4$s · %5$s</string>
+    <plurals name="history_targets">
+        <item quantity="one">%1$d app / website put on hold</item>
+        <item quantity="other">%1$d apps / websites put on hold</item>
+    </plurals>
+    <string name="outcome_completed">Completed</string>
+    <string name="outcome_early">Ended early</string>
+    <string name="outcome_recovered">Recovered</string>
+    <string name="history_archive">Archive</string>
+    <string name="history_restore">Restore</string>
+    <string name="history_delete">Delete</string>
+    <string name="history_delete_title">Permanently delete this session?</string>
+    <string name="history_delete_text">%1$s\n\nThis removes the session and its contribution to all progress charts, totals, and goals. This cannot be undone. Archive it instead to keep its progress.</string>
+    <string name="history_delete_confirm">Delete permanently</string>
+    <string name="history_deleted">Session deleted. Progress updated.</string>
+    <string name="history_archived_toast">Session archived. Your progress still counts.</string>
+    <string name="history_restored">Session restored.</string>
+    <string name="history_save_failed">Still couldn\'t save that change. Free some storage and try again.</string>
+
     <!-- Block screens, worded like app/browser-extension/blocked.html and websites.js presets. -->
     <string name="screen_eyebrow">A LITTLE SPACE FOR YOUR ATTENTION</string>
     <string name="screen_footnote">Your focus session is managed by Still. Return there to request an early release.</string>
@@ -123,4 +173,138 @@
     <string name="notice_until">Blocking distractions until %1$s</string>
     <string name="done_title">Focus session complete</string>
     <string name="done_text">Your apps are available again.</string>
+
+    <!-- Alerts, worded like app/alerts.js, alerts-main.cjs and alarm.html. -->
+    <string name="alerts_title">Alerts</string>
+    <string name="alerts_explain">A quiet reminder to stretch. A full-screen call to focus. Alerts can also start a focus session that ends at the time you chose.</string>
+    <string name="alerts_next">NEXT</string>
+    <string name="alerts_next_none">A little space in your schedule.</string>
+    <string name="alerts_next_none_detail">Create an alert for something that deserves your attention.</string>
+    <string name="alerts_next_at">%1$s · %2$s</string>
+    <string name="alerts_next_snoozed">Snoozed · alerts again %1$s · %2$s</string>
+    <string name="alerts_empty">Good intentions deserve a time.</string>
+    <string name="alerts_fix">Fix this</string>
+    <string name="alerts_need_notifications">Notifications are off for Still, so alerts can\'t ring. Allow notifications.</string>
+    <string name="alerts_need_full_screen">Android isn\'t letting Still open alarm screens, so Full attention and Focus card alarms only show as notifications. Allow full-screen notifications for Still.</string>
+    <string name="alerts_need_blocking">Apps are NOT blocked. Turn on app blocking so alerts can start focus sessions.</string>
+    <string name="alerts_full">You can save up to 100 alerts.</string>
+    <string name="alert_add">New alert</string>
+    <string name="alert_enable">Enable %1$s</string>
+    <string name="alert_new_title">Make room for a moment.</string>
+    <string name="alert_edit_title">A moment, made yours.</string>
+    <string name="alert_title_hint">What deserves your attention?</string>
+    <string name="alert_note_hint">A note for yourself (optional)</string>
+    <string name="alert_when">WHEN</string>
+    <string name="alert_on">On</string>
+    <string name="alert_from">From</string>
+    <string name="repeat_once">Once</string>
+    <string name="repeat_daily">Every day</string>
+    <string name="repeat_weekdays">Weekdays</string>
+    <string name="length_duration">For a duration</string>
+    <string name="length_range">Until a time</string>
+    <string name="alert_end_label">Ends at</string>
+    <string name="alert_next_day">%1$s (+1 day)</string>
+    <string name="alert_style_label">ALARM STYLE</string>
+    <string name="style_full">Full attention</string>
+    <string name="style_card">Focus card</string>
+    <string name="style_notification">Quiet reminder</string>
+    <string name="style_full_text">A full-screen moment above your apps and the lock screen. Sound included.</string>
+    <string name="style_card_text">A floating card above your apps. Room to notice, room to breathe.</string>
+    <string name="style_notification_text">A notification with your task and note, with the phone\'s notification sound unless you choose Silent. Swipe it away like any other notification.</string>
+    <string name="alert_sound_label">SOUND</string>
+    <string-array name="alert_sounds">
+        <item>Chime</item>
+        <item>Bloom</item>
+        <item>Bell</item>
+        <item>Pulse</item>
+        <item>Silent</item>
+        <item>Your own sound</item>
+    </string-array>
+    <string name="alert_volume_name">Volume</string>
+    <string name="alert_volume">Volume %1$d%%</string>
+    <string name="alert_sound_choose">Choose a sound file</string>
+    <string name="alert_banner_choose">Add an image, GIF or video</string>
+    <string name="alert_file">%1$s · change</string>
+    <string name="alert_media_type">This file type isn\'t supported.</string>
+    <string name="alert_media_size">Choose a file smaller than 200 MB.</string>
+    <string name="alert_media_failed">Still couldn\'t copy that file. Try another one.</string>
+    <string name="alert_media_missing">A sound or banner file is missing. Choose it again.</string>
+    <string name="alert_snooze_label">SNOOZE AND DISMISS</string>
+    <string name="alert_snooze_limit">Snoozes allowed</string>
+    <string name="alert_unlimited">Unlimited</string>
+    <string name="alert_show_dismiss">Show Dismiss</string>
+    <string name="alert_block_label">BLOCKING</string>
+    <string name="block_none">No blocking</string>
+    <string name="block_current">Use the Focus space selection</string>
+    <string name="block_custom">Choose apps and websites</string>
+    <string name="alert_current_note">Uses the apps and websites selected on the main screen when the alert starts.</string>
+    <string name="alert_copy_apps">Copy Focus space</string>
+    <string name="alert_sites_hint">Websites, one per line</string>
+    <string name="alert_delay_label">Release delay (minutes, 0 for none)</string>
+    <string name="alert_block_hint">The session ends at the end of the alert\'s time. Snoozing releases the apps for 5 minutes, then blocks them again if time remains.</string>
+    <string name="alert_preview">Preview</string>
+    <string name="alert_delete">Delete alert</string>
+    <string name="alert_delete_title">Remove this little reminder?</string>
+    <string name="alert_delete_text">This deletes the scheduled alert. Any focus session already running will continue until its normal end.</string>
+    <string name="alert_saved">Your alert is saved. A little intention, scheduled.</string>
+    <string name="alert_save_failed">Still couldn\'t save your alerts. Free some storage and try again.</string>
+    <string name="alert_past">Choose a future time or a time range that is still active.</string>
+    <string name="alert_minutes">%1$d min</string>
+    <string name="alert_until">until %1$s</string>
+    <string name="alert_until_next_day">until %1$s (+1 day)</string>
+    <string name="alert_reminder_only">Reminder only</string>
+    <string name="alert_uses_focus_space">Uses Focus space selection</string>
+    <plurals name="alert_blocks">
+        <item quantity="one">%1$d app / website selected for blocking</item>
+        <item quantity="other">%1$d apps / websites selected for blocking</item>
+    </plurals>
+    <plurals name="alert_blocking_until">
+        <item quantity="one">%1$d app / website blocked until %2$s</item>
+        <item quantity="other">%1$d apps / websites blocked until %2$s</item>
+    </plurals>
+    <string name="alert_status_snoozed">Snoozed · alerts again %1$s</string>
+    <string name="alert_status_session">Focus session running</string>
+    <string name="alert_status_paused">Paused</string>
+    <string name="alert_status_pending">Waiting to block apps</string>
+    <string name="alert_status_done">Delivered / finished</string>
+    <string name="alert_status_scheduled">Scheduled</string>
+    <string name="alert_session_ended">This alert’s focus session has ended.</string>
+    <string name="alert_missed">Missed while the phone was off or Still couldn\'t run.</string>
+    <string name="alert_delivered">Reminder delivered · no apps or websites blocked.</string>
+    <string name="alert_none_selected">Reminder delivered · no apps or websites were selected for blocking.</string>
+    <string name="alert_waiting">Waiting to start blocking…</string>
+    <string name="alert_starting">Starting blocking…</string>
+    <plurals name="alert_started">
+        <item quantity="one">Started a focus session with %1$d app / website blocked.</item>
+        <item quantity="other">Started a focus session with %1$d apps / websites blocked.</item>
+    </plurals>
+    <string name="alert_block_failed">Blocking could not start. %1$s</string>
+    <string name="alert_too_late">Focus window ended before blocking could start.</string>
+    <string name="alert_other_session">Another focus session is running. Blocking will start if time remains.</string>
+    <string name="alert_not_blocking">Apps are NOT blocked. Turn on app blocking in Still; blocking will start if time remains.</string>
+    <string name="alert_snoozed_reminder">Snoozed for 5 minutes.</string>
+    <string name="alert_snoozed">Snoozed · this alarm’s apps are unblocked.</string>
+    <string name="alert_restarting">Waiting to restart blocking…</string>
+    <string name="alert_window_ended">This focus window has ended. This is a reminder only; scheduled blocking has ended.</string>
+    <string name="alert_snooze_ended">Your focus window has ended. This is your snoozed reminder.</string>
+    <string name="alert_later">Your reminder, a little later.</string>
+    <string name="alarm_brand">still.</string>
+    <string name="alarm_orbit">◷</string>
+    <string name="alarm_eyebrow">A MOMENT FOR WHAT MATTERS</string>
+    <string name="alarm_eyebrow_preview">YOUR ALARM · PREVIEW</string>
+    <string name="alarm_ended">This focus window has ended</string>
+    <string name="alarm_open">Let’s focus</string>
+    <string name="alarm_snooze">Snooze for 5 min</string>
+    <string name="alarm_dismiss">Dismiss</string>
+    <string name="alarm_footnote">Snooze unblocks this alarm’s apps for 5 minutes. Dismiss keeps app blocking active.</string>
+    <string name="alarm_footnote_no_dismiss">Snooze unblocks this alarm’s apps for 5 minutes.</string>
+    <string name="alarm_footnote_late">The focus window ends before the 5-minute snooze returns. That reminder will not restart or extend app blocking.</string>
+    <string name="alarm_preview_message">Preview only · no apps or websites will be blocked.</string>
+    <string name="alarm_snooze_gone">This alarm can\'t be snoozed any more.</string>
+    <string name="alarm_banner">Your alert banner</string>
+    <string name="alarm_banner_failed">Banner could not play. Try a JPG, GIF, or H.264 MP4.</string>
+    <string name="channel_alarms">Alarms</string>
+    <string name="channel_reminders">Reminders</string>
+    <string name="channel_reminders_quiet">Silent reminders</string>
+    <string name="outcome_snoozed">Snoozed</string>
 </resources>

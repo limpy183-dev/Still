@@ -2,6 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Alerts: exact alarm times (USE_EXACT_ALARM is for alarm apps and granted at install on Android 13+;
+         SCHEDULE_EXACT_ALARM covers Android 12), alarm screens over the lock screen, and rescheduling after a reboot. -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- Package visibility: the app picker, and the protected apps that must never be blocked. -->
     <queries>
@@ -70,10 +78,52 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
+            android:name=".HistoryActivity"
+            android:exported="false"
+            android:label="@string/history_title"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
             android:name=".LimitsActivity"
             android:exported="false"
             android:label="@string/limits_title"
             android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".AlertsActivity"
+            android:exported="false"
+            android:label="@string/alerts_title" />
+
+        <activity
+            android:name=".AlertEditActivity"
+            android:exported="false"
+            android:label="@string/alerts_title"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Alarm screens: their own task, so closing one returns to whatever was on screen. -->
+        <activity
+            android:name=".AlarmActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:label="@string/alerts_title"
+            android:launchMode="singleInstance"
+            android:taskAffinity="io.github.limpy183dev.still.alarm" />
+
+        <activity
+            android:name=".AlarmActivity$Card"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:label="@string/alerts_title"
+            android:launchMode="singleInstance"
+            android:taskAffinity="io.github.limpy183dev.still.card"
+            android:theme="@style/Theme.Still.Card" />
+
+        <!-- Snooze and Dismiss from alarm notifications; not exported, so only Still's notifications can send them. -->
+        <receiver
+            android:name=".AlarmActivity$Actions"
+            android:exported="false" />
 
         <service
             android:name=".BlockService"
@@ -88,12 +138,15 @@
                 android:resource="@xml/block_service" />
         </service>
 
-        <!-- Exported for the system's date/time broadcast; it only re-reads state, so no sender can change a session. -->
+        <!-- Exported for the system's boot, date, time and time-zone broadcasts; it only re-reads state, so no sender can change a session. -->
         <receiver
             android:name=".Events"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
 

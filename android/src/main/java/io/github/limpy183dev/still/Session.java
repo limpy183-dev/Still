@@ -15,6 +15,8 @@ import java.util.Set;
  */
 final class Session {
     static final int MAX_MINUTES = 1440, MAX_DELAY = 120, MAX_APPS = 100, MAX_INTENTION = 120;
+    /** An alarm's local time range can last 25 hours on the night daylight saving time ends. */
+    static final long MAX_SCHEDULED_MS = 1500 * 60000L;
 
     /** One reading of both clocks. {@code boot} is Settings.Global.BOOT_COUNT (-1 if unavailable). */
     static final class Clock {
@@ -25,6 +27,8 @@ final class Session {
 
     String id, intention, outcome;
     long startedAt, endsAt, unlockAt, finishedAt;
+    /** Set for a session an alarm started: it ends at this time rather than after durationMinutes. */
+    long scheduledEndsAt;
     int durationMinutes, unlockDelayMinutes, boot;
     long endsElapsed, unlockElapsed;
     boolean strict;
@@ -64,11 +68,27 @@ final class Session {
         return s;
     }
 
+    /** A session that ends at a fixed time, for alarms (as FocusSession.ResolveEnd on Windows). */
+    static Session startUntil(String id, String intention, long endsAt, int delay, boolean strict, Map<String, String> apps,
+                              Collection<String> websites, Clock now) {
+        long left = endsAt - now.wall;
+        if (left <= 0 || left > MAX_SCHEDULED_MS) throw new IllegalArgumentException("The scheduled focus window has ended or is too long.");
+        int minutes = (int) Math.max(1, Math.min(MAX_MINUTES, (left + 59999) / 60000));
+        Session s = start(id, intention, minutes, delay, strict, apps, websites, now);
+        s.scheduledEndsAt = endsAt;
+        s.endsAt = endsAt;
+        s.endsElapsed = now.elapsed + left;
+        return s;
+    }
+
+    /** The chosen length, which no clock reading can exceed. */
+    long length() { return scheduledEndsAt != 0 ? scheduledEndsAt - startedAt : durationMinutes * 60000L; }
+
     private boolean sameBoot(Clock now) { return now.boot == boot && now.boot != -1; }
 
     // Capped at the chosen length, so moving the clock back before a reboot cannot stretch a session.
     long remaining(Clock now) {
-        return Math.min(durationMinutes * 60000L, sameBoot(now) ? endsElapsed - now.elapsed : endsAt - now.wall);
+        return Math.min(length(), sameBoot(now) ? endsElapsed - now.elapsed : endsAt - now.wall);
     }
 
     boolean expired(Clock now) { return remaining(now) <= 0; }
