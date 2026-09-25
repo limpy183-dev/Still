@@ -88,9 +88,10 @@
       <div class="page-heading"><div><div class="eyebrow">ONE SMALL THING AT A TIME</div><h1>A little list. <span>A clearer mind.</span></h1><p>Make room for your next steps. Type / on any line to choose a format.</p></div></div>
       <section class="panel todo-paper" aria-label="Your list">
         <div class="card-heading"><h2>Your to-do list</h2><span id="todo-progress" class="tag" aria-live="polite"></span></div>
+        <div id="todo-select-bar" class="todo-select-bar" role="toolbar" aria-label="Selected lines" hidden><span id="todo-select-count" aria-live="polite"></span><button type="button" class="secondary-button" id="todo-select-all">Select all</button><button type="button" class="secondary-button danger" id="todo-select-delete">Delete</button><button type="button" class="secondary-button" id="todo-select-cancel">Cancel</button></div>
         <div id="todo-rows"></div>
         <button id="todo-add" class="add-app-button"><svg><use href="#i-plus"/></svg> Add a line</button>
-        <div class="todo-footer"><span>Enter for a new line · / for formats</span><span id="todo-save-status" role="status">Saved on this PC</span></div>
+        <div class="todo-footer"><span>Enter for a new line · / for formats · hold a line to select or move</span><span><button type="button" id="todo-undo" class="todo-undo" hidden>Undo delete</button><span id="todo-save-status" role="status">Saved on this PC</span></span></div>
       </section>
     </section>
     <section class="page" id="page-alerts" aria-label="Alerts">

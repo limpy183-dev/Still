@@ -24,7 +24,7 @@
 | **Focused work** | Choose desktop apps, games, Store apps, and websites. Set a session from 1 minute to 24 hours. |
 | **A pause before quitting** | Add an optional 1–120 minute wait before ending a session early. |
 | **A quieter browser** | Block domains in Chrome and Edge, choose a block screen, and set daily website limits or bedtime. |
-| **A small plan** | Keep a local to-do list with checkboxes, headings, notes, and a keyboard-friendly `/` menu. |
+| **A small plan** | Keep a local to-do list with checkboxes, headings, notes, a keyboard-friendly `/` menu, and hold-to-select for bulk delete and reordering. |
 | **A helpful reminder** | Schedule one-time, daily, or weekday alerts, with optional blocking, sounds, and media. |
 | **Visible progress** | Review session history, daily charts, a calendar, and time spent on your intentions. Export history as JSON. |
 
