@@ -1,3 +1,7 @@
+## What's new in v1.0.5
+
+- **Android preview:** it now shows its real version in App info (1.0.5), and future previews install over it as updates. Download `Still-Android-preview-1.0.5.apk` below. No changes to the Windows app.
+
 ## What's new in v1.0.4
 
 - **Android preview.** An early test build of Still for Android (Android 11+) is attached below as `Still-Android-preview-1.0.4.apk`. No changes to the Windows app.
