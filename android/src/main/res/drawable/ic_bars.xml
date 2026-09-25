@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The three bars of assets/still.png, on the 108dp adaptive-icon grid. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M34,47.5V61.5M54,33.5V74.5M74,40V69"
+        android:strokeWidth="11"
+        android:strokeColor="@color/lime"
+        android:strokeLineCap="round" />
+</vector>

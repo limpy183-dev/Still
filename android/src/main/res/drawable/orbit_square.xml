@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A clean page: the orbit is a slightly turned square (blocked.css .paper .orbit). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="92dp"
+    android:height="92dp"
+    android:viewportWidth="92"
+    android:viewportHeight="92">
+    <group android:pivotX="46" android:pivotY="46" android:rotation="-8" android:scaleX="0.9" android:scaleY="0.9">
+        <path
+            android:pathData="M4.5,0.5h83a4,4 0 0,1 4,4v83a4,4 0 0,1 -4,4h-83a4,4 0 0,1 -4,-4v-83a4,4 0 0,1 4,-4z"
+            android:strokeWidth="1"
+            android:strokeColor="#FFFFFFFF" />
+        <group android:pivotX="46" android:pivotY="46" android:rotation="-30">
+            <group android:translateX="23.5" android:translateY="23.5">
+                <path
+                    android:fillColor="#FFFFFFFF"
+                    android:pathData="M22.5,0A22.5,22.5 0 0,1 45,22.5L45,45L22.5,45A22.5,22.5 0 0,1 0,22.5A22.5,22.5 0 0,1 22.5,0z" />
+            </group>
+        </group>
+    </group>
+</vector>

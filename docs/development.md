@@ -43,6 +43,7 @@ The UI test covers selection, search, saved groups, setup, active-session immuta
 - `native/discover.ps1`: read-only desktop and Store app discovery.
 - `installer/`: Still Setup (install, update, uninstall) and its fonts/icon; built by `scripts/build-installer.ps1`.
 - `tests/`: native, JavaScript, policy, and UI checks.
+- `android/`: the Android preview app. See [Still for Android](android.md).
 - `docs/`: user and developer guides, website setup, and README screenshots.
 
 ## Refreshing README screenshots

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Alerts: exact alarm times (USE_EXACT_ALARM is for alarm apps and granted at install on Android 13+;
+         SCHEDULE_EXACT_ALARM covers Android 12), alarm screens over the lock screen, and rescheduling after a reboot. -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- Package visibility: the app picker, and the protected apps that must never be blocked. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.HOME" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.settings.SETTINGS" />
+        </intent>
+        <intent>
+            <action android:name="android.settings.ACCESSIBILITY_SETTINGS" />
+        </intent>
+        <intent>
+            <action android:name="android.settings.APPLICATION_DETAILS_SETTINGS" />
+            <data android:scheme="package" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.DELETE" />
+            <data android:scheme="package" />
+        </intent>
+    </queries>
+
+    <!-- No cloud backup or device transfer: restoring a running session onto another phone would block it unexpectedly. -->
+    <application
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Still">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".BlockScreenActivity"
+            android:exported="false"
+            android:label="@string/screen_title"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".TodosActivity"
+            android:exported="false"
+            android:label="@string/todos_title"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".HistoryActivity"
+            android:exported="false"
+            android:label="@string/history_title"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".LimitsActivity"
+            android:exported="false"
+            android:label="@string/limits_title"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".AlertsActivity"
+            android:exported="false"
+            android:label="@string/alerts_title" />
+
+        <activity
+            android:name=".AlertEditActivity"
+            android:exported="false"
+            android:label="@string/alerts_title"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Alarm screens: their own task, so closing one returns to whatever was on screen. -->
+        <activity
+            android:name=".AlarmActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:label="@string/alerts_title"
+            android:launchMode="singleInstance"
+            android:taskAffinity="io.github.limpy183dev.still.alarm" />
+
+        <activity
+            android:name=".AlarmActivity$Card"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:label="@string/alerts_title"
+            android:launchMode="singleInstance"
+            android:taskAffinity="io.github.limpy183dev.still.card"
+            android:theme="@style/Theme.Still.Card" />
+
+        <!-- Snooze and Dismiss from alarm notifications; not exported, so only Still's notifications can send them. -->
+        <receiver
+            android:name=".AlarmActivity$Actions"
+            android:exported="false" />
+
+        <service
+            android:name=".BlockService"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/block_service" />
+        </service>
+
+        <!-- Exported for the system's boot, date, time and time-zone broadcasts; it only re-reads state, so no sender can change a session. -->
+        <receiver
+            android:name=".Events"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Emergency release over USB debugging. DUMP is held only by the system and the adb shell. -->
+        <receiver
+            android:name=".Recover"
+            android:exported="true"
+            android:permission="android.permission.DUMP" />
+    </application>
+</manifest>

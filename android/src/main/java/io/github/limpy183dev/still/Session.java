@@ -1,0 +1,132 @@
+package io.github.limpy183dev.still;
+
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * A focus session, mirroring native/Session.cs. Pure Java so it is unit-tested on the JVM.
+ *
+ * Deadlines are tracked on two clocks. Within one boot the monotonic elapsed clock decides, so changing
+ * the phone's date or time cannot end a session early or extend it. After a reboot the elapsed clock
+ * restarts, so the wall-clock deadline is used and the elapsed anchor is re-established.
+ */
+final class Session {
+    static final int MAX_MINUTES = 1440, MAX_DELAY = 120, MAX_APPS = 100, MAX_INTENTION = 120;
+    /** An alarm's local time range can last 25 hours on the night daylight saving time ends. */
+    static final long MAX_SCHEDULED_MS = 1500 * 60000L;
+
+    /** One reading of both clocks. {@code boot} is Settings.Global.BOOT_COUNT (-1 if unavailable). */
+    static final class Clock {
+        final long wall, elapsed;
+        final int boot;
+        Clock(long wall, long elapsed, int boot) { this.wall = wall; this.elapsed = elapsed; this.boot = boot; }
+    }
+
+    String id, intention, outcome;
+    long startedAt, endsAt, unlockAt, finishedAt;
+    /** Set for a session an alarm started: it ends at this time rather than after durationMinutes. */
+    long scheduledEndsAt;
+    int durationMinutes, unlockDelayMinutes, boot;
+    long endsElapsed, unlockElapsed;
+    boolean strict;
+    /** Package name to label, in selection order. */
+    final Map<String, String> apps = new LinkedHashMap<>();
+    /** Blocked website domains (normalised, unique). */
+    final Set<String> websites = new LinkedHashSet<>();
+    /** The block screen, frozen when the session starts. */
+    BlockScreen screen = BlockScreen.DEFAULT;
+
+    /** {@code targetCount} is apps plus websites, like on Windows. Website-only sessions are allowed. */
+    static void validate(int minutes, int delay, int targetCount) {
+        if (minutes < 1 || minutes > MAX_MINUTES) throw new IllegalArgumentException("Choose a focus duration from 1 to 1,440 minutes.");
+        if (delay < 0 || delay > MAX_DELAY) throw new IllegalArgumentException("Choose a release delay from 0 to 120 minutes.");
+        if (targetCount < 1 || targetCount > MAX_APPS) throw new IllegalArgumentException("Select between 1 and 100 apps or websites.");
+    }
+
+    static Session start(String id, String intention, int minutes, int delay, boolean strict, Map<String, String> apps,
+                         Collection<String> websites, Clock now) {
+        Session s = new Session();
+        for (String site : websites) s.websites.add(Websites.domain(site));
+        validate(minutes, delay, apps.size() + s.websites.size());
+        s.id = id;
+        String text = intention == null ? "" : intention.trim();
+        s.intention = text.isEmpty() ? "Time to focus" : text.substring(0, Math.min(MAX_INTENTION, text.length()));
+        s.durationMinutes = minutes;
+        s.unlockDelayMinutes = delay;
+        s.strict = strict;
+        for (Map.Entry<String, String> app : apps.entrySet()) {
+            String label = app.getValue() == null ? app.getKey() : app.getValue();
+            s.apps.put(app.getKey(), label.substring(0, Math.min(100, label.length())));
+        }
+        s.startedAt = now.wall;
+        s.boot = now.boot;
+        s.endsAt = now.wall + minutes * 60000L;
+        s.endsElapsed = now.elapsed + minutes * 60000L;
+        return s;
+    }
+
+    /** A session that ends at a fixed time, for alarms (as FocusSession.ResolveEnd on Windows). */
+    static Session startUntil(String id, String intention, long endsAt, int delay, boolean strict, Map<String, String> apps,
+                              Collection<String> websites, Clock now) {
+        long left = endsAt - now.wall;
+        if (left <= 0 || left > MAX_SCHEDULED_MS) throw new IllegalArgumentException("The scheduled focus window has ended or is too long.");
+        int minutes = (int) Math.max(1, Math.min(MAX_MINUTES, (left + 59999) / 60000));
+        Session s = start(id, intention, minutes, delay, strict, apps, websites, now);
+        s.scheduledEndsAt = endsAt;
+        s.endsAt = endsAt;
+        s.endsElapsed = now.elapsed + left;
+        return s;
+    }
+
+    /** The chosen length, which no clock reading can exceed. */
+    long length() { return scheduledEndsAt != 0 ? scheduledEndsAt - startedAt : durationMinutes * 60000L; }
+
+    private boolean sameBoot(Clock now) { return now.boot == boot && now.boot != -1; }
+
+    // Capped at the chosen length, so moving the clock back before a reboot cannot stretch a session.
+    long remaining(Clock now) {
+        return Math.min(length(), sameBoot(now) ? endsElapsed - now.elapsed : endsAt - now.wall);
+    }
+
+    boolean expired(Clock now) { return remaining(now) <= 0; }
+
+    boolean unlockRequested() { return unlockAt != 0; }
+
+    long unlockRemaining(Clock now) {
+        if (!unlockRequested()) return Long.MAX_VALUE;
+        return Math.min(unlockDelayMinutes * 60000L, sameBoot(now) ? unlockElapsed - now.elapsed : unlockAt - now.wall);
+    }
+
+    boolean canEnd(Clock now) { return unlockDelayMinutes == 0 || unlockRemaining(now) <= 0; }
+
+    /** Starts the release wait. A pending request keeps its original time. */
+    void requestUnlock(Clock now) {
+        if (unlockRequested() || unlockDelayMinutes == 0) return;
+        unlockAt = now.wall + unlockDelayMinutes * 60000L;
+        unlockElapsed = now.elapsed + unlockDelayMinutes * 60000L;
+    }
+
+    void cancelUnlock() { unlockAt = 0; unlockElapsed = 0; }
+
+    /**
+     * Re-derives both deadlines from the clock that is trusted right now: the elapsed clock in the same
+     * boot, the wall clock after a reboot. Returns true if anything changed and should be saved.
+     */
+    boolean anchor(Clock now) {
+        long left = remaining(now), unlockLeft = unlockRemaining(now);
+        long oldEnds = endsAt, oldUnlock = unlockAt;
+        int oldBoot = boot;
+        boot = now.boot;
+        endsAt = now.wall + left;
+        endsElapsed = now.elapsed + left;
+        if (unlockRequested()) {
+            unlockAt = now.wall + unlockLeft;
+            unlockElapsed = now.elapsed + unlockLeft;
+        }
+        // The two clocks are read a moment apart, so ignore sub-second jitter to avoid pointless writes.
+        return oldBoot != boot || Math.abs(endsAt - oldEnds) > 1000 || Math.abs(unlockAt - oldUnlock) > 1000;
+    }
+}
