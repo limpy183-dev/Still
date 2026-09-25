@@ -37,6 +37,8 @@ Chrome and Edge website selections, logos, custom block screens, redirects, and 
 
 Open **To-do list** in the sidebar. Type `/` at the start of a line or after a space to choose a checkbox, tick circle, bullet, numbered item, heading, or note. Keep typing to filter; use the arrow keys and Enter or click a format. Escape dismisses the menu. Enter creates another line, and Backspace on an empty line removes it. Checkboxes and circles can be checked off independently.
 
+Hold a line for half a second (or right-click it, or press Shift+F10) to enter selection mode. Click lines to select them, or use **Select all**, then **Delete** to remove them together; **Undo delete** in the footer brings them back for 15 seconds. In selection mode each line shows a ⌃⌄ handle: drag it to move the line, or focus it and press the up and down arrow keys. **Cancel** or Escape leaves selection mode.
+
 The Windows app saves edits automatically with your local preferences, including during focus sessions. The list supports up to 500 lines of 2,000 characters each. Browser-only previews do not save edits. Run `npm run test:todos` to check formatting, editing, completion, and persistence.
 
 ## Alerts

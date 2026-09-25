@@ -1,3 +1,8 @@
+## What's new in v1.0.3
+
+- **Select and move to-dos.** Hold a line in your to-do list (or right-click it) to enter selection mode. Select a few lines, or **Select all**, and delete them together; **Undo delete** puts them back.
+- While selecting, drag a line's ⌃⌄ handle to move it up or down the list, or focus the handle and use the arrow keys.
+
 ## What's new in v1.0.2
 
 - Works with more Windows setups: folders and account names with accents, apostrophes, `%`, `&` or brackets, and redirected folders.

@@ -1,6 +1,6 @@
 {
   "name": "still-focus",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A quieter space for your attention. Windows app blocking and intentional focus.",
   "main": "app/main.cjs",
   "scripts": {
