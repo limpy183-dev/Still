@@ -5,7 +5,7 @@ window.alarm.onData(item => {
   get('alarm-snooze').hidden = item.preview || (alert.snoozeLimit != null && (alert.snoozeCount || 0) >= alert.snoozeLimit);
   get('alarm-dismiss').hidden = get('alarm-dismiss-top').hidden = !item.preview && alert.showDismiss === false;
   document.body.classList.add('alarm-' + alert.style);
-  document.body.classList.toggle('reduced-motion', !!item.reducedMotion);
+  applyAccessibility(item.accessibility || { reducedMotion: item.reducedMotion }, window.alarm.setZoom);
   get('alarm-title').textContent = alert.title; get('alarm-note').textContent = alert.note;
   get('alarm-message').textContent = item.message;
   get('alarm-time').textContent = item.occurrence.end <= Date.now() ? 'This focus window has ended' : 'Until ' + new Date(item.occurrence.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

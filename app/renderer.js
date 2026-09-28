@@ -814,10 +814,21 @@ $('#group-save').onclick = () => {
 
 $('#group-name').onkeydown = event => { if (event.key === 'Enter') $('#group-save').click(); };
 
-for (const [id, key] of [['notifications', 'notifications'], ['reduced-motion', 'reducedMotion'], ['launch-at-login', 'launchAtLogin']]) {
+const applyLook = () => applyAccessibility(prefs, api.setZoom);
+for (const [id, key] of [['notifications', 'notifications'], ['reduced-motion', 'reducedMotion'], ['high-contrast', 'highContrast'], ['readable-font', 'readableFont'], ['strong-focus', 'strongFocus'], ['launch-at-login', 'launchAtLogin']]) {
 
-  $(`#${id}`).onchange = () => { prefs[key] = $(`#${id}`).checked; document.body.classList.toggle('reduced-motion', prefs.reducedMotion); save(); if (key === 'launchAtLogin' && state.demo) toast('Sign-in preferences are available in the packaged Windows app.'); };
+  $(`#${id}`).onchange = () => { prefs[key] = $(`#${id}`).checked; applyLook(); save(); if (key === 'launchAtLogin' && state.demo) toast('Sign-in preferences are available in the packaged Windows app.'); };
 
+}
+
+$('#text-size').onchange = () => { prefs.textSize = Number($('#text-size').value); applyLook(); save(); };
+$('#accessibility-reset').onclick = () => {
+  Object.assign(prefs, { textSize: 100, highContrast: false, readableFont: false, strongFocus: false, reducedMotion: false });
+  showAccessibility(); applyLook(); save(); toast('Accessibility options are back to their defaults.');
+};
+function showAccessibility() {
+  $('#text-size').value = String(prefs.textSize || 100);
+  for (const [id, key] of [['reduced-motion', 'reducedMotion'], ['high-contrast', 'highContrast'], ['readable-font', 'readableFont'], ['strong-focus', 'strongFocus']]) $(`#${id}`).checked = prefs[key] === true;
 }
 
 $('#check-updates').onclick = () => act(async () => {
@@ -855,9 +866,9 @@ async function init() {
     $('#duration').value = prefs.duration; $('#delay').value = prefs.delay; $('#delay-enabled').checked = prefs.delayEnabled; $('#intention').value = prefs.intention; $('#history-page-size').value = String(prefs.historyPageSize ?? 10);
 
     if (initial.version) $('#app-version').textContent = `STILL ${initial.version}`;
-    $('#notifications').checked = prefs.notifications; $('#reduced-motion').checked = prefs.reducedMotion; $('#launch-at-login').checked = prefs.launchAtLogin;
+    $('#notifications').checked = prefs.notifications; $('#launch-at-login').checked = prefs.launchAtLogin;
 
-    document.body.classList.toggle('reduced-motion', prefs.reducedMotion);
+    showAccessibility(); applyLook();
 
     $$('[data-duration]').forEach(button => button.classList.toggle('selected', Number(button.dataset.duration) === prefs.duration));
 

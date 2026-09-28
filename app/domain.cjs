@@ -47,6 +47,10 @@ function validatePreferences(value) {
     intention: String(value.intention || '').slice(0, 120),
     notifications: value.notifications !== false,
     reducedMotion: value.reducedMotion === true,
+    textSize: [100, 115, 130, 150, 175].includes(value.textSize) ? value.textSize : 100,
+    highContrast: value.highContrast === true,
+    readableFont: value.readableFont === true,
+    strongFocus: value.strongFocus === true,
     launchAtLogin: value.launchAtLogin === true
   };
 }

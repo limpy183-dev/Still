@@ -24,6 +24,7 @@ npm test             # IPC validation and preference bounds
 npm run build:native # Compile guard + native deadline/state checks
 npm run test:policy  # Read-only Windows policy generation/evaluation
 npm run test:ui      # Full Electron flow in explicit preview mode
+npm run test:accessibility  # Settings accessibility options: text size, contrast (7:1), fonts, focus, layout at every size
 npm run test:packaged # Real app discovery and resource check after building
 npm run demo         # Interactive preview; NEVER blocks real apps
 ```

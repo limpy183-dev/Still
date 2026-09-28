@@ -26,6 +26,14 @@ test('persist only bounded, known preferences and executable metadata', () => {
   assert.deepEqual(result.selected, [game.path]); assert.deepEqual(result.groups[0].paths, [game.path]);
 });
 
+test('persist only known accessibility options and default older preference files', () => {
+  const defaults = { textSize: 100, highContrast: false, readableFont: false, strongFocus: false, reducedMotion: false };
+  const pick = p => ({ textSize: p.textSize, highContrast: p.highContrast, readableFont: p.readableFont, strongFocus: p.strongFocus, reducedMotion: p.reducedMotion });
+  assert.deepEqual(pick(validatePreferences({})), defaults);
+  assert.deepEqual(pick(validatePreferences({ textSize: 175, highContrast: true, readableFont: true, strongFocus: true, reducedMotion: true })), { textSize: 175, highContrast: true, readableFont: true, strongFocus: true, reducedMotion: true });
+  for (const textSize of [0, 99, 200, 1000, '150', null, NaN, {}]) assert.equal(validatePreferences({ textSize }).textSize, 100, String(textSize));
+  assert.equal(validatePreferences({ highContrast: 'yes', readableFont: 1, strongFocus: 'true' }).highContrast, false);
+});
 test('persist bounded to-do text and known formats', () => {
   const todos = validatePreferences({ todos: [null, { text: 9 }, { text: 'x'.repeat(2001), type: 'script', done: 'yes' }, { text: 'Read', type: 'circle', done: true }] }).todos;
   assert.deepEqual(todos, [{ text: 'x'.repeat(2000), type: 'checkbox', done: false }, { text: 'Read', type: 'circle', done: true }]);

@@ -24,7 +24,9 @@ Already using the portable build? Just run the installer; your data carries over
 4. Save work in selected apps, then start the session. Selected running apps are closed. The selection, duration, and release delay cannot be changed during a session.
 5. To end early, request release, wait the configured period, then choose **End focus session**. Waiting does not automatically end a session. Cancelling a release request restores the lock; a new request starts a new full wait. Natural session expiry always releases apps, even if a release wait would have lasted longer.
 
-Closing the window hides it in the system tray. Quitting the UI does not stop the guard. Timers and release requests are persisted and survive restarting Windows. Session history, JSON export, completion notifications, reduced motion, and launch at sign-in are included.
+Closing the window hides it in the system tray. Quitting the UI does not stop the guard. Timers and release requests are persisted and survive restarting Windows. Session history, JSON export, completion notifications, reduced motion, accessibility options, and launch at sign-in are included.
+
+**Accessibility:** at the bottom of Settings, **Made to fit you** has a **Text size** menu (100%, 115%, 130%, 150%, 175%) that scales the whole app, so the layout rearranges itself to fit and a small window shows less at once; **High contrast** (black on white, strong borders); **Easier-to-read font** (Verdana); **Stronger focus outlines** for keyboard use; **A gentler pace** (reduce motion); and **Reset accessibility**. Alarm screens follow these choices. They apply immediately and are saved on this PC.
 
 Keep the portable executable in a stable location if you enable launch at sign-in. This is an unsigned local build; Windows may show a publisher prompt.
 The packaged app creates a **Still Focus** Start Menu shortcut so Windows can identify its notifications; moving the portable executable updates that shortcut on the next launch.

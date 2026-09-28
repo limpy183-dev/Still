@@ -1,6 +1,6 @@
 {
   "name": "still-focus",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "A quieter space for your attention. Windows app blocking and intentional focus.",
   "main": "app/main.cjs",
   "scripts": {
@@ -15,6 +15,7 @@
     "test:csp": "powershell -NoProfile -ExecutionPolicy Bypass -File tests/csp-policy.ps1",
     "test:packaged": "node tests/packaged.cjs",
     "test:ui": "node tests/ui.cjs",
+    "test:accessibility": "node tests/accessibility.cjs",
     "test:startup": "node tests/startup.cjs",
     "test:todos": "node tests/todos.cjs",
     "test:alerts": "node tests/alerts-ui.cjs",

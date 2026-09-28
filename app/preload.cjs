@@ -1,7 +1,8 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webFrame } = require('electron');
 const invoke = name => (...args) => ipcRenderer.invoke(name, ...args);
 contextBridge.exposeInMainWorld('still', {
   websiteTarget: invoke('websiteTarget'), websiteIcons: invoke('websiteIcons'), websiteImage: invoke('websiteImage'), websiteSetup: invoke('websiteSetup'),
+  setZoom: factor => { if (Number.isFinite(factor)) webFrame.setZoomFactor(Math.min(1.75, Math.max(1, factor))); },
   bootstrap: invoke('bootstrap'), appIcons: invoke('appIcons'), showWindow: invoke('showWindow'), status: invoke('status'), savePreferences: invoke('savePreferences'),
   install: invoke('install'), uninstall: invoke('uninstall'), discover: invoke('discover'), browse: invoke('browse'),
   start: invoke('start'), requestUnlock: invoke('requestUnlock'), cancelUnlock: invoke('cancelUnlock'), end: invoke('end'),

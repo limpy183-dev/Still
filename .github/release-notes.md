@@ -1,6 +1,7 @@
-## What's new in v1.0.9
+## What's new in v1.1.0
 
-- **Sidebar fits shorter windows.** Settings and A little guidance no longer get cut off at the bottom of the sidebar. On smaller screens the sidebar hides its note and picture and tightens its spacing, and it scrolls as a last resort.
+- **Accessibility options.** A new **Made to fit you** section at the bottom of Settings has a text size menu (100% to 175%, scaling the whole app so the layout rearranges to fit), high contrast, an easier-to-read font, stronger focus outlines and reduced motion. They also apply to alarm screens.
+- **Small windows.** The website block screen choices now wrap instead of running off the edge in narrow windows.
 
 ## Install or update
 

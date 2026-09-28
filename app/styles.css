@@ -83,3 +83,24 @@
 @media(max-height:680px){.sidebar{padding-top:18px}.workspace-label{margin:24px 0 10px}.nav-item,.sidebar-bottom .nav-item{padding-top:9px;padding-bottom:9px}.local-label{padding-top:10px;margin-top:6px}}
 @media(max-height:680px) and (max-width:850px){.sidebar nav{margin-top:22px}}
 @media(max-width:1150px) and (min-width:851px){.sidebar-bottom .nav-item{gap:9px;padding-left:12px;padding-right:12px;white-space:nowrap}}
+/* Accessibility (Settings > Made to fit you). Text size is page zoom set in accessibility.js, so the width breakpoints above reflow the layout. */
+.accessibility-settings select{background:#f8faf4;border:1px solid #d5dec8;border-radius:8px;padding:9px;color:#405333;font:inherit;max-width:190px}
+.setting-row h3 label{cursor:pointer}
+body.readable-font{--font:Verdana,'Segoe UI',sans-serif}
+body.strong-focus :is(button,a,input,select,textarea,[tabindex]):focus-visible,body.strong-focus dialog:focus-visible{outline:3px solid #000;outline-offset:3px;box-shadow:0 0 0 6px #fff}
+body.strong-focus .switch input:focus-visible+span{outline:3px solid #000;outline-offset:3px;box-shadow:0 0 0 6px #fff}
+body.strong-focus :is(.intention-field,.search-field):focus-within{outline:3px solid #000;outline-offset:2px}
+/* High contrast: black on white text, black borders and switches; the few dark surfaces flip to white text. */
+body.high-contrast{--bg:#fff;--paper:#fff;--ink:#000;--muted:#000;--line:#000;--soft:#f1f3ea;--green:#1f3008;background:#fff}
+:root:root body.high-contrast :where(div,p,span,small,label,li,h1,h2,h3,h4,strong,em,code,legend,a,button,select,input,textarea,time){color:#000}
+body.high-contrast :is(.primary-button,.toast,.calendar-day.has-session,.todo-select[aria-checked=true],.bedtime-row,.website-screen-preview.dusk,.website-screen-options .dusk,.nav-item.active),body.high-contrast :is(.primary-button,.toast,.calendar-day.has-session,.todo-select[aria-checked=true],.bedtime-row,.website-screen-preview.dusk,.website-screen-options .dusk,.nav-item.active) :where(*){color:#fff}
+body.high-contrast :is(.primary-button,.toast,.nav-item.active){background:#000;border-color:#000}
+body.high-contrast :is(.titlebar,.sidebar){background:#fff;color:#000}
+body.high-contrast .sidebar{border-right:2px solid #000}
+body.high-contrast :is(.panel,dialog,select,input,textarea,.secondary-button,.search-field,.intention-field,.app-row,.duration-presets button,.calendar-day){border-color:#000}
+body.high-contrast input::placeholder{color:#333}
+body.high-contrast .switch>span{background:#fff;box-shadow:inset 0 0 0 2px #000}
+body.high-contrast .switch>span:after{background:#000;box-shadow:none}
+body.high-contrast .switch input:checked+span{background:#000}
+body.high-contrast .switch input:checked+span:after{background:#fff}
+body.high-contrast .card-heading svg{color:#000}
