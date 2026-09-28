@@ -1,6 +1,7 @@
 const { _electron: electron } = require('playwright');
 const assert = require('node:assert/strict');
 const path = require('node:path');
+const screenshot = require('./screenshot.cjs');
 
 async function run() {
   const env = { ...process.env }; delete env.ELECTRON_RUN_AS_NODE;
@@ -31,7 +32,7 @@ async function run() {
     await window.waitForFunction(count => document.querySelectorAll('#library-list .app-row').length === count, apps.length);
     await window.waitForFunction(() => [...document.querySelectorAll('#library-list .app-icon img')].every(img => img.complete && img.naturalWidth > 0));
     assert.equal(await window.locator('#library-list .app-icon').count(), apps.length);
-    await window.screenshot({ path: 'test-results/library-icons.png', fullPage: true });
+    await screenshot(application, window, 'test-results/library-icons.png');
     await window.evaluate(() => {
       const img = document.querySelector('#library-list .app-icon img');
       img.dispatchEvent(new Event('error'));

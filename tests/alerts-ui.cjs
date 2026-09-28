@@ -2,6 +2,7 @@ const { _electron: electron } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const screenshot = require('./screenshot.cjs');
 async function run() {
   await fs.mkdir('test-results', { recursive: true });
   const env = { ...process.env }; delete env.ELECTRON_RUN_AS_NODE;
@@ -97,7 +98,7 @@ async function run() {
     await window.waitForTimeout(10200); // Keep the native notification's existing presentation lifetime.
     await window.locator('#alert-save').click();
     await window.waitForSelector('#alert-dialog:not([open])', { state: 'attached' });
-    await window.screenshot({ path: 'test-results/alerts-list.png', fullPage: true });
+    await screenshot(application, window, 'test-results/alerts-list.png');
     // Drive a due alert through the production scheduler while main UI is hidden.
     await window.evaluate(async () => { await window.still.install(); await window.still.deleteAlert(alerts[0].id); });
     const record = await window.evaluate(async () => {
@@ -123,7 +124,7 @@ async function run() {
     assert.equal(await window.locator('.alert-status').innerText(), await window.evaluate(time => 'Snoozed · alerts again ' + alertWhen(time), saved[0].snoozeAt));
     assert.match(await window.locator('#alert-next-detail').innerText(), /Snoozed/);
     await window.evaluate(() => window.still.showWindow());
-    await window.screenshot({ path: 'test-results/alerts-snoozed.png', fullPage: true });
+    await screenshot(application, window, 'test-results/alerts-snoozed.png');
     await window.reload();
     await window.waitForFunction(() => typeof alerts !== 'undefined' && alerts[0]?.snoozeAt);
     await window.locator('[data-page="alerts"]').click();

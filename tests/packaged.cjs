@@ -1,6 +1,7 @@
 const { _electron: electron } = require('playwright');
 const assert = require('node:assert/strict');
 const path = require('node:path');
+const screenshot = require('./screenshot.cjs');
 const fs = require('node:fs/promises');
 async function run() {
   const environment = { ...process.env }; delete environment.ELECTRON_RUN_AS_NODE;
@@ -16,12 +17,12 @@ async function run() {
     assert.equal(await application.evaluate(({ app }) => app.isPackaged), true);
     await window.evaluate(() => document.fonts.ready);
     await window.waitForTimeout(600);
-    await window.screenshot({ path: 'test-results/windows-app.png', fullPage: true });
+    await screenshot(application, window, 'test-results/windows-app.png');
     await window.locator('#add-apps').click();
     await window.waitForSelector('#picker-list .app-row', { timeout: 60000 });
     const discovered = await window.locator('#picker-list .app-row').count();
     assert.ok(discovered > 0, 'Packaged PowerShell discovery returns actual installed apps');
-    await window.screenshot({ path: 'test-results/windows-app-picker.png', fullPage: true });
+    await screenshot(application, window, 'test-results/windows-app-picker.png');
     await window.locator('#picker-search').fill('zzzz-no-such-application');
     assert.equal(await window.locator('#picker-list .app-row').count(), 0);
     await window.locator('#picker-search').fill('');

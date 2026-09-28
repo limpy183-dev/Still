@@ -2,6 +2,7 @@ const { _electron: electron } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const screenshot = require('./screenshot.cjs');
 async function run() {
   await fs.mkdir('test-results', { recursive: true });
   const environment = { ...process.env }; delete environment.ELECTRON_RUN_AS_NODE;
@@ -15,7 +16,7 @@ async function run() {
     await window.waitForFunction(() => document.querySelectorAll('#selected-apps .app-row').length > 0);
     await window.evaluate(() => document.fonts.ready);
     await window.waitForTimeout(600);
-    await window.screenshot({ path: 'test-results/focus-space.png', fullPage: true });
+    await screenshot(application, window, 'test-results/focus-space.png');
     assert.equal(await window.locator('h1').first().innerText(), 'Your time. On purpose.');
     await window.locator('#add-apps').click();
     await window.locator('#picker-search').fill('Minecraft');
@@ -46,7 +47,7 @@ async function run() {
     assert.equal(await window.locator('#start-button').isDisabled(), true);
     const earlyRelease = await window.evaluate(async () => { try { await window.still.end(); return false; } catch { return true; } });
     assert.equal(earlyRelease, true, 'IPC rejects release before delay');
-    await window.screenshot({ path: 'test-results/active-session.png', fullPage: true });
+    await screenshot(application, window, 'test-results/active-session.png');
     await window.locator('#cancel-unlock').click();
     await window.waitForSelector('#unlock-info[hidden]', { state: 'attached' });
     const beforeReload = await window.evaluate(() => window.still.status());
@@ -59,10 +60,10 @@ async function run() {
     assert.equal(await window.locator('#remove-guard').isDisabled(), true);
     await window.locator('#reduced-motion').check({ force: true });
     assert.equal(await window.locator('body').evaluate(el => el.classList.contains('reduced-motion')), true);
-    await window.screenshot({ path: 'test-results/settings.png', fullPage: true });
+    await screenshot(application, window, 'test-results/settings.png');
     await window.locator('[data-page="focus"]').click();
     await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1000, 760));
-    await window.screenshot({ path: 'test-results/compact.png', fullPage: true });
+    await screenshot(application, window, 'test-results/compact.png');
     const overflowing = await window.evaluate(() => document.documentElement.scrollWidth > innerWidth);
     assert.equal(overflowing, false, 'No horizontal overflow at minimum window width');
     for (const [width, height] of [[1350, 900], [1000, 600], [640, 480]]) {
@@ -77,7 +78,7 @@ async function run() {
     await window.locator('[data-page="history"]').click();
     assert.equal(await window.locator('#total-completed').innerText(), '1');
     assert.ok((await window.locator('#history-list').innerText()).includes('One meaningful thing'));
-    await window.screenshot({ path: 'test-results/history.png', fullPage: true });
+    await screenshot(application, window, 'test-results/history.png');
     const monthLabel = await window.locator('#calendar-month').innerText();
     assert.equal(await window.locator('.calendar-day.has-session').count(), 1);
     assert.equal(await window.locator('.calendar-weekday').count(), 7);

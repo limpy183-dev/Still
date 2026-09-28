@@ -2,6 +2,7 @@ const { _electron: electron } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const screenshot = require('./screenshot.cjs');
 
 async function run() {
   const environment = { ...process.env }; delete environment.ELECTRON_RUN_AS_NODE;
@@ -100,14 +101,14 @@ async function run() {
     assert.deepEqual((await page.evaluate(async () => (await window.still.bootstrap()).preferences.todos)).map(item => item.text), moved, 'New order is saved');
     await lines.first().click({ button: 'right' });
     await fs.mkdir('test-results', { recursive: true });
-    await page.screenshot({ path: 'test-results/todos-select.png', fullPage: true });
+    await screenshot(app, page, 'test-results/todos-select.png');
     await page.locator('#todo-select-cancel').click();
     await fs.mkdir('test-results', { recursive: true });
-    await page.screenshot({ path: 'test-results/todos.png', fullPage: true });
+    await screenshot(app, page, 'test-results/todos.png');
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1000, 760));
     await lines.last().fill('/');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
-    await page.screenshot({ path: 'test-results/todos-menu.png', fullPage: true });
+    await screenshot(app, page, 'test-results/todos-menu.png');
     assert.deepEqual(errors, [], 'No renderer or CSP errors');
     console.log('Passed: all six formats, keyboard and mouse selection, completion, safe text, local persistence, deletion, hold-to-select, bulk delete with undo, reordering, and compact layout.');
   } finally { await app.close(); }

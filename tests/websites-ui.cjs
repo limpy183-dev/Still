@@ -2,6 +2,7 @@ const { _electron: electron } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const screenshot = require('./screenshot.cjs');
 async function run() {
   await fs.mkdir('test-results', { recursive: true });
   const env = { ...process.env }; delete env.ELECTRON_RUN_AS_NODE;
@@ -38,7 +39,7 @@ async function run() {
     assert.equal(await window.locator('#website-screen-error').innerText(), '');
     await window.locator('[name="website-screen"][value="dusk"]').check({ force: true });
     await window.locator('.website-settings').scrollIntoViewIfNeeded();
-    await window.screenshot({ path: 'test-results/website-screens.png', fullPage: true });
+    await screenshot(application, window, 'test-results/website-screens.png');
     await window.locator('[data-page="limits"]').click();
     assert.equal(await window.locator('[data-limit-website]').count(), 5, 'Five recommended websites');
     await window.locator('[data-limit-website="youtube.com"]').click();
