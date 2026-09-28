@@ -22,14 +22,16 @@ async function run() {
       const { preferences } = await window.still.bootstrap();
       await window.still.savePreferences({ ...preferences, apps });
     }, apps);
-    // Bootstrap must reconstruct icons from the saved identity-only preferences.
-    const restored = await window.evaluate(() => window.still.bootstrap());
+    // Icons load after startup (appIcons), rebuilt from the saved identity-only preferences.
+    const restored = await window.evaluate(() => window.still.appIcons());
     for (const app of apps.filter(a => a.icon)) {
-      assert.ok(restored.apps.find(a => a.path === app.path)?.icon, `Saved icon restored: ${app.name}`);
+      assert.ok(restored.find(a => a.path === app.path)?.icon, `Saved icon restored: ${app.name}`);
     }
     await window.reload();
     await window.locator('[data-page="library"]').click();
     await window.waitForFunction(count => document.querySelectorAll('#library-list .app-row').length === count, apps.length);
+    // Icons arrive after the first render, so wait for them before checking they decode.
+    await window.waitForFunction(count => document.querySelectorAll('#library-list .app-icon img').length === count, apps.filter(a => a.icon).length, { timeout: 60000 });
     await window.waitForFunction(() => [...document.querySelectorAll('#library-list .app-icon img')].every(img => img.complete && img.naturalWidth > 0));
     assert.equal(await window.locator('#library-list .app-icon').count(), apps.length);
     await screenshot(application, window, 'test-results/library-icons.png');
