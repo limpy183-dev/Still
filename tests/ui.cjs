@@ -65,6 +65,13 @@ async function run() {
     await window.screenshot({ path: 'test-results/compact.png', fullPage: true });
     const overflowing = await window.evaluate(() => document.documentElement.scrollWidth > innerWidth);
     assert.equal(overflowing, false, 'No horizontal overflow at minimum window width');
+    for (const [width, height] of [[1350, 900], [1000, 600], [640, 480]]) {
+      await application.evaluate(({ BrowserWindow }, size) => BrowserWindow.getAllWindows()[0].setContentSize(...size), [width, height]);
+      await window.waitForFunction(size => innerHeight >= size - 2 && innerHeight <= size + 2, height);
+      const help = await window.locator('#help-button').boundingBox();
+      assert.ok(help.y + help.height <= await window.evaluate(() => innerHeight), `Settings and guidance stay visible at ${width}x${height}`);
+    }
+    await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1000, 760));
     // Natural expiry is tested against the running timer, not by mutating app internals.
     await window.waitForSelector('.focus-card:not(.running)', { timeout: 70000 });
     await window.locator('[data-page="history"]').click();
