@@ -1,6 +1,6 @@
-## What's new in v1.0.8
+## What's new in v1.0.9
 
-- **Centred window buttons.** The minimise, maximise and close icons in the title bar now sit exactly in the middle of their buttons, as do the close button on alarm screens and the installer's window buttons. They're drawn as crisp lines instead of text characters.
+- **Sidebar fits shorter windows.** Settings and A little guidance no longer get cut off at the bottom of the sidebar. On smaller screens the sidebar hides its note and picture and tightens its spacing, and it scrolls as a last resort.
 
 ## Install or update
 
