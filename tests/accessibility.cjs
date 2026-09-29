@@ -83,7 +83,8 @@ async function run() {
     }
     assert.ok((await window.evaluate(() => getComputedStyle(document.body).fontFamily)).startsWith('Manrope'));
     await window.locator('#readable-font').check({ force: true });
-    assert.ok((await window.evaluate(() => getComputedStyle(document.body).fontFamily)).startsWith('Verdana'), 'Verdana replaces Manrope');
+    assert.ok((await window.evaluate(() => getComputedStyle(document.body).fontFamily)).startsWith('"Atkinson Hyperlegible Next"'), 'Atkinson Hyperlegible replaces Manrope');
+    assert.ok(await window.evaluate(async () => (await document.fonts.load('16px "Atkinson Hyperlegible Next"')).length > 0), 'the bundled Atkinson Hyperlegible font loads');
     await window.locator('#readable-font').uncheck({ force: true });
 
     // Strong focus: a keyboard-focused button gets a thicker outline only when switched on.

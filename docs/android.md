@@ -109,7 +109,7 @@ Tap the sliders button at the top right of any page. **Settings** holds *Reminde
 
 - **Text size:** 100%, 115%, 130%, 150% or 175%, multiplied by the phone's own font size. Longer lines wrap, so pages get longer; the bottom bar's labels grow up to 130% so they still fit. (On Windows it scales the whole window, like page zoom.)
 - **High contrast:** black text and borders on plain white, or white on plain black in the dark theme.
-- **Easier-to-read font:** Atkinson Hyperlegible Next instead of Manrope (Verdana on Windows). The Braille Institute designed it so similar letters and numbers (I, l, 1; O, 0) are easy to tell apart. It's bundled, so it works the same on every phone.
+- **Easier-to-read font:** Atkinson Hyperlegible Next instead of Manrope, as on Windows. The Braille Institute designed it so similar letters and numbers (I, l, 1; O, 0) are easy to tell apart. It's bundled, so it works the same on every phone.
 - **Stronger focus outlines:** a thick black ring with a white line inside around whatever a keyboard, switch or D-pad reaches. Touching the screen hides it.
 - **A gentler pace:** no page entrances, floating leaf, breathing glow, pulsing status, button presses or to-do glides. Android's *Remove animations* does the same for every app.
 - **Reset accessibility** puts them all back.
