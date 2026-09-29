@@ -60,6 +60,7 @@ async function badge() {
   const privateReady = await chrome.extension.isAllowedIncognitoAccess(), on = blocked().length > 0;
   const [text, title] = app === 'lost' ? ['!', 'Still · reconnect Windows protection; existing blocks stay in place']
     : app === 'failed' ? ['!', 'Still · couldn’t apply Windows protection’s websites; existing blocks stay in place']
+    : app === 'other' ? ['!', 'Still for Windows doesn’t recognise this copy of the extension. Use the Chrome Web Store version, or Settings → Set up browser companion in Still']
     // Private-window access is required for the app's sessions ('!'); on its own it's optional, so only the tooltip mentions it.
     : !privateReady ? [app === 'connected' ? '!' : on ? 'ON' : '', 'Still · to block websites in private windows, turn on “Allow in Incognito” (Edge: “Allow in InPrivate”) in this extension’s Details']
     : on ? ['ON', 'Still · websites blocked'] : ['', app === 'connected' ? 'Still · connected, ready to focus' : 'Still · Website focus'];
@@ -100,11 +101,13 @@ function connect() {
     port.onMessage.addListener(snapshot => { queue = queue.catch(() => {}).then(() => apply(snapshot)).catch(error => { console.error(error); app = 'failed'; return badge(); }).catch(console.error); });
     port.onDisconnect.addListener(() => {
       // No registered host means Still for Windows isn't set up here: work on our own and check again every 30 s.
-      const missing = /not found/i.test(chrome.runtime.lastError?.message || ''), wasLost = app === 'lost'; port = null;
-      if (app !== (app = missing ? 'none' : 'lost')) chrome.storage.local.set({ app });
+      // "Forbidden" means it is, but only accepts the store extension and Still's own copy (by ID), not this copy, e.g. one loaded
+      // unpacked from elsewhere. Neither holds blocks from the app, and neither is fixed by retrying quickly.
+      const error = chrome.runtime.lastError?.message || '', missing = /not found/i.test(error), wasLost = app === 'lost'; port = null;
+      if (app !== (app = missing ? 'none' : /forbidden/i.test(error) ? 'other' : 'lost')) chrome.storage.local.set({ app });
       badge().catch(() => {});
       // Retry quickly once (an app update or restart), then only on the 30 s alarm, so a host that can't start isn't relaunched every 5 s.
-      if (!missing && !wasLost) retryTimer = setTimeout(connect, 5000);
+      if (app === 'lost' && !wasLost) retryTimer = setTimeout(connect, 5000);
       chrome.alarms.create('reconnect', { delayInMinutes: 0.5 });
     });
   } catch { retryTimer = setTimeout(connect, 5000); }

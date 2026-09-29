@@ -42,9 +42,10 @@ function list(element, items) {
 const describe = site => `${site.domain} · ${site.minutes ? site.minutes + ' min a day' : 'no daily limit'}${site.bedtime ? ' · rests at bedtime' : ''}`;
 async function render() {
   const { own, snapshot, limits, app } = await read(), active = own.session?.endsAt > Date.now();
-  $('app').textContent = app === 'connected' ? 'Connected to Still for Windows' : app === 'lost' ? 'Still for Windows isn’t responding. Its blocks stay in place until it’s back.' : 'Working on its own in this browser';
+  $('app').textContent = app === 'connected' ? 'Connected to Still for Windows' : app === 'lost' ? 'Still for Windows isn’t responding. Its blocks stay in place until it’s back.' : app === 'other' ? 'Still for Windows doesn’t recognise this copy' : 'Working on its own in this browser';
+  $('other').hidden = app !== 'other';
   $('app').classList.toggle('ready', app === 'connected');
-  $('pitch').hidden = app === 'connected' || app === 'lost';
+  $('pitch').hidden = ['connected', 'lost', 'other'].includes(app);
   $('private').hidden = await chrome.extension.isAllowedIncognitoAccess();
   const appSites = snapshot?.websites?.length || 0;
   $('app-session').hidden = !appSites;

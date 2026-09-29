@@ -25,6 +25,8 @@ While Settings is open, Still reads the extension list (`extensions.settings`) i
 
 **Can't use the store?** Settings shows a **Load it from this PC instead** dropdown under the store steps. Open **chrome://extensions** or **edge://extensions**, enable Developer mode, select **Load unpacked**, and choose the folder shown there, then continue from step 3. Use the store version or the unpacked copy in each profile, not both.
 
+Still Guard only connects to the store extension and Still's own copy, which it recognises by their IDs. Any other copy (for example the store package loaded unpacked for testing) still works on its own, and its settings page and tooltip say that Still for Windows doesn't recognise it.
+
 Both the store extension and the unpacked copy can be removed from the browser like any extension; a force-installed (managed) extension would be needed for a stronger removal boundary, and Still does not claim that protection. The store version updates through the store. Still refreshes the unpacked copy's files when the app starts after an update, and the companion reloads itself within a minute while keeping its blocking rules. If it does not reconnect, reload it from the browser's extensions page.
 
 ## Daily limits and bedtime

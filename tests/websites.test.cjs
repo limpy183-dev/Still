@@ -147,6 +147,12 @@ test('extension works on its own and alongside Still for Windows: sessions and l
   await new Promise(setImmediate);
   assert.equal(vm.runInContext('app', context), 'none'); assert.equal(badges.at(-1), 'ON', 'Without the app there is no warning badge, even without private-window access');
   assert.match(titles.at(-1), /Allow in Incognito/, 'The tooltip still says how to cover private windows');
+  // A copy Still Guard doesn't accept (e.g. loaded unpacked from elsewhere) says so, instead of "isn't responding".
+  chrome.runtime.lastError = { message: 'Access to the specified native messaging host is forbidden.' }; listeners.disconnect(); delete chrome.runtime.lastError;
+  await new Promise(setImmediate);
+  assert.equal(storage.app, 'other'); assert.match(titles.at(-1), /doesn’t recognise this copy/);
+  chrome.runtime.lastError = { message: 'Specified native messaging host not found.' }; listeners.disconnect(); delete chrome.runtime.lastError;
+  await new Promise(setImmediate); assert.equal(storage.app, 'none');
   assert.deepEqual(dynamic.map(rule => rule.condition.requestDomains[0]), ['reddit.com', 'reddit.com', 'example.com', 'example.com']);
   assert.equal(dynamic[0].action.redirect.url, 'https://news.org/'); assert.equal(updates[0].id, 1);
   // The app holds news.org (our redirect target) and reddit.com; its session wins where both hold, and our redirect falls back to the block page.
