@@ -36,7 +36,7 @@
 <div class="titlebar"><div class="wrap"><a href="/changelog"><span class="tiny-dot"></span><span>Still <span data-version>1.1.0</span> is here · See what’s new</span></a><span class="window-dots" aria-hidden="true"><span>−</span><span>□</span><span>×</span></span></div></div>
 <header class="site-header"><div class="wrap">
   <a class="brand" href="/home" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a>
-  <nav class="nav" id="site-nav" aria-label="Main"><a href="/features">Features</a><a href="/guide">Guide</a><a href="/download" aria-current="page">Download</a><a href="/privacy">Privacy</a><a href="/faq">FAQ</a><a href="/changelog">Changelog</a></nav>
+  <nav class="nav" id="site-nav" aria-label="Main"><a href="/features">Features</a><a href="/guide">Guide</a><a href="/download" aria-current="page">Download</a><a href="/extension">Extension</a><a href="/privacy">Privacy</a><a href="/faq">FAQ</a><a href="/changelog">Changelog</a></nav>
   <a class="btn btn-primary btn-sm header-cta" href="/download"><svg aria-hidden="true"><use href="#i-download"/></svg>Download</a>
   <button class="menu-toggle" type="button" aria-label="Menu" aria-controls="site-nav" aria-expanded="false"><span></span></button>
 </div></header>
@@ -70,7 +70,7 @@
         </div>
         <div>
           <small class="tag" style="margin-bottom:8px">SHA-256 CHECKSUM</small>
-          <div class="hash"><span id="sha" data-sha>219ca2c88e8f690cffed1be730029ede967f68cb6cf39f76495a92129259482a</span><button class="copy" type="button" data-copy="#sha"><svg aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button></div>
+          <div class="hash"><span id="sha" data-sha>e1ac4da706ed1b34fda1953901b3672f9cda5575d9e2eb2259ff7e8210393457</span><button class="copy" type="button" data-copy="#sha"><svg aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button></div>
           <p class="muted small" style="margin-top:8px">Check it in PowerShell: <code>Get-FileHash .\Still-Setup-*.exe</code></p>
         </div>
       </div>
@@ -80,7 +80,7 @@
           <li><svg aria-hidden="true"><use href="#i-windows"/></svg>Windows 10 version 2004 or later, or Windows 11 (x64), kept up to date</li>
           <li><svg aria-hidden="true"><use href="#i-cpu"/></svg>Windows PowerShell 5.1 and .NET Framework 4.8 (included with current Windows)</li>
           <li><svg aria-hidden="true"><use href="#i-shield"/></svg>Administrator approval once, later, if you enable Windows protection</li>
-          <li><svg aria-hidden="true"><use href="#i-globe"/></svg>Chrome or Edge for website blocking and time limits</li>
+          <li><svg aria-hidden="true"><use href="#i-globe"/></svg>Chrome or Edge with the <a class="linklike" style="font-size:inherit;padding:0" href="/extension">Still extension</a> for website blocking and time limits</li>
         </ul>
         <div class="note" style="margin-top:auto"><svg aria-hidden="true"><use href="#i-info"/></svg><span>Domain-joined or MDM-managed PCs, and PCs that already use application-control rules, are intentionally refused so Still never changes an organisation’s security policy.</span></div>
         <a class="linklike" data-release-page href="https://github.com/limpy183-dev/Still/releases/latest" style="font-size:14px">All files on GitHub →</a>
@@ -92,6 +92,13 @@
         <p class="muted small" style="margin-top:6px">An early test build for Android 11 or newer: focus sessions, app and website blocking, daily limits, to-dos, history and alerts. It isn’t a finished release yet. After installing, follow the <a class="linklike" style="font-size:13.5px;padding:0" href="https://github.com/limpy183-dev/Still/blob/main/docs/android.md#set-up">Android setup steps</a>.</p>
       </div>
       <a class="btn btn-secondary" data-apk href="https://github.com/limpy183-dev/Still/releases/download/v1.1.0/Still-Android-preview-1.1.0.apk"><svg aria-hidden="true"><use href="#i-download"/></svg>Download the APK <small class="muted" data-apk-size>(0.3 MB)</small></a>
+    </div>
+    <div class="panel" id="extension" data-reveal style="margin-top:20px;padding:24px;display:flex;flex-wrap:wrap;align-items:center;gap:16px 24px">
+      <div style="flex:1 1 320px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-size:19px;letter-spacing:-.3px">Still · Website focus</b><span class="pill"><span class="tiny-dot"></span>Chrome &amp; Edge</span></div>
+        <p class="muted small" style="margin-top:6px">The browser extension, free on the Chrome Web Store. It blocks websites, sets daily limits and a bedtime on its own, on any computer, and is the browser companion for Still for Windows. <a class="linklike" style="font-size:13.5px;padding:0" href="/extension">More about the extension</a>.</p>
+      </div>
+      <a class="btn btn-secondary" href="https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb" rel="noopener"><svg aria-hidden="true"><use href="#i-globe"/></svg>Add to Chrome</a>
     </div>
   </div>
 </section>
@@ -210,7 +217,7 @@ npm run dist    <span class="c"># release/Still-Setup-&lt;version&gt;.exe</span>
 <footer class="site-footer"><div class="foot-orbit" aria-hidden="true"></div><div class="wrap">
   <div class="foot-grid">
     <div class="foot-brand"><a class="brand" href="/home" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a><p>Less distraction.<br>More possibility.</p><small>A quieter space for your attention. Free for Windows 10 &amp; 11.</small></div>
-    <div class="foot-col"><strong>STILL</strong><a href="/features">Features</a><a href="/download">Download</a><a href="/changelog">Changelog</a><a href="https://github.com/limpy183-dev/Still/releases">All releases</a></div>
+    <div class="foot-col"><strong>STILL</strong><a href="/features">Features</a><a href="/download">Download</a><a href="/extension">Browser extension</a><a href="/changelog">Changelog</a><a href="https://github.com/limpy183-dev/Still/releases">All releases</a></div>
     <div class="foot-col"><strong>LEARN</strong><a href="/guide">Getting started</a><a href="/guide#websites">Website blocking</a><a href="/guide#recovery">Recovery</a><a href="/faq">FAQ</a><a href="/support">Support</a><a href="mailto:contact@stillfocus.fyi" title="contact@stillfocus.fyi">Email us</a></div>
     <div class="foot-col"><strong>TRUST</strong><a href="/privacy">Privacy &amp; security</a><a href="/privacy#limits">Honest limits</a><a href="https://github.com/limpy183-dev/Still">Source code</a><a href="https://github.com/limpy183-dev/Still/blob/main/LICENSE">MIT license</a></div>
   </div>

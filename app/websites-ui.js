@@ -120,11 +120,11 @@ function initWebsites() {
   $('#website-setup').onclick = () => act(async () => {
     if (!api.websiteSetup || state.demo) throw Error('Browser setup is available in the installed Windows app, outside preview mode.');
     if (!state.installed || !state.websiteBlocking || !state.websiteLimits) applyStatus(await api.install());
-    const { directory, store } = await api.websiteSetup();
+    const { directory } = await api.websiteSetup();
     $('#website-setup-path').textContent = directory;
-    $('#website-setup-store').textContent = store;
-    $('#website-setup-store-step').hidden = $('#website-setup-fallback').hidden = !store;
     $('#website-setup-steps').hidden = false;
+    await api.websiteStore();
   }, $('#website-setup'));
+  $('#website-store-open').onclick = () => api.websiteStore?.();
   api.websiteIcons?.(apps.filter(Websites.isWebsite)).then(enriched => { mergeApps(enriched); renderApps(); }).catch(() => {});
 }

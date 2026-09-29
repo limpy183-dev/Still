@@ -16,12 +16,14 @@ Without the app, a session can be ended at any time from the settings page, and 
 
 ## Browser setup
 
-1. Finish any active session. Choose **Settings → Set up browser companion**. This updates Still Guard, registers the browser's native messaging host, and opens a stable copy of the companion folder.
-2. Open **chrome://extensions** or **edge://extensions**, enable Developer mode, select **Load unpacked**, and choose that folder.
+1. Finish any active session. Choose **Settings → Set up browser companion**. This updates Still Guard, registers the browser's native messaging host, keeps a copy of the companion on this PC, and opens the extension in the Chrome Web Store.
+2. Add [Still · Website focus](https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb) from the Chrome Web Store. Edge asks you to allow extensions from other stores first.
 3. Open the Still extension's Details and enable **Allow in incognito** / **Allow in InPrivate**. The guard requires this capability before accepting the companion's readiness acknowledgement.
 4. Repeat in every browser profile you use, then restart those browsers. The extension's tooltip should report connected and ready. Keep at least one connected browser open when starting a website session, including scheduled alerts.
 
-The local build uses an unpacked companion. A store-published, managed extension would be needed for a stronger installation/removal boundary; this build does not claim that protection. Still refreshes an existing companion's files when the app starts after an update, and the companion reloads itself within a minute while keeping its blocking rules. If it does not reconnect, reload it from the browser's extensions page.
+**Can't use the store?** Settings shows a **Load it from this PC instead** dropdown under the store steps. Open **chrome://extensions** or **edge://extensions**, enable Developer mode, select **Load unpacked**, and choose the folder shown there, then continue from step 3. Use the store version or the unpacked copy in each profile, not both.
+
+Both the store extension and the unpacked copy can be removed from the browser like any extension; a force-installed (managed) extension would be needed for a stronger removal boundary, and Still does not claim that protection. The store version updates through the store. Still refreshes the unpacked copy's files when the app starts after an update, and the companion reloads itself within a minute while keeping its blocking rules. If it does not reconnect, reload it from the browser's extensions page.
 
 ## Daily limits and bedtime
 
@@ -35,7 +37,7 @@ As a separate fallback the guard writes machine-level Chrome/Edge URLBlocklist p
 
 Session state lives in the protected guard directory and survives quitting Still or restarting Windows. The companion retains its last confirmed rules if the native connection is lost, and releases only when the guard confirms release. Restart Windows protection if those rules remain after an outage. No TLS interception, root certificate, network proxy, DNS change, or background browsing-history upload is used.
 
-This is a focus aid, not an absolute security boundary. Administrators, other browsers, alternative/proxy/remote websites, profiles without the companion before policy refresh, and development-extension removal can bypass some controls. Supported-browser URL policies remain as a fallback after removal once they have refreshed. Web extensions cannot guarantee protection from the administrator of the same computer.
+This is a focus aid, not an absolute security boundary. Administrators, other browsers, alternative/proxy/remote websites, profiles without the companion before policy refresh, and removing the extension can bypass some controls. Supported-browser URL policies remain as a fallback after removal once they have refreshed. Web extensions cannot guarantee protection from the administrator of the same computer.
 
 ## Resource use and checks
 

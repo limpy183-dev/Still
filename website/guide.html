@@ -36,7 +36,7 @@
 <div class="titlebar"><div class="wrap"><a href="/changelog"><span class="tiny-dot"></span><span>Still <span data-version>1.1.0</span> is here · See what’s new</span></a><span class="window-dots" aria-hidden="true"><span>−</span><span>□</span><span>×</span></span></div></div>
 <header class="site-header"><div class="wrap">
   <a class="brand" href="/home" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a>
-  <nav class="nav" id="site-nav" aria-label="Main"><a href="/features">Features</a><a href="/guide" aria-current="page">Guide</a><a href="/download">Download</a><a href="/privacy">Privacy</a><a href="/faq">FAQ</a><a href="/changelog">Changelog</a></nav>
+  <nav class="nav" id="site-nav" aria-label="Main"><a href="/features">Features</a><a href="/guide" aria-current="page">Guide</a><a href="/download">Download</a><a href="/extension">Extension</a><a href="/privacy">Privacy</a><a href="/faq">FAQ</a><a href="/changelog">Changelog</a></nav>
   <a class="btn btn-primary btn-sm header-cta" href="/download"><svg aria-hidden="true"><use href="#i-download"/></svg>Download</a>
   <button class="menu-toggle" type="button" aria-label="Menu" aria-controls="site-nav" aria-expanded="false"><span></span></button>
 </div></header>
@@ -122,11 +122,14 @@
       <p>Website selections work everywhere app selections do: Focus space, the library, saved groups, alerts and history. Paste a URL or enter a domain in <b>Add website</b>; the whole domain and its subdomains are blocked. Up to 100 apps and websites can be selected together, including website-only sessions.</p>
       <h3>Set up the browser companion (Chrome &amp; Edge)</h3>
       <ol class="olist">
-        <li><span>Finish any active session. Choose <b>Settings → Set up browser companion</b>. This updates Still Guard, registers the browser’s native messaging host, and opens a stable copy of the companion folder.</span></li>
-        <li><span>Open <code>chrome://extensions</code> or <code>edge://extensions</code>, enable <b>Developer mode</b>, select <b>Load unpacked</b>, and choose that folder.</span></li>
+        <li><span>Finish any active session. Choose <b>Settings → Set up browser companion</b>. This updates Still Guard, registers the browser’s native messaging host, and opens the extension in the Chrome Web Store.</span></li>
+        <li><span>Add <a href="https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb" rel="noopener"><b>Still · Website focus</b></a> from the Chrome Web Store. In Edge, allow extensions from other stores when it asks.</span></li>
         <li><span>Open the Still extension’s <b>Details</b> and enable <b>Allow in incognito</b> (Chrome) or <b>Allow in InPrivate</b> (Edge).</span></li>
         <li><span>Repeat in every browser profile you use, then restart those browsers. The extension’s tooltip should say it’s connected and ready.</span></li>
       </ol>
+      <details class="note" style="display:block;margin-top:16px"><summary style="cursor:pointer"><b>Can’t use the store? Load the extension from your PC instead</b></summary>
+        <p>Still keeps a copy of the extension on your PC and shows its folder under the store steps. Open <code>chrome://extensions</code> or <code>edge://extensions</code>, enable <b>Developer mode</b>, select <b>Load unpacked</b>, and choose that folder. Then follow steps 3 and 4 above. Use the store version or this one in each profile, not both.</p>
+      </details>
       <div class="note green"><svg aria-hidden="true"><use href="#i-info"/></svg><span>Keep at least one connected browser open when a website session or scheduled alert starts. Still waits for the companion to confirm its rules; without confirmation the start fails safely and rolls back.</span></div>
       <h3>Block screens</h3>
       <p>In <b>Settings → Website block screens</b>, choose Quiet garden, Evening calm or A clean page; create your own with a headline, text and a JPG/PNG/WebP image; or redirect blocked visits to an HTTPS page outside your blocked websites. The screen is fixed for the length of each session.</p>
@@ -142,6 +145,7 @@
         <li>Time counts while a limited website is open in any browser tab, focused or not, checked every 30 seconds.</li>
         <li>When time runs out, or bedtime starts, open tabs go to a block page and new visits are redirected until midnight or the end of bedtime.</li>
         <li>Limits work outside focus sessions and can be changed at any time. They need the browser companion.</li>
+        <li>The <a href="/extension">extension</a> also has its own limits and bedtime, for when you use it without the Windows app. When both limit a site, the stricter one applies.</li>
       </ul>
     </section>
 
@@ -260,7 +264,7 @@ npm test               <span class="c"># IPC validation and preference bounds</s
 <footer class="site-footer"><div class="foot-orbit" aria-hidden="true"></div><div class="wrap">
   <div class="foot-grid">
     <div class="foot-brand"><a class="brand" href="/home" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a><p>Less distraction.<br>More possibility.</p><small>A quieter space for your attention. Free for Windows 10 &amp; 11.</small></div>
-    <div class="foot-col"><strong>STILL</strong><a href="/features">Features</a><a href="/download">Download</a><a href="/changelog">Changelog</a><a href="https://github.com/limpy183-dev/Still/releases">All releases</a></div>
+    <div class="foot-col"><strong>STILL</strong><a href="/features">Features</a><a href="/download">Download</a><a href="/extension">Browser extension</a><a href="/changelog">Changelog</a><a href="https://github.com/limpy183-dev/Still/releases">All releases</a></div>
     <div class="foot-col"><strong>LEARN</strong><a href="/guide">Getting started</a><a href="/guide#websites">Website blocking</a><a href="/guide#recovery">Recovery</a><a href="/faq">FAQ</a><a href="/support">Support</a><a href="mailto:contact@stillfocus.fyi" title="contact@stillfocus.fyi">Email us</a></div>
     <div class="foot-col"><strong>TRUST</strong><a href="/privacy">Privacy &amp; security</a><a href="/privacy#limits">Honest limits</a><a href="https://github.com/limpy183-dev/Still">Source code</a><a href="https://github.com/limpy183-dev/Still/blob/main/LICENSE">MIT license</a></div>
   </div>

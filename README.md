@@ -11,6 +11,7 @@
     <a href="docs/user-guide.md">User guide</a>
   </p>
   <p>Windows 10 / 11 · x64 · No account required · MIT licensed</p>
+  <p><sub>Browser extension for Chrome &amp; Edge: <a href="https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb"><strong>Still · Website focus</strong> on the Chrome Web Store</a> · works on its own or with the Windows app</sub></p>
   <p><sub>Also on Android 11+ as an early preview: <a href="https://stillfocus.fyi/download#android">download the APK</a> · <a href="docs/android.md">Still for Android</a></sub></p>
 </div>
 
@@ -58,6 +59,10 @@ An early test build for Android 11 or newer, with sessions, app and website bloc
 3. Choose apps and websites, a duration, and an optional release delay, then tap **Start focus**.
 
 Newer previews install over the top and keep your data. Still refuses work profiles and managed phones, and Safe mode always switches its blocking off. [Still for Android →](docs/android.md)
+
+### In Chrome and Edge
+
+[**Still · Website focus**](https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb) is free on the Chrome Web Store. On its own, on Windows, Mac, Linux or ChromeOS, it blocks websites during a focus session, sets daily limits and a bedtime, and shows a calm block screen. With Still for Windows it becomes the browser companion: **Settings → Set up browser companion** opens the store page, and the app's locked sessions and alerts then cover websites too. [More about the extension](https://stillfocus.fyi/extension) · [Setup](docs/website-blocking.md#browser-setup)
 
 ## Take a look
 

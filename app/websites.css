@@ -2,3 +2,7 @@
 
 .bedtime-row{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin:18px 0;padding:14px 16px;border-radius:12px;background:#243640;color:#e5d4b6;font-size:13px}.bedtime-row label{display:flex;align-items:center;gap:8px}.bedtime-row input{border:0;border-radius:8px;padding:6px 8px;font:inherit;background:#f5efe2;color:#243640}.limit-list{display:grid;gap:8px}.limit-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border,#dfe4da);border-radius:12px;background:var(--surface,#fff)}.limit-row .app-icon{flex:0 0 32px;width:32px;height:32px}.limit-row .app-icon img{width:24px;height:24px;object-fit:contain}.limit-row strong{flex:1;min-width:0;overflow-wrap:anywhere;font-size:14px}.limit-row select{border:1px solid var(--border,#dfe4da);border-radius:9px;padding:7px 8px;font:inherit;font-size:13px;background:var(--surface,#fff)}.limit-bedtime{display:flex;align-items:center;gap:6px;font-size:12px;color:#5a6659;cursor:pointer}.limit-empty{font-size:13px;color:#76816e;margin:4px 0}@media(max-width:700px){.limit-row{flex-wrap:wrap}}
 .bedtime-row input:disabled{opacity:.45}
+#website-store-open{margin:10px 0 4px}
+.website-setup-advanced{border:1px solid #dce1d6;border-radius:10px;padding:0 14px;margin:12px 0}
+.website-setup-advanced summary{cursor:pointer;font-size:12px;font-weight:600;color:#5a6659;padding:12px 0}
+.website-setup-advanced[open]{padding-bottom:6px}
