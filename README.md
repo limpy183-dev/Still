@@ -101,6 +101,17 @@ Choose a daily allowance and whether bedtime applies to each website. These limi
 
 </details>
 
+<details>
+<summary><strong>Your progress — where your attention went</strong></summary>
+
+A session calendar shows the days you focused; choose one to see what you worked on. Beside it, your focus time adds up per task, and a task typed with different capitals still counts as one.
+
+[![Still progress page with a September session calendar and focus time for five tasks](docs/images/progress.png)](docs/images/progress.png)
+
+[See everything on the progress page →](https://stillfocus.fyi/features#progress)
+
+</details>
+
 ## How a session works
 
 ```mermaid
