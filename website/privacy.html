@@ -121,6 +121,7 @@
     <section class="panel doc-section" id="browser" data-reveal>
       <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-globe"/></svg></span>Browser companion</h2>
       <p>The companion uses Chrome and Edge’s native request rules. It doesn’t upload browsing history, and its native host waits on filesystem notifications rather than scanning tabs or polling URLs. For time limits, the companion checks the addresses of your open tabs every 30 seconds, on your PC only, and counts time while a limited website is open in any tab.</p>
+      <p>The extension’s settings page shows each website you add with its logo. Like the Windows app, it requests only that domain’s icon from Google’s favicon service, once, and keeps it in your browser. If that fails, the website gets a letter icon.</p>
       <p>No TLS interception, root certificate, network proxy or DNS change is ever used.</p>
       <p>While Settings is open, Still checks whether the extension is added by reading the extension list in your Chrome and Edge profile settings on this PC. It only looks for its own extension, and nothing is sent anywhere.</p>
     </section>

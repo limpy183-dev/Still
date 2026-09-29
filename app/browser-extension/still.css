@@ -36,7 +36,7 @@ a{color:#5c752e}
 .toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:#5a6659;cursor:pointer}
 .list{list-style:none;margin:14px 0;padding:0;display:grid;gap:8px}.list:empty{display:none}
 .list li{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 12px;border:1px solid #e6eadf;border-radius:12px}
-.list .icon{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:#edf0e4;color:#687a4a;font-weight:750;text-transform:uppercase;flex-shrink:0}
+.list .icon{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:#edf0e4;color:#687a4a;font-weight:750;text-transform:uppercase;flex-shrink:0;overflow:hidden}.list .icon img{width:22px;height:22px;object-fit:contain}
 .list li>span:not(.icon){flex:1;min-width:0;overflow-wrap:anywhere;font-weight:600}.list small{font-size:11px;color:#728052;background:#edf1e3;border-radius:20px;padding:3px 10px;white-space:nowrap}
 .remove{width:30px;height:30px;display:grid;place-items:center;border:1px solid #e6eadd;border-radius:8px;color:#879573;font-size:17px;line-height:1;flex-shrink:0}.remove:hover{background:#eff4e5}
 .session-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px}

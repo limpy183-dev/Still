@@ -22,6 +22,8 @@ async function run() {
     const worker = context.serviceWorkers()[0] || await context.waitForEvent('serviceworker');
     const extensionId = new URL(worker.url()).host;
     await context.route('https://**/*', route => route.fulfill({ contentType: 'text/html', headers: { 'access-control-allow-origin': '*' }, body: '<h1>Allowed page</h1>' }));
+    const logo = await fs.readFile('app/browser-extension/icons/icon-32.png'); let logoRequests = 0;
+    await context.route('https://www.google.com/s2/favicons**', route => { logoRequests++; route.fulfill({ contentType: 'image/png', body: logo }); });
     const page = await context.newPage(); await page.goto('https://www.youtube.com/watch');
     await worker.evaluate(async () => {
       clearTimeout(retryTimer); port = null; // This isolated browser test does not contact the installed guard.
@@ -76,6 +78,9 @@ async function run() {
     const settings2 = await context.newPage(); await settings2.goto(`chrome-extension://${extensionId}/still.html`);
     await settings2.fill('#site', 'https://www.youtube.com/watch'); await settings2.click('#add-site button');
     await settings2.getByRole('listitem').filter({ hasText: 'youtube.com' }).waitFor();
+    await settings2.locator('#sites img').waitFor(); // The website's logo replaces its letter.
+    await settings2.reload(); await settings2.locator('#sites img').waitFor();
+    assert.equal(logoRequests, 1, 'A logo is fetched once, then kept in the browser');
     await settings2.check('input[value=custom]'); await settings2.fill('#title', 'Mine first'); assert.equal(await settings2.locator('#shot-title').innerText(), 'Mine first', 'The preview follows the headline'); await settings2.click('#screen .primary');
     await settings2.getByText('Saved.').waitFor();
     await settings2.fill('#limit-site', 'reddit.com'); await settings2.click('#add-limit button');
@@ -102,7 +107,7 @@ async function run() {
     await until(async () => await ruleCount() === 0, 'Ending both sessions did not release their rules.');
     await blocked.goto('https://youtube.com'); assert.equal(await blocked.locator('h1').innerText(), 'Allowed page');
     await other.goto('https://x.com/home'); assert.equal(await other.locator('h1').innerText(), 'Allowed page');
-    console.log('Real Chromium extension passed: existing tabs, subdomains, custom text, redirect, unrelated domains, self-reload after updates, release, standalone sessions from the settings page, and both sessions together.');
+    console.log('Real Chromium extension passed: existing tabs, subdomains, custom text, redirect, unrelated domains, self-reload after updates, release, standalone sessions and website logos from the settings page, and both sessions together.');
   } finally {
     await context.close();
     // Unique temporary directory created above, never a user browser profile.

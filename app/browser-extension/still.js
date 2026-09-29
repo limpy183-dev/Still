@@ -12,10 +12,28 @@ const act = handler => async event => {
   event.preventDefault(); $('error').textContent = '';
   try { await handler(event); } catch (error) { $('error').textContent = error.message; }
 };
+// Website logos come from Google's favicon service, as in Still for Windows. Each domain is fetched once and kept in this browser;
+// until then, or if it fails, the row keeps its letter.
+const logos = {};
+function logo(domain) {
+  logos[domain] ||= (async () => {
+    const { icons: saved = {} } = await chrome.storage.local.get('icons');
+    if (saved[domain]) return saved[domain];
+    const response = await fetch('https://www.google.com/s2/favicons?sz=64&domain=' + encodeURIComponent(domain), { signal: AbortSignal.timeout(5000) });
+    const blob = await response.blob();
+    if (!response.ok || !blob.type.startsWith('image/') || blob.size > 50000) return '';
+    const uri = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(blob); });
+    const { icons: latest = {} } = await chrome.storage.local.get('icons');
+    await chrome.storage.local.set({ icons: { ...latest, [domain]: uri } });
+    return uri;
+  })().catch(() => { delete logos[domain]; return ''; });
+  return logos[domain];
+}
 function list(element, items) {
   element.replaceChildren(...items.map(({ text, tag, remove, label }) => {
     const item = document.createElement('li'), icon = document.createElement('span'), name = document.createElement('span');
     icon.className = 'icon'; icon.setAttribute('aria-hidden', 'true'); icon.textContent = label[0]; name.textContent = text; item.append(icon, name);
+    logo(label).then(uri => { if (uri) { const image = new Image(); image.alt = ''; image.src = uri; icon.replaceChildren(image); } });
     if (tag) { const note = document.createElement('small'); note.textContent = tag; item.append(note); }
     if (remove) { const button = document.createElement('button'); button.className = 'remove'; button.type = 'button'; button.textContent = '×'; button.setAttribute('aria-label', 'Remove ' + label); button.onclick = act(remove); item.append(button); }
     return item;
