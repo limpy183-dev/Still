@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Settings > Easier-to-read font: Atkinson Hyperlegible Next (Braille Institute, SIL OFL 1.1), subset to Manrope's characters. -->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android">
+    <font
+        android:font="@font/atkinson_variable"
+        android:fontStyle="normal"
+        android:fontVariationSettings="'wght' 400"
+        android:fontWeight="400" />
+    <font
+        android:font="@font/atkinson_variable"
+        android:fontStyle="normal"
+        android:fontVariationSettings="'wght' 500"
+        android:fontWeight="500" />
+    <font
+        android:font="@font/atkinson_variable"
+        android:fontStyle="normal"
+        android:fontVariationSettings="'wght' 600"
+        android:fontWeight="600" />
+    <font
+        android:font="@font/atkinson_variable"
+        android:fontStyle="normal"
+        android:fontVariationSettings="'wght' 700"
+        android:fontWeight="700" />
+    <font
+        android:font="@font/atkinson_variable"
+        android:fontStyle="normal"
+        android:fontVariationSettings="'wght' 800"
+        android:fontWeight="800" />
+</font-family>

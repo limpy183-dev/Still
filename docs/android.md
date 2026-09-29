@@ -4,7 +4,7 @@
 
 A native Android version of Still's focus sessions, in [`android/`](../android). So far: sessions, app and website blocking, a release delay, strict protection, the managed-phone check, daily website limits with bedtime, block screens, the to-do list, session history and alerts. Each [GitHub release](https://github.com/limpy183-dev/Still/releases/latest) includes a signed preview APK (`Still-Android-preview-X.Y.Z.apk`) for testing; it isn't a finished release.
 
-Android 11 or newer. It is written in plain Java against the Android framework, with no libraries, so the release APK is about 260 KB, most of it the Manrope typeface.
+Android 11 or newer. It is written in plain Java against the Android framework, with no libraries, so the release APK is about 320 KB, most of it the Manrope typeface and Atkinson Hyperlegible Next (for the easier-to-read font). Both are SIL Open Font License fonts, subset to the same characters; their licenses are in `src/main/assets`.
 
 <p>
   <img src="images/android-focus.png" alt="The Focus page: a 50-minute timer ring, presets and your intention" width="200" />
@@ -109,7 +109,7 @@ Tap the sliders button at the top right of any page. **Settings** holds *Reminde
 
 - **Text size:** 100%, 115%, 130%, 150% or 175%, multiplied by the phone's own font size. Longer lines wrap, so pages get longer; the bottom bar's labels grow up to 130% so they still fit. (On Windows it scales the whole window, like page zoom.)
 - **High contrast:** black text and borders on plain white, or white on plain black in the dark theme.
-- **Easier-to-read font:** the phone's own font instead of Manrope (Verdana on Windows). It follows the font chosen in the phone's settings.
+- **Easier-to-read font:** Atkinson Hyperlegible Next instead of Manrope (Verdana on Windows). The Braille Institute designed it so similar letters and numbers (I, l, 1; O, 0) are easy to tell apart. It's bundled, so it works the same on every phone.
 - **Stronger focus outlines:** a thick black ring with a white line inside around whatever a keyboard, switch or D-pad reaches. Touching the screen hides it.
 - **A gentler pace:** no page entrances, floating leaf, breathing glow, pulsing status, button presses or to-do glides. Android's *Remove animations* does the same for every app.
 - **Reset accessibility** puts them all back.
@@ -182,6 +182,7 @@ adb shell settings put secure enabled_accessibility_services io.github.limpy183d
 
 The Android app is a preview. Its changes are listed here, and the larger ones on the website changelog too.
 
+- **Atkinson Hyperlegible (2026-09-29, next release).** The easier-to-read font is now Atkinson Hyperlegible Next, bundled with the app, instead of the phone's own font.
 - **Settings and accessibility (2026-09-29, v1.1.4).** A Settings page (the sliders button at the top right) with the Windows *Made to fit you* options: text size up to 175%, high contrast (light and dark), an easier-to-read font, stronger focus outlines, a gentler pace and reset. Also from Windows: missed alarms ring late as a *Late reminder* instead of being skipped, *Reminders count as focus*, and saving or switching on an alert no longer rings a window that already ended.
 
 - **Moving to-dos (2026-09-25, v1.0.7).** Drag a line's ⌃⌄ handle to move it, with the same lift, glide and settle animation as the Windows list.

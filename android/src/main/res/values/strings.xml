@@ -425,7 +425,7 @@
     <string name="high_contrast">High contrast</string>
     <string name="high_contrast_hint">Darker text, stronger borders and a plain white background (plain black in the dark theme).</string>
     <string name="readable_font">Easier-to-read font</string>
-    <string name="readable_font_hint">Switch to your phone’s own font instead of Manrope. It follows the font you choose in your phone’s settings.</string>
+    <string name="readable_font_hint">Switch to Atkinson Hyperlegible, a typeface made by the Braille Institute so letters like I, l and 1 are easy to tell apart.</string>
     <string name="strong_focus">Stronger focus outlines</string>
     <string name="strong_focus_hint">A thick black-and-white outline around whatever you reach with a keyboard, switch or D-pad.</string>
     <string name="reduced_motion">A gentler pace</string>
