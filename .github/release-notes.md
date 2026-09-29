@@ -1,7 +1,8 @@
-## What's new in v1.1.2
+## What's new in v1.1.3
 
-- **A redesigned extension.** The [Still · Website focus](https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb) settings page (click its toolbar icon) now looks and feels like Still for Windows: the same font, cards and buttons, toggle switches, quick session lengths, the dark bedtime bar, block screen tiles with a live preview, and a simple Choose file row for your own image.
-- **Clearer about what it does.** The extension blocks websites on its own. For more control (blocking apps, scheduled sessions and sessions you can't end early), we recommend using it together with Still for Windows.
+- **Website logos in the extension.** Every website in the [Still · Website focus](https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb) settings page now shows its logo, like in Still.
+- **Clearer extension status.** Hovering the extension no longer says "reconnect Windows protection" when Still is connected. It tells you to turn on Allow in Incognito (or InPrivate) when private windows aren't covered, and says so if Still for Windows doesn't recognise the copy of the extension you're using.
+- **Extension updates reliably.** Still's own copy of the extension now always reloads after Still updates, so it never keeps running older code.
 
 ## Install or update
 
