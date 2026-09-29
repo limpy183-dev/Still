@@ -2,7 +2,7 @@
 
 - **Accessibility options.** A new **Made to fit you** section at the bottom of Settings has a text size menu (100% to 175%, scaling the whole app so the layout rearranges to fit), high contrast, an easier-to-read font, stronger focus outlines and reduced motion. They also apply to alarm screens.
 - **Small windows.** The website block screen choices now wrap instead of running off the edge in narrow windows.
-- **Browser extension on the Chrome Web Store.** [Still · Website focus](https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb) works on its own (website list, sessions, daily limits, bedtime, block screen), or as Still's companion. **Settings → Set up browser companion** now opens the store page; loading the extension from this PC is still there, under a dropdown.
+- **Browser extension on the Chrome Web Store.** [Still · Website focus](https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb) works on its own (website list, sessions, daily limits, bedtime, block screen), or as Still's companion. **Settings → Set up browser companion** now opens the store page; loading the extension from this PC is still there, under a dropdown. Until the extension is added in Chrome or Edge, the button gently pulses to show it’s needed.
 - **Alarms after you quit.** A new setting keeps alerts ringing after you quit Still from the tray, and alarms missed while the PC slept ring when it wakes, labelled as late.
 - **Reminders count as focus.** Pressing **Let’s focus** on a reminder-only alarm can add its focus window to Your progress when you switch on **Reminders count as focus** in Settings.
 

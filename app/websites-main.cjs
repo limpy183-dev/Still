@@ -53,6 +53,8 @@ function setupWebsites({ handle, getWindow }) {
   // Store-published companion IDs (npm run build:extension packs it). Add each ID once the store assigns it.
   const storeIds = ['gkkjcgapilgkjafncmbkgcijnoijgejb'];
   const store = `https://chromewebstore.google.com/detail/${storeIds[0]}`;
+  // The unpacked copy's ID comes from the manifest key, the way Chrome derives it.
+  const companionId = require('node:crypto').createHash('sha256').update(Buffer.from(require('./browser-extension/manifest.json').key, 'base64')).digest('hex').slice(0, 32).replace(/[0-9a-f]/g, digit => String.fromCharCode(97 + parseInt(digit, 16)));
   async function copyCompanion() {
     await fs.mkdir(path.join(directory, 'icons'), { recursive: true });
     // Copy files individually: Electron's Windows ASAR support cannot recursively cp a directory.
@@ -64,8 +66,7 @@ function setupWebsites({ handle, getWindow }) {
     await fs.writeFile(path.join(directory, 'manifest.json.tmp'), JSON.stringify(manifest, null, 2));
     await fs.rename(path.join(directory, 'manifest.json.tmp'), path.join(directory, 'manifest.json'));
     // Rewritten on every refresh so an update's new store IDs reach users who set up earlier.
-    const id = require('node:crypto').createHash('sha256').update(Buffer.from(manifest.key, 'base64')).digest('hex').slice(0, 32).replace(/[0-9a-f]/g, digit => String.fromCharCode(97 + parseInt(digit, 16)));
-    const origins = [id, ...storeIds].map(extension => `chrome-extension://${extension}/`);
+    const origins = [companionId, ...storeIds].map(extension => `chrome-extension://${extension}/`);
     await fs.writeFile(path.join(directory, 'native-host.json'), JSON.stringify({ name: 'app.still.focus', description: 'Still focus sessions', path: path.join(process.env.ProgramFiles, 'Still Guard', 'Still.Guard.exe'), type: 'stdio', allowed_origins: origins }));
   }
   handle('websiteSetup', async () => {
@@ -77,6 +78,27 @@ function setupWebsites({ handle, getWindow }) {
   });
   // The store listing is the main way in; the unpacked folder is the fallback shown under it.
   handle('websiteStore', () => shell.openExternal(store));
+  // Chrome and Edge list each profile's extensions under extensions.settings in (Secure) Preferences.
+  // A file is re-read only when it changes, so checking while Settings is open stays cheap.
+  const profileFiles = new Map();
+  async function listsCompanion(file) {
+    const { mtimeMs } = await fs.stat(file);
+    if (profileFiles.get(file)?.mtimeMs === mtimeMs) return profileFiles.get(file).found;
+    const text = await fs.readFile(file, 'utf8'), ids = [companionId, ...storeIds];
+    const settings = ids.some(id => text.includes(id)) ? JSON.parse(text).extensions?.settings || {} : {};
+    const found = ids.some(id => settings[id] && !(Array.isArray(settings[id].disable_reasons) ? settings[id].disable_reasons.length : settings[id].disable_reasons || settings[id].state === 0));
+    profileFiles.set(file, { mtimeMs, found }); return found;
+  }
+  handle('websiteExtension', async () => {
+    for (const browser of ['Google\\Chrome', 'Microsoft\\Edge']) {
+      const root = path.join(process.env.LOCALAPPDATA || '', browser, 'User Data');
+      for (const profile of await fs.readdir(root).catch(() => [])) {
+        if (profile !== 'Default' && !profile.startsWith('Profile ')) continue;
+        for (const name of ['Secure Preferences', 'Preferences']) if (await listsCompanion(path.join(root, profile, name)).catch(() => false)) return true;
+      }
+    }
+    return false;
+  });
   // After an update, bring an already set-up companion up to date without asking the user to set it up again.
   return fs.access(directory).then(copyCompanion, () => {}).catch(error => console.warn('Browser companion refresh:', error.message));
 }

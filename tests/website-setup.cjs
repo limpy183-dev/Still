@@ -26,7 +26,21 @@ const assert = require('node:assert/strict');
       await module.exports.setupWebsites({ handle: () => {}, getWindow: () => null });
       const refreshed = (await fs.readFile(path.join(directory, 'background.js'), 'utf8')) !== 'stale';
       const manifest = JSON.parse(await fs.readFile(path.join(directory, 'manifest.json'), 'utf8'));
-      return { packaged: app.isPackaged, files: await fs.readdir(directory), icons: await fs.readdir(path.join(directory, 'icons')), registrations, host, refreshed, stamp: manifest.version_name, name: manifest.name, version: app.getVersion(), store };
+      // Extension check: a fake Chrome profile under a temporary LOCALAPPDATA.
+      const local = process.env.LOCALAPPDATA, fake = await fs.mkdtemp(path.join(app.getPath('temp'), 'still-profiles-'));
+      const prefs = path.join(fake, 'Google', 'Chrome', 'User Data', 'Profile 3', 'Secure Preferences');
+      const extension = {};
+      try {
+        process.env.LOCALAPPDATA = fake;
+        extension.none = await handlers.websiteExtension();
+        await fs.mkdir(path.dirname(prefs), { recursive: true });
+        await fs.writeFile(prefs, JSON.stringify({ extensions: { settings: { gkkjcgapilgkjafncmbkgcijnoijgejb: { disable_reasons: [1] } } } }));
+        extension.disabled = await handlers.websiteExtension();
+        await fs.writeFile(prefs, JSON.stringify({ extensions: { settings: { gkkjcgapilgkjafncmbkgcijnoijgejb: { location: 1 } } } }));
+        await fs.utimes(prefs, new Date(), new Date(Date.now() + 5000));
+        extension.store = await handlers.websiteExtension();
+      } finally { process.env.LOCALAPPDATA = local; await fs.rm(fake, { recursive: true, force: true }); }
+      return { extension, packaged: app.isPackaged, files: await fs.readdir(directory), icons: await fs.readdir(path.join(directory, 'icons')), registrations, host, refreshed, stamp: manifest.version_name, name: manifest.name, version: app.getVersion(), store };
     });
     for (const file of ['background.js', 'blocked.html', 'blocked.css', 'blocked.js', 'still.html', 'still.css', 'still.js', 'manifest.json', 'websites.js', 'native-host.json']) assert.ok(result.files.includes(file), file);
     for (const file of ['icon-16.png', 'icon-32.png', 'icon-48.png', 'icon-128.png']) assert.ok(result.icons.includes(file), `icons/${file}`);
@@ -37,7 +51,8 @@ const assert = require('node:assert/strict');
     assert.equal(result.store, 'https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb');
     assert.ok(result.host.allowed_origins.includes('chrome-extension://gkkjcgapilgkjafncmbkgcijnoijgejb/'), 'store companion may connect');
     assert.ok(result.refreshed, 'companion files are refreshed on start');
+    assert.deepEqual(result.extension, { none: false, disabled: false, store: true }, 'extension check finds only an enabled companion');
     assert.equal(result.stamp, result.version); assert.equal(result.name, 'Still · Website focus');
-    console.log(`Browser setup passed (${result.packaged ? 'packaged ASAR' : 'source'}): extracted companion, stable identity, both native-host registrations and refresh after updates. Registry calls were stubbed; live browser settings unchanged.`);
+    console.log(`Browser setup passed (${result.packaged ? 'packaged ASAR' : 'source'}): extracted companion, stable identity, both native-host registrations, refresh after updates and the installed-extension check. Registry calls were stubbed; live browser settings unchanged.`);
   } finally { await application.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

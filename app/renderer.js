@@ -161,6 +161,7 @@ function showPage(next) {
   closeTodoMenu();
   if (next === 'library') renderLibrary(); if (next === 'history') renderHistory();
   if (next === 'alerts') renderAlerts();
+  if (next === 'settings') checkExtension();
   renderStats(); updateTimer();
   window.scrollTo({ top: 0 });
 

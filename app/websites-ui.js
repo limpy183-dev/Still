@@ -40,6 +40,21 @@ function commitWebsiteScreen() {
     $('#website-screen-error').textContent = ''; save();
   } catch (error) { $('#website-screen-error').textContent = 'Not saved. ' + error.message; }
 }
+// Looks for the extension in Chrome/Edge profiles while Settings is open, until it turns up.
+let extensionCheck;
+async function checkExtension() {
+  clearTimeout(extensionCheck);
+  if (!api.websiteExtension || page !== 'settings' || document.hidden) return;
+  const found = await api.websiteExtension().catch(() => null);
+  if (found === null || page !== 'settings') return;
+  $('#website-setup').classList.toggle('needs-setup', !found);
+  const status = $('#website-extension-status');
+  status.hidden = false; status.classList.toggle('found', found);
+  setText(status, found ? 'Added in Chrome or Edge on this PC' : 'Not added to Chrome or Edge yet');
+  if (!found) extensionCheck = setTimeout(checkExtension, 10000);
+}
+window.addEventListener('focus', checkExtension);
+document.addEventListener('visibilitychange', checkExtension);
 function updateWebsiteLock() {
   $('#website-screen-fields').disabled = !!state.session;
   $('#website-setup').disabled = !!state.session;
@@ -122,8 +137,7 @@ function initWebsites() {
     if (!state.installed || !state.websiteBlocking || !state.websiteLimits) applyStatus(await api.install());
     const { directory } = await api.websiteSetup();
     $('#website-setup-path').textContent = directory;
-    $('#website-setup-steps').hidden = false;
-    await api.websiteStore();
+    await api.websiteStore(); checkExtension();
   }, $('#website-setup'));
   $('#website-store-open').onclick = () => api.websiteStore?.();
   api.websiteIcons?.(apps.filter(Websites.isWebsite)).then(enriched => { mergeApps(enriched); renderApps(); }).catch(() => {});

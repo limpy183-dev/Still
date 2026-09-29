@@ -6,3 +6,17 @@
 .website-setup-advanced{border:1px solid #dce1d6;border-radius:10px;padding:0 14px;margin:12px 0}
 .website-setup-advanced summary{cursor:pointer;font-size:12px;font-weight:600;color:#5a6659;padding:12px 0}
 .website-setup-advanced[open]{padding-bottom:6px}
+.website-setup-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;margin:4px 0 6px}
+.website-extension-status{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:600;color:#8a7440;animation:page-in .45s ease-out both}
+.website-extension-status::before{content:"";width:7px;height:7px;border-radius:50%;background:#d0a94c;box-shadow:0 0 0 3px #d0a94c26;animation:extension-dot 2.4s ease-in-out infinite}
+.website-extension-status.found{color:#5e7542}
+.website-extension-status.found::before{background:#8fac5c;box-shadow:0 0 0 3px #8fac5c26;animation:none}
+#website-setup{position:relative;overflow:hidden;isolation:isolate;transition:background .5s ease,color .5s ease,border-color .5s ease,transform .25s ease}
+#website-setup.needs-setup:not(:disabled){background:#293126;border-color:#293126;color:#f6f9ee;animation:setup-halo 2.8s cubic-bezier(.4,0,.2,1) infinite}
+#website-setup.needs-setup:not(:disabled)::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(105deg,transparent 30%,#e3efc855 50%,transparent 70%);transform:translateX(-120%);animation:setup-sheen 4.2s ease-in-out 1s infinite}
+#website-setup.needs-setup:not(:disabled) span{display:inline-block;animation:setup-nudge 2.8s cubic-bezier(.4,0,.2,1) infinite}
+#website-setup.needs-setup:not(:disabled):hover{transform:translateY(-1px);animation-play-state:paused}
+@keyframes setup-halo{0%{box-shadow:0 0 0 0 #a1bb6899,0 6px 16px -8px #29312680}70%{box-shadow:0 0 0 12px #a1bb6800,0 6px 16px -8px #29312680}100%{box-shadow:0 0 0 0 #a1bb6800,0 6px 16px -8px #29312680}}
+@keyframes setup-sheen{0%{transform:translateX(-120%)}35%,100%{transform:translateX(120%)}}
+@keyframes setup-nudge{0%,100%{transform:translateY(0)}14%{transform:translateY(-1.5px)}28%{transform:translateY(0)}}
+@keyframes extension-dot{50%{box-shadow:0 0 0 5px #d0a94c10}}
