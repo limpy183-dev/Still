@@ -11,7 +11,17 @@ protocol.registerSchemesAsPrivileged([{ scheme: 'still-media', privileges: { sta
 async function setupAlerts({ handle, getWindow, showWindow, getPreferences, status, getStatusGeneration = () => 0, start, snooze, prepare, onNextAlert = () => {} }) {
   const directory = path.join(app.getPath('userData'), 'alert-media');
   const store = path.join(app.getPath('userData'), 'alerts.json');
+  // Reminder-only alarms have no guard session; "Let's focus" can add their window to Progress.
+  const focusStore = path.join(app.getPath('userData'), 'alarm-focus.json');
   await fs.mkdir(directory, { recursive: true });
+  let focus = [], focusRevision = randomUUID();
+  try { focus = JSON.parse(await fs.readFile(focusStore, 'utf8')).filter(item => typeof item?.id === 'string' && item.id.startsWith('alarm-') && Number.isFinite(item.startedAt) && Number.isFinite(item.endsAt)); }
+  catch (error) { if (error.code !== 'ENOENT') { await fs.copyFile(focusStore, focusStore + '.recovery-' + Date.now()).catch(() => {}); console.warn('Alarm focus history could not be loaded. A recovery copy was retained.', error); } }
+  async function saveFocus(next) {
+    await fs.writeFile(focusStore + '.tmp', JSON.stringify(next, null, 2));
+    await fs.rename(focusStore + '.tmp', focusStore);
+    focus = next; focusRevision = randomUUID();
+  }
   let records = [], queue = Promise.resolve(), ticking = false, active = null, presentations = [];
   try {
     const saved = JSON.parse(await fs.readFile(store, 'utf8'));
@@ -123,6 +133,14 @@ async function setupAlerts({ handle, getWindow, showWindow, getPreferences, stat
         await persist(next);
       });
     }
+    if (action === 'open' && !presentation.item.preview && getPreferences().countAlarmFocus) await serial(async () => {
+      const record = records.find(record => record.id === presentation.item.alert.id), now = Date.now(), end = presentation.item.occurrence.end;
+      // Alarms that start blocking already count through their focus session.
+      if (!record || record.sessionId || record.pending || end <= now) return;
+      const id = `alarm-${record.id}-${record.lastOccurrence}`;
+      if (focus.some(item => item.id === id)) return;
+      await saveFocus([{ id, alarm: true, intention: record.title, apps: [], startedAt: now, endsAt: end, finishedAt: end, durationMinutes: Math.ceil((end - now) / 60000), outcome: 'completed' }, ...focus].slice(0, 500));
+    });
     if (action === 'open') await showWindow();
     if (active === presentation) closePresentation(); return true;
   });
@@ -249,5 +267,13 @@ async function setupAlerts({ handle, getWindow, showWindow, getPreferences, stat
   setInterval(scheduleTick, 2000).unref();
   nextAlert();
   app.on('before-quit', () => { presentations = []; closePresentation(); });
+  return {
+    // Only finished windows count, like completed sessions.
+    focusHistory: now => { const done = focus.filter(item => item.finishedAt <= now); return { records: done, revision: focusRevision + ':' + done.length }; },
+    updateFocus: (id, action) => serial(async () => {
+      if (!focus.some(item => item.id === id)) throw Error('Saved session not found.');
+      await saveFocus(action === 'delete' ? focus.filter(item => item.id !== id) : focus.map(item => item.id === id ? { ...item, archived: action === 'archive' } : item));
+    })
+  };
 }
 module.exports = { setupAlerts };

@@ -9,7 +9,7 @@ const source = fs.readFileSync(require.resolve('../app/alerts-main.cjs'), 'utf8'
 const base = { id: 'saved-alert', title: 'Focus', note: '', date: '2026-09-23', time: '09:00', repeat: 'once', lengthMode: 'duration', durationMinutes: 20, endTime: '10:00', style: 'card', blockMode: 'custom', apps: [{ name: 'Game', path: 'C:\\StillPreview\\Game.exe' }], unlockDelayMinutes: 0, sound: 'silent', volume: 65, enabled: true };
 
 async function scheduler(saved = [], preferences = { apps: base.apps, selected: [base.apps[0].path] }, workArea = { x: 0, y: 0, width: 1200, height: 900 }) {
-  let now = +new Date('2026-09-23T09:00:00'), interval, stored = JSON.stringify(saved), preparations = 0, reads = 0, opened = 0;
+  let now = +new Date('2026-09-23T09:00:00'), interval, files = { 'alerts.json': JSON.stringify(saved) }, preparations = 0, reads = 0, opened = 0;
   const handlers = {}, windows = [], starts = [], events = [], notifications = [], timers = new Map();
   const guard = { installed: true, scheduledAlerts: true, snoozeAlerts: true, session: null };
   class Window {
@@ -33,11 +33,11 @@ async function scheduler(saved = [], preferences = { apps: base.apps, selected: 
   const electron = { app: { getPath: () => '/test', on() {} }, BrowserWindow: Window, Notification, screen, ipcMain: { handle: (name, fn) => { handlers[name] = fn; } }, protocol: { registerSchemesAsPrivileged() {}, handle() {} } };
   const context = vm.createContext({ module: { exports: {} }, __dirname: path.resolve('app'), structuredClone, console,
     Date: class extends Date { static now() { return now; } },
-    require: name => name === 'electron' ? electron : name === 'node:fs/promises' ? { mkdir: async () => {}, readFile: async () => stored, writeFile: async (_file, value) => { stored = value; }, rename: async () => {} } : name.startsWith('./') ? require(path.resolve('app', name)) : require(name),
+    require: name => name === 'electron' ? electron : name === 'node:fs/promises' ? { mkdir: async () => {}, readFile: async file => { if (!(path.basename(file) in files)) throw Object.assign(Error('missing'), { code: 'ENOENT' }); return files[path.basename(file)]; }, writeFile: async (file, value) => { files[path.basename(file)] = value; }, rename: async (from, to) => { files[path.basename(to)] = files[path.basename(from)]; } } : name.startsWith('./') ? require(path.resolve('app', name)) : require(name),
     setInterval: fn => { interval = fn; return { unref() {} }; }, setTimeout: (fn, delay) => { const token = {}; timers.set(token, { fn, delay }); return token; }, clearTimeout: token => timers.delete(token)
   });
   vm.runInContext(source, context);
-  await context.module.exports.setupAlerts({
+  const api = await context.module.exports.setupAlerts({
     handle: (name, fn) => { handlers[name] = fn; }, getWindow: () => ({ isDestroyed: () => false, webContents: { send: (name, value) => events.push({ name, value }) } }),
     showWindow: () => { opened++; },
     getPreferences: () => preferences,
@@ -46,10 +46,11 @@ async function scheduler(saved = [], preferences = { apps: base.apps, selected: 
     snooze: async id => { if (guard.unavailable) throw Error('Release failed'); if (guard.session?.id === id) guard.session = null; },
     start: async request => { assert.equal(guard.session, null); starts.push(request); guard.session = { ...request, id: 'session-' + starts.length, phase: 'active', endsAt: request.scheduledEndsAt }; return guard; }
   });
-  return { handlers, guard, starts, events, windows, notifications, reads: () => reads, opened: () => opened,
+  const act = action => { const window = windows.at(-1); return handlers['alarm-action']({ sender: window.webContents, senderFrame: window.webContents.mainFrame }, action); };
+  return { time: () => now, api, handlers, guard, starts, events, windows, notifications, reads: () => reads, opened: () => opened,
     timeout: delay => { for (const [token, timer] of [...timers]) if (timer.delay === delay) { timers.delete(token); timer.fn(); } },
     tick: () => interval(), advance: ms => { now += ms; }, list: () => handlers['alerts:list'](), preparations: () => preparations,
-    snooze: () => { const window = windows.at(-1); return handlers['alarm-action']({ sender: window.webContents, senderFrame: window.webContents.mainFrame }, 'snooze'); }
+    act, snooze: () => act('snooze')
   };
 }
 
@@ -190,4 +191,30 @@ test('an alarm missed while Still was closed rings late without blocking', async
   assert.equal(s.windows.length, 1);
   assert.match(s.windows[0]['alarm-data'].message, /^Late reminder · Still was closed/);
   assert.equal(s.list()[0].pending, null);
+});
+test('"Let\'s focus" on a reminder-only alarm counts its remaining window once the window ends', async () => {
+  const reminder = { ...base, blockMode: 'none', apps: [] };
+  const s = await scheduler([reminder], { countAlarmFocus: true });
+  await s.tick(); s.advance(5 * 60000);
+  await s.act('open');
+  assert.equal(s.opened(), 1);
+  assert.equal(s.api.focusHistory(s.time()).records.length, 0, 'not counted before the window ends');
+  s.advance(15 * 60000);
+  const [record] = s.api.focusHistory(s.time()).records;
+  assert.equal(record.endsAt - record.startedAt, 15 * 60000);
+  assert.equal(record.intention, 'Focus'); assert.equal(record.outcome, 'completed'); assert.ok(record.id.startsWith('alarm-'));
+  await s.api.updateFocus(record.id, 'archive');
+  assert.equal(s.api.focusHistory(s.time()).records[0].archived, true);
+  await s.api.updateFocus(record.id, 'delete');
+  assert.equal(s.api.focusHistory(s.time()).records.length, 0);
+});
+test('alarm focus is not added when the toggle is off, for previews, or when the alarm already blocks apps', async () => {
+  const off = await scheduler([{ ...base, blockMode: 'none', apps: [] }], {});
+  await off.tick(); await off.act('open');
+  const blocking = await scheduler([base], { apps: base.apps, selected: [base.apps[0].path], countAlarmFocus: true });
+  await blocking.tick(); await blocking.tick(); assert.equal(blocking.starts.length, 1);
+  await blocking.act('open');
+  const preview = await scheduler([], { countAlarmFocus: true });
+  await preview.handlers['alerts:preview']({ ...base, blockMode: 'none', apps: [] }); await preview.act('open');
+  for (const s of [off, blocking, preview]) { s.advance(3600000); assert.equal(s.api.focusHistory(s.time()).records.length, 0); }
 });

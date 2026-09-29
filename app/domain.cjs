@@ -52,7 +52,8 @@ function validatePreferences(value) {
     readableFont: value.readableFont === true,
     strongFocus: value.strongFocus === true,
     launchAtLogin: value.launchAtLogin === true,
-    alertsAfterQuit: value.alertsAfterQuit === true
+    alertsAfterQuit: value.alertsAfterQuit === true,
+    countAlarmFocus: value.countAlarmFocus === true
   };
 }
 const releases = 'https://github.com/limpy183-dev/Still/releases/';

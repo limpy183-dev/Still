@@ -103,7 +103,7 @@ let apps = [], selected = new Set(), groups = [], page = 'focus', busy = false, 
 
 let state = { installed: false, session: null, history: [], demo: !window.still, error: null, unavailable: false };
 
-let prefs = { duration: 50, delay: 5, delayEnabled: true, intention: '', notifications: true, reducedMotion: false, launchAtLogin: false, alertsAfterQuit: false };
+let prefs = { duration: 50, delay: 5, delayEnabled: true, intention: '', notifications: true, reducedMotion: false, launchAtLogin: false, alertsAfterQuit: false, countAlarmFocus: false };
 
 let historyFilter = 'active';
 
@@ -638,7 +638,7 @@ function renderHistoryList() {
   $('#history-pager').hidden = pages < 2;
   $('#history-page').textContent = `${first + 1}–${first + shown.length} of ${visible.length} · Page ${historyView.page + 1} of ${pages}`;
   $('#history-previous').disabled = historyView.page === 0; $('#history-next').disabled = historyView.page >= pages - 1;
-  $('#history-list').innerHTML = shown.length ? shown.map(s => `<div class="history-row"><span class="history-symbol" data-color="${intentionColor(intentionLabel(s))}">${icon(s.outcome === 'completed' ? 'check' : 'clock')}</span><div><h3>${escapeHtml(s.intention || 'Time to focus')}</h3><p>${new Date(s.startedAt).toLocaleDateString([], { month: 'short', day: 'numeric' })} · ${new Date(s.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · ${s.apps.length} apps / websites put on hold</p></div><strong>${Math.floor(focusMilliseconds(s) / 60000)}m</strong><span class="history-outcome${s.outcome !== 'completed' ? ' early' : ''}">${escapeHtml(({ completed: 'Completed', 'ended-early': 'Ended early', failed: 'Not started', interrupted: 'Interrupted', recovered: 'Recovered' })[s.outcome] || s.outcome)}</span><div class="history-actions"><button class="text-button" data-history-action="${s.archived ? 'restore' : 'archive'}" data-id="${escapeHtml(s.id)}" ${state.unavailable ? 'disabled' : ''}>${s.archived ? 'Restore' : 'Archive'}</button><button class="text-button danger" data-history-action="delete" data-id="${escapeHtml(s.id)}" ${state.unavailable ? 'disabled' : ''}>Delete</button></div></div>`).join('') : filtered ? empty('No sessions match these filters.', 'Try a different search, period, or outcome.', 'leaf') : empty('No sessions in this view.', 'Your saved sessions will appear here. Try another view to find archived sessions.', 'leaf');
+  $('#history-list').innerHTML = shown.length ? shown.map(s => `<div class="history-row"><span class="history-symbol" data-color="${intentionColor(intentionLabel(s))}">${icon(s.outcome === 'completed' ? 'check' : 'clock')}</span><div><h3>${escapeHtml(s.intention || 'Time to focus')}</h3><p>${new Date(s.startedAt).toLocaleDateString([], { month: 'short', day: 'numeric' })} · ${new Date(s.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · ${s.alarm ? 'From an alarm · nothing blocked' : `${s.apps.length} apps / websites put on hold`}</p></div><strong>${Math.floor(focusMilliseconds(s) / 60000)}m</strong><span class="history-outcome${s.outcome !== 'completed' ? ' early' : ''}">${escapeHtml(({ completed: 'Completed', 'ended-early': 'Ended early', failed: 'Not started', interrupted: 'Interrupted', recovered: 'Recovered' })[s.outcome] || s.outcome)}</span><div class="history-actions"><button class="text-button" data-history-action="${s.archived ? 'restore' : 'archive'}" data-id="${escapeHtml(s.id)}" ${state.unavailable ? 'disabled' : ''}>${s.archived ? 'Restore' : 'Archive'}</button><button class="text-button danger" data-history-action="delete" data-id="${escapeHtml(s.id)}" ${state.unavailable ? 'disabled' : ''}>Delete</button></div></div>`).join('') : filtered ? empty('No sessions match these filters.', 'Try a different search, period, or outcome.', 'leaf') : empty('No sessions in this view.', 'Your saved sessions will appear here. Try another view to find archived sessions.', 'leaf');
 }
 
 const refreshHistory = () => { historyView.page = 0; renderHistoryList(); };
@@ -815,7 +815,7 @@ $('#group-save').onclick = () => {
 $('#group-name').onkeydown = event => { if (event.key === 'Enter') $('#group-save').click(); };
 
 const applyLook = () => applyAccessibility(prefs, api.setZoom);
-for (const [id, key] of [['notifications', 'notifications'], ['reduced-motion', 'reducedMotion'], ['high-contrast', 'highContrast'], ['readable-font', 'readableFont'], ['strong-focus', 'strongFocus'], ['launch-at-login', 'launchAtLogin'], ['alerts-after-quit', 'alertsAfterQuit']]) {
+for (const [id, key] of [['notifications', 'notifications'], ['reduced-motion', 'reducedMotion'], ['high-contrast', 'highContrast'], ['readable-font', 'readableFont'], ['strong-focus', 'strongFocus'], ['launch-at-login', 'launchAtLogin'], ['alerts-after-quit', 'alertsAfterQuit'], ['count-alarm-focus', 'countAlarmFocus']]) {
 
   $(`#${id}`).onchange = () => { prefs[key] = $(`#${id}`).checked; applyLook(); save(); if (key === 'launchAtLogin' && state.demo) toast('Sign-in preferences are available in the packaged Windows app.'); if (key === 'alertsAfterQuit' && state.demo) toast('Preview mode never schedules alarms after you quit.'); };
 
@@ -866,7 +866,7 @@ async function init() {
     $('#duration').value = prefs.duration; $('#delay').value = prefs.delay; $('#delay-enabled').checked = prefs.delayEnabled; $('#intention').value = prefs.intention; $('#history-page-size').value = String(prefs.historyPageSize ?? 10);
 
     if (initial.version) $('#app-version').textContent = `STILL ${initial.version}`;
-    $('#notifications').checked = prefs.notifications; $('#launch-at-login').checked = prefs.launchAtLogin; $('#alerts-after-quit').checked = prefs.alertsAfterQuit;
+    $('#notifications').checked = prefs.notifications; $('#launch-at-login').checked = prefs.launchAtLogin; $('#alerts-after-quit').checked = prefs.alertsAfterQuit; $('#count-alarm-focus').checked = prefs.countAlarmFocus;
 
     showAccessibility(); applyLook();
 

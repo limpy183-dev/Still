@@ -17,7 +17,7 @@ const demo = process.argv.includes('--demo'), testing = process.argv.includes('-
 const testData = testing && process.argv.find(arg => arg.startsWith('--test-data='))?.slice(12);
 if (demo || testing) app.setPath('userData', testData || path.join(app.getPath('temp'), testing ? `Still-test-${process.pid}-${Date.now()}` : 'Still-preview'));
 // Opened by the alerts wake task: stay in the tray unless an alarm asks for the window.
-let startHidden = process.argv.includes('--alarm-wake');
+let startHidden = process.argv.includes('--alarm-wake'), alarmFocus;
 let win, tray, quitting = false, preferences = {}, lastSession, polling = false;
 const uiUrl = pathToFileURL(path.join(__dirname, 'index.html')).href;
 let nativeDir = app.isPackaged ? path.join(process.resourcesPath, 'guard') : path.join(__dirname, '..', 'native');
@@ -62,12 +62,19 @@ function finishDemo(outcome) {
   demoState.historyRevision = require('node:crypto').randomUUID();
   demoState.session = null;
 }
+// Adds alarm focus windows ("Let's focus" on reminder-only alarms) to the saved session history.
+function withAlarmFocus(value) {
+  if (!alarmFocus || value.unavailable || !Array.isArray(value.history)) return value;
+  const { records, revision } = alarmFocus.focusHistory(Date.now());
+  if (!records.length) return value;
+  return { ...value, history: [...value.history, ...records].sort((a, b) => b.startedAt - a.startedAt), historyRevision: value.historyRevision && value.historyRevision + '|' + revision };
+}
 async function status(full = false) {
   if (demo) {
     if (demoState.session && Date.now() >= demoState.session.endsAt) finishDemo('completed');
-    return { ...demoState, now: Date.now() };
+    return withAlarmFocus({ ...demoState, now: Date.now() });
   }
-  try { return await guardClient.status(full); }
+  try { return withAlarmFocus(await guardClient.status(full)); }
   catch (error) {
     return { installed: false, session: null, history: [], unavailable: true, error: ['ENOENT', 'ECONNREFUSED'].includes(error.code) ? null : error.message, now: Date.now() };
   }
@@ -175,14 +182,15 @@ function registerHandlers() {
   handle('status', status);
   handle('updateHistory', async (id, action) => {
     if (typeof id !== 'string' || !id || id.length > 100 || !['archive', 'restore', 'delete'].includes(action)) throw new Error('Invalid history action.');
+    if (id.startsWith('alarm-')) { await alarmFocus.updateFocus(id, action); return status(); }
     if (!demo) {
-      try { return await guardClient.mutate({ command: 'updateHistory', id, action }); }
+      try { return withAlarmFocus(await guardClient.mutate({ command: 'updateHistory', id, action })); }
       catch (error) {
         if (error.message !== 'Unknown command.') throw error;
         const current = await status();
         if (current.unavailable || current.session) throw new Error('Finish your current session, then try again to update Windows protection for session management.');
         await elevate('install');
-        return guardClient.mutate({ command: 'updateHistory', id, action });
+        return withAlarmFocus(await guardClient.mutate({ command: 'updateHistory', id, action }));
       }
     }
     guardClient.invalidate();
@@ -342,7 +350,7 @@ else {
       })().catch(error => console.warn('Notification registration:', error.message));
     }
     registerHandlers();
-    await setupAlerts({ handle, getWindow: () => win, showWindow, getPreferences: () => preferences, status, getStatusGeneration: () => guardClient.generation, start: request => startSession(request, true), snooze: snoozeSession, onNextAlert: scheduleWake, prepare: async () => {
+    alarmFocus = await setupAlerts({ handle, getWindow: () => win, showWindow, getPreferences: () => preferences, status, getStatusGeneration: () => guardClient.generation, start: request => startSession(request, true), snooze: snoozeSession, onNextAlert: scheduleWake, prepare: async () => {
       let current = await status();
       if (current.installed && !current.unavailable && (current.demo || (current.scheduledAlerts && current.snoozeAlerts && current.websiteBlocking))) return;
       if (current.session) throw Error('Finish your current focus session before updating Windows protection for alerts.');
