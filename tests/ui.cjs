@@ -100,6 +100,12 @@ async function run() {
     await window.locator('[data-set-color="rose"]').click();
     assert.equal(await window.locator('.attention-row').getAttribute('data-color'), 'rose');
     await window.waitForFunction(async () => (await window.still.bootstrap()).preferences.intentionColors['One meaningful thing'] === 'rose');
+    // The same task typed with different capitals and spacing shares one row and colour, named by its latest spelling.
+    await window.evaluate(() => { const [first] = state.history; state.history.push({ ...first, id: 'case-check', intention: ' ONE Meaningful Thing', startedAt: first.startedAt + 1000 }); renderProgress(); });
+    assert.equal(await window.locator('.attention-row').count(), 1);
+    assert.match(await window.locator('.attention-row').innerText(), /ONE Meaningful Thing[\s\S]*2 sessions/);
+    assert.equal(await window.locator('.attention-row').getAttribute('data-color'), 'rose');
+    await window.evaluate(() => { state.history.pop(); renderProgress(); });
     await window.locator('#intention-sort').selectOption('name');
     await window.locator('[data-intention-clear]').click();
     assert.equal(await window.locator('.calendar-day[aria-pressed="true"]').count(), 0);

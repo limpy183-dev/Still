@@ -454,8 +454,24 @@ let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
 let selectedDay = null, colorPickerFor = null;
 const INTENTION_COLORS = ['sage', 'moss', 'lime', 'sky', 'lavender', 'rose', 'clay', 'sand'];
 const intentionLabel = record => record.intention || 'Time to focus';
+// "Wash dishes" and "Wash Dishes " are the same task.
+const intentionKey = label => label.trim().toLocaleLowerCase();
+// Each task's first spelling names its colour, so a new spelling doesn't change it.
+let intentionNames = new Map();
+function refreshIntentionNames() {
+  const first = new Map();
+  for (const record of [...state.history, ...(state.session ? [state.session] : [])]) {
+    const label = intentionLabel(record), key = intentionKey(label), seen = first.get(key);
+    if (!seen || record.startedAt < seen.startedAt) first.set(key, { label, startedAt: record.startedAt });
+  }
+  intentionNames = new Map([...first].map(([key, { label }]) => [key, label]));
+}
+const intentionName = label => intentionNames.get(intentionKey(label)) || label;
 // Unpicked tasks get a stable colour from their name, so the list is distinct out of the box.
-const intentionColor = label => (prefs.intentionColors || {})[label] || INTENTION_COLORS[[...label].reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) >>> 0, 7) % INTENTION_COLORS.length];
+const intentionColor = label => {
+  const name = intentionName(label), key = intentionKey(label), saved = prefs.intentionColors || {};
+  return saved[name] || Object.entries(saved).find(([picked]) => intentionKey(picked) === key)?.[1] || INTENTION_COLORS[[...name].reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) >>> 0, 7) % INTENTION_COLORS.length];
+};
 const dayEnd = start => { const end = new Date(start); end.setDate(end.getDate() + 1); return +end; };
 
 function renderSessionCalendar() {
@@ -466,7 +482,7 @@ function renderSessionCalendar() {
     const date = new Date(record.startedAt);
     if (date.getFullYear() !== year || date.getMonth() !== month) continue;
     const entry = byDay.get(date.getDate()) || { count: 0, labels: new Set() };
-    entry.count++; entry.labels.add(intentionLabel(record));
+    entry.count++; entry.labels.add(intentionName(intentionLabel(record)));
     byDay.set(date.getDate(), entry);
   }
   $('#calendar-month').textContent = calendarMonth.toLocaleDateString([], { month: 'long', year: 'numeric' });
@@ -512,9 +528,11 @@ function renderIntentions(records, rangeStart) {
     const minutes = focusMilliseconds(record, from, to) / 60000;
     // A chosen day also lists sessions started that day, so every marked calendar day has something to show.
     if (minutes <= 0 && !(selectedDay !== null && record.startedAt >= from && record.startedAt < to)) continue;
-    const label = intentionLabel(record), group = groups.get(label) || { label, minutes: 0, sessions: 0, last: 0 };
-    group.minutes += minutes; group.sessions++; group.last = Math.max(group.last, record.startedAt);
-    groups.set(label, group);
+    const label = intentionLabel(record), key = intentionKey(label), group = groups.get(key) || { label, minutes: 0, sessions: 0, last: 0 };
+    // The row shows the latest spelling.
+    if (record.startedAt >= group.last) { group.label = label; group.last = record.startedAt; }
+    group.minutes += minutes; group.sessions++;
+    groups.set(key, group);
   }
   const sort = intentionSorters[prefs.intentionSort] ? prefs.intentionSort : 'time';
   const list = [...groups.values()].sort(intentionSorters[sort]), timed = list.filter(group => group.minutes > 0);
@@ -541,13 +559,14 @@ $('#progress-intentions').onclick = event => {
   if (!target) return;
   if (target.dataset.intentionClear !== undefined) selectedDay = null;
   else if (target.dataset.intentionScope) { prefs.intentionScope = target.dataset.intentionScope; save(); }
-  else if (target.dataset.setColor) { prefs.intentionColors = { ...prefs.intentionColors, [target.dataset.label]: target.dataset.setColor }; colorPickerFor = null; save(); }
+  else if (target.dataset.setColor) { prefs.intentionColors = { ...prefs.intentionColors, [intentionName(target.dataset.label)]: target.dataset.setColor }; colorPickerFor = null; save(); }
   else colorPickerFor = colorPickerFor === target.dataset.intentionColor ? null : target.dataset.intentionColor;
   renderProgress();
 };
 
 function renderProgress() {
   if (!presentationVisible || page !== 'history') return;
+  refreshIntentionNames();
   const count = prefs.progressDays || 30, goal = prefs.dailyGoal || 60;
 
   const today = new Date(now()); today.setHours(0, 0, 0, 0);
@@ -624,6 +643,7 @@ const historyView = { search: '', days: 0, outcome: 'all', sort: 'newest', page:
 const historySorters = { newest: (a, b) => b.startedAt - a.startedAt, oldest: (a, b) => a.startedAt - b.startedAt, longest: (a, b) => focusMilliseconds(b) - focusMilliseconds(a) || b.startedAt - a.startedAt };
 
 function renderHistoryList() {
+  refreshIntentionNames();
   const { search, days, outcome, sort } = historyView, query = search.trim().toLowerCase(), since = days ? now() - days * 86400000 : 0;
   const visible = state.history.filter(s => (historyFilter === 'all' || !!s.archived === (historyFilter === 'archived'))
     && (!query || intentionLabel(s).toLowerCase().includes(query))
