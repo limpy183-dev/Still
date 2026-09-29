@@ -1,6 +1,6 @@
-## What's new in v1.1.5
+## What's new in v1.1.6
 
-- **A font made for reading, on Windows and Android.** Settings → Made to fit you → *Easier-to-read font* now switches to [Atkinson Hyperlegible](https://www.brailleinstitute.org/freefont/), a typeface the Braille Institute designed so letters and numbers like I, l and 1 or O and 0 are easy to tell apart. It's bundled with Still, so it looks the same on every PC and phone. (It used Verdana on Windows and the phone's own font on Android.)
+- **One task, however you type it.** On the progress page, *Where your attention went* now counts "Clean school equipment" and "Clean School Equipment" (or one with a stray space) as the same task: one row, one colour, one total, shown with your latest spelling. Colours you've already picked stay the same and your saved history isn't changed. Works the same on Windows and Android.
 
 ## Install or update
 
