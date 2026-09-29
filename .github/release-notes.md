@@ -1,8 +1,8 @@
-## What's new in v1.1.3
+## What's new in v1.1.4
 
-- **Website logos in the extension.** Every website in the [Still · Website focus](https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb) settings page now shows its logo, like in Still.
-- **Clearer extension status.** Hovering the extension no longer says "reconnect Windows protection" when Still is connected. It tells you to turn on Allow in Incognito (or InPrivate) when private windows aren't covered, and says so if Still for Windows doesn't recognise the copy of the extension you're using.
-- **Extension updates reliably.** Still's own copy of the extension now always reloads after Still updates, so it never keeps running older code.
+- **Accessibility on Android.** The Android preview has a Settings page (the sliders button at the top right) with the same *Made to fit you* options as Windows: text size up to 175%, high contrast (in light and dark), an easier-to-read font, stronger focus outlines, a gentler pace and reset. Alarm screens follow them too.
+- **Android alerts catch up with Windows.** An alarm missed while the phone was off now rings as a late reminder instead of being skipped, and Settings → *Reminders count as focus* adds a reminder's focus window to Your progress when you press Let's focus.
+- **Fix (Windows and Android):** saving a new alert, or switching a paused one back on, no longer rings a window that already ended today as a late reminder. It starts from the next one.
 
 ## Install or update
 

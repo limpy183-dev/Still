@@ -4,8 +4,8 @@
   const REPO = 'limpy183-dev/Still';
   // Used until GitHub answers (or if it can't be reached). Update on release.
   const FALLBACK = {
-    version: '1.1.3', date: '2026-09-29T14:36:28Z', size: 147216896,
-    url: `https://github.com/${REPO}/releases/download/v1.1.3/Still-Setup-1.1.3.exe`,
+    version: '1.1.4', date: '2026-09-29T14:36:28Z', size: 147216896,
+    url: `https://github.com/${REPO}/releases/download/v1.1.4/Still-Setup-1.1.4.exe`,
     sha: '68128427d813a66d2ee7154d2ee1a089ed56e320ea6430b052fb51c2a19236d3',
     page: `https://github.com/${REPO}/releases/latest`
   };
