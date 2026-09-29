@@ -62,7 +62,7 @@ Newer previews install over the top and keep your data. Still refuses work profi
 
 ### In Chrome and Edge
 
-[**Still · Website focus**](https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb) is free on the Chrome Web Store. On its own, on Windows, Mac, Linux or ChromeOS, it blocks websites during a focus session, sets daily limits and a bedtime, and shows a calm block screen. With Still for Windows it becomes the browser companion: **Settings → Set up browser companion** opens the store page, and the app's locked sessions and alerts then cover websites too. [More about the extension](https://stillfocus.fyi/extension) · [Setup](docs/website-blocking.md#browser-setup)
+[**Still · Website focus**](https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb) is free on the Chrome Web Store. On its own, on Windows, Mac, Linux or ChromeOS, it blocks websites during a focus session, sets daily limits and a bedtime, and shows a calm block screen. It only blocks websites, so for more control we recommend using it with Still for Windows, where it becomes the browser companion: **Settings → Set up browser companion** opens the store page, and the app's locked sessions and alerts then cover websites too. [More about the extension](https://stillfocus.fyi/extension) · [Setup](docs/website-blocking.md#browser-setup)
 
 ## Take a look
 

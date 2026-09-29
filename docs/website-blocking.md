@@ -10,7 +10,7 @@ In **Settings → Website block screens**, choose Quiet garden, Evening calm, or
 
 Still · Website focus from the Chrome Web Store or Edge Add-ons also works without the Windows app, including on Mac, Linux and ChromeOS. Click its toolbar icon to open its settings: add websites and start a focus session, add daily limits and bedtime, and choose a block screen (Garden, Dusk, Paper, your own message and image, or another page). These settings stay in that browser profile.
 
-Without the app, a session can be ended at any time from the settings page, and the extension can be turned off from the extensions page. For sessions that can't be ended early, app blocking and the browser-policy fallback, set up Still for Windows as below.
+Without the app, a session can be ended at any time from the settings page, and the extension can be turned off from the extensions page. The extension only blocks websites. For more control (sessions that can't be ended early, app blocking, scheduled alerts and the browser-policy fallback), we recommend setting up Still for Windows as below.
 
 **With both installed, they work together.** Each side keeps its own settings and only adds blocks: a site is held while either side's session holds it, and when both limit a site the stricter limit applies. Ending a session in the extension never releases the app's session, and the app's session ending never releases the extension's. The settings page shows what Still for Windows holds and which limits were set there. If a redirect page chosen on one side is held by the other, the block page is shown instead.
 
