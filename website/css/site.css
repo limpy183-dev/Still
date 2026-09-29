@@ -821,6 +821,8 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 
 /* ——— Screenshot gallery + lightbox ——— */
 .gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+/* An odd last shot sits centred on its own row. */
+.gallery>.shot:last-child:nth-child(odd){grid-column:1/-1;justify-self:center;width:calc(50% - 9px)}
 .shot{display:block;width:100%;padding:12px;text-align:left;cursor:zoom-in}
 .shot .frame{display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:12px;border:1px solid var(--line);background:var(--bg);aspect-ratio:16/10}
 .shot img{width:100%;height:100%;object-fit:contain;object-position:center;transition:transform .8s var(--ease-out)}
@@ -838,4 +840,4 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .lightbox .close svg{width:18px;height:18px}
 @keyframes lb-in{from{opacity:0;transform:translateY(14px) scale(.96)}}
 @keyframes lb-fade{from{opacity:0}}
-@media (max-width:700px){.gallery{grid-template-columns:1fr}}
+@media (max-width:700px){.gallery{grid-template-columns:1fr}.gallery>.shot:last-child:nth-child(odd){width:100%}}
