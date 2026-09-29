@@ -86,6 +86,11 @@ Open **Progress** from the bar at the bottom, during a session or not. It follow
 
 Still keeps the last 500 sessions. The range and goal are saved as `progressDays` and `dailyGoal`, like the Windows preferences.
 
+<p>
+  <img src="images/android-progress.png" alt="Your progress: total focus, completed sessions and daily focus bars" width="240" />
+  <img src="images/android-attention.png" alt="Where your attention went: 19h 5m across five tasks over the last 30 days, with Revise chemistry counting both of its spellings" width="240" />
+</p>
+
 ## Alerts
 
 Open **Alerts** from the bar at the bottom, during a session or not. They follow the Windows rules and wording:
