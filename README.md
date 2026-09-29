@@ -149,7 +149,7 @@ Still has no accounts or telemetry, and its font is bundled locally. Preferences
 <details>
 <summary><strong>Do alerts work after I close Still?</strong></summary>
 
-Alerts work while Still is open or in the system tray. Quitting Still stops scheduling, and sleeping PCs are not woken. Enable launch at sign-in to resume scheduling after a restart. An active guard session continues independently.
+Alerts work while Still is open or in the system tray. Quitting Still stops them unless you turn on **Alarms after you quit** in Settings: Windows Task Scheduler then reopens Still quietly in the tray just before each alert, including after a restart. Sleeping PCs are not woken; an alarm missed while asleep or closed rings when Still next runs. An active guard session continues independently.
 
 [Alert modes, snooze behavior, and scheduling limits →](docs/user-guide.md#alerts)
 

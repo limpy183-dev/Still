@@ -8,11 +8,16 @@ const { pathToFileURL } = require('node:url');
 const { allowedApp, validateSession, validatePreferences, newerVersion, updateUrl, sameFileUrl } = require('./domain.cjs');
 const { setupWebsites } = require('./websites-main.cjs');
 const { setupAlerts } = require('./alerts-main.cjs');
+const { wakeTaskXml } = require('./alert-domain.cjs');
 const { createGuardClient } = require('./guard-client.cjs');
 const guardClient = createGuardClient(guard);
 const execute = promisify(execFile);
-const demo = process.argv.includes('--demo');
-if (demo || process.argv.includes('--test')) app.setPath('userData', path.join(app.getPath('temp'), process.argv.includes('--test') ? `Still-test-${process.pid}-${Date.now()}` : 'Still-preview'));
+const demo = process.argv.includes('--demo'), testing = process.argv.includes('--test');
+// Tests pass --test-data so a scheduled wake reopens the same test profile.
+const testData = testing && process.argv.find(arg => arg.startsWith('--test-data='))?.slice(12);
+if (demo || testing) app.setPath('userData', testData || path.join(app.getPath('temp'), testing ? `Still-test-${process.pid}-${Date.now()}` : 'Still-preview'));
+// Opened by the alerts wake task: stay in the tray unless an alarm asks for the window.
+let startHidden = process.argv.includes('--alarm-wake');
 let win, tray, quitting = false, preferences = {}, lastSession, polling = false;
 const uiUrl = pathToFileURL(path.join(__dirname, 'index.html')).href;
 let nativeDir = app.isPackaged ? path.join(process.resourcesPath, 'guard') : path.join(__dirname, '..', 'native');
@@ -166,7 +171,7 @@ function registerHandlers() {
     return { ...current, preferences, apps: preferences.apps || [], version: app.getVersion() };
   });
   handle('appIcons', () => enrich(preferences.apps || []));
-  handle('showWindow', showWindow);
+  handle('showWindow', () => { if (startHidden) startHidden = false; else return showWindow(); });
   handle('status', status);
   handle('updateHistory', async (id, action) => {
     if (typeof id !== 'string' || !id || id.length > 100 || !['archive', 'restore', 'delete'].includes(action)) throw new Error('Invalid history action.');
@@ -188,7 +193,7 @@ function registerHandlers() {
     demoState.historyRevision = require('node:crypto').randomUUID();
     return status();
   });
-  handle('savePreferences', savePreferences);
+  handle('savePreferences', async value => { const saved = await savePreferences(value); scheduleWake(); trayMenu(); return saved; });
   handle('install', () => elevate('install'));
   handle('uninstall', async () => { const s = await status(); if (s.session) throw new Error('Finish your session before removing protection.'); return elevate('uninstall'); });
   handle('discover', async () => enrich(await discoverApps()));
@@ -269,6 +274,29 @@ async function startSession(request, scheduled = false) {
     demoState.session = { ...value, id: require('node:crypto').randomUUID(), startedAt: Date.now(), endsAt: value.scheduledEndsAt || Date.now() + value.durationMinutes * 60000, unlockAt: 0, phase: 'active' };
     return status();
 }
+const wakeTask = testing ? 'Still Alerts Test' : 'Still Alerts', schtasks = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'schtasks.exe');
+let nextAlertAt = Infinity, wakeAt, wakeQueue = Promise.resolve();
+// Keeps one Task Scheduler entry at the next alert (30 s early, so Still is ready) while "Alarms after you quit" is on.
+function scheduleWake(at = nextAlertAt) {
+  nextAlertAt = at;
+  if (demo) return;
+  const next = preferences.alertsAfterQuit && Number.isFinite(at) ? at - 30000 : null;
+  if (next === wakeAt) return;
+  wakeAt = next;
+  wakeQueue = wakeQueue.then(async () => {
+    if (next === null) return execute(schtasks, ['/Delete', '/TN', wakeTask, '/F'], { windowsHide: true }).catch(() => {});
+    const args = [...(app.isPackaged ? [] : [app.getAppPath()]), '--alarm-wake', ...(testing ? ['--test', '--test-data=' + app.getPath('userData')] : [])];
+    const file = path.join(app.getPath('userData'), 'alerts-wake-task.xml');
+    await fs.writeFile(file, '\ufeff' + wakeTaskXml(next, process.env.PORTABLE_EXECUTABLE_FILE || process.execPath, args.map(arg => /[\s"]/.test(arg) ? `"${arg}"` : arg).join(' ')), 'utf16le');
+    await execute(schtasks, ['/Create', '/TN', wakeTask, '/XML', file, '/F'], { windowsHide: true, timeout: 20000 });
+  }).catch(error => {
+    if (wakeAt === next) wakeAt = undefined; // Retry on the next change.
+    win?.webContents.send('alert-error', 'Windows could not schedule alerts to ring after Still quits: ' + error.message);
+  });
+}
+function trayMenu() {
+  tray?.setContextMenu(Menu.buildFromTemplate([{ label: 'Open Still', click: showWindow }, { type: 'separator' }, { label: preferences.alertsAfterQuit ? 'Quit Still (alerts still ring; active protection continues)' : 'Quit Still (alerts stop; active protection continues)', click: () => { quitting = true; app.quit(); } }]));
+}
 async function showWindow() {
   if (!win || win.isDestroyed()) return;
   // Show immediately; the show/restore events refresh the existing document.
@@ -288,7 +316,7 @@ function makeWindow() {
 }
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
-  app.on('second-instance', showWindow);
+  app.on('second-instance', (_event, argv) => { if (!argv.includes('--alarm-wake')) showWindow(); });
   app.whenReady().then(async () => {
     try { preferences = validatePreferences(JSON.parse(await fs.readFile(path.join(app.getPath('userData'), 'preferences.json'), 'utf8'))); } catch { preferences = validatePreferences({}); }
     try { reconcileLoginSettings(); } catch (error) { console.warn('Sign-in settings:', error.message); }
@@ -314,7 +342,7 @@ else {
       })().catch(error => console.warn('Notification registration:', error.message));
     }
     registerHandlers();
-    await setupAlerts({ handle, getWindow: () => win, showWindow, getPreferences: () => preferences, status, getStatusGeneration: () => guardClient.generation, start: request => startSession(request, true), snooze: snoozeSession, prepare: async () => {
+    await setupAlerts({ handle, getWindow: () => win, showWindow, getPreferences: () => preferences, status, getStatusGeneration: () => guardClient.generation, start: request => startSession(request, true), snooze: snoozeSession, onNextAlert: scheduleWake, prepare: async () => {
       let current = await status();
       if (current.installed && !current.unavailable && (current.demo || (current.scheduledAlerts && current.snoozeAlerts && current.websiteBlocking))) return;
       if (current.session) throw Error('Finish your current focus session before updating Windows protection for alerts.');
@@ -324,7 +352,7 @@ else {
     makeWindow();
     tray = new Tray(nativeImage.createFromPath(path.join(__dirname, '..', 'assets', 'still.ico')));
     tray.setToolTip('Still · Make room for focus');
-    tray.setContextMenu(Menu.buildFromTemplate([{ label: 'Open Still', click: showWindow }, { type: 'separator' }, { label: 'Quit Still (alerts stop; active protection continues)', click: () => { quitting = true; app.quit(); } }]));
+    trayMenu();
     tray.on('double-click', showWindow);
     let sentHistoryRevision;
     setInterval(async () => {

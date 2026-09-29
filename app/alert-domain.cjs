@@ -83,4 +83,18 @@ function nextOccurrence(alert, now) {
   if (alert.repeat === 'once') { const occurrence = occurrenceOn(alert, localDate(alert.date)); if (occurrence.start > now) return occurrence.start; }
   return null;
 }
-module.exports = { validateAlert, dueOccurrence, nextOccurrence, occurrenceOn, MEDIA_FILE };
+// A one-shot Task Scheduler task that reopens Still (hidden) before the next alert after it quits.
+// StartWhenAvailable runs it after sleep or sign-in if the time was missed; PT0S stops Windows ending Still after 72 hours.
+function wakeTaskXml(at, command, args) {
+  const pad = value => String(value).padStart(2, '0'), d = new Date(at);
+  const escape = value => value.replace(/[<>&'"]/g, c => `&#${c.charCodeAt(0)};`);
+  return `<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo><Description>Reopens Still in the background so your alerts ring after you quit it. Turn off "Alarms after you quit" in Still's Settings to remove it.</Description></RegistrationInfo>
+  <Triggers><TimeTrigger><StartBoundary>${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}</StartBoundary><Enabled>true</Enabled></TimeTrigger></Triggers>
+  <Principals><Principal id="Author"><LogonType>InteractiveToken</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal></Principals>
+  <Settings><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy><DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><StartWhenAvailable>true</StartWhenAvailable><ExecutionTimeLimit>PT0S</ExecutionTimeLimit><Priority>5</Priority></Settings>
+  <Actions Context="Author"><Exec><Command>${escape(command)}</Command><Arguments>${escape(args)}</Arguments></Exec></Actions>
+</Task>`;
+}
+module.exports = { validateAlert, dueOccurrence, nextOccurrence, occurrenceOn, wakeTaskXml, MEDIA_FILE };

@@ -103,7 +103,7 @@ let apps = [], selected = new Set(), groups = [], page = 'focus', busy = false, 
 
 let state = { installed: false, session: null, history: [], demo: !window.still, error: null, unavailable: false };
 
-let prefs = { duration: 50, delay: 5, delayEnabled: true, intention: '', notifications: true, reducedMotion: false, launchAtLogin: false };
+let prefs = { duration: 50, delay: 5, delayEnabled: true, intention: '', notifications: true, reducedMotion: false, launchAtLogin: false, alertsAfterQuit: false };
 
 let historyFilter = 'active';
 
@@ -815,9 +815,9 @@ $('#group-save').onclick = () => {
 $('#group-name').onkeydown = event => { if (event.key === 'Enter') $('#group-save').click(); };
 
 const applyLook = () => applyAccessibility(prefs, api.setZoom);
-for (const [id, key] of [['notifications', 'notifications'], ['reduced-motion', 'reducedMotion'], ['high-contrast', 'highContrast'], ['readable-font', 'readableFont'], ['strong-focus', 'strongFocus'], ['launch-at-login', 'launchAtLogin']]) {
+for (const [id, key] of [['notifications', 'notifications'], ['reduced-motion', 'reducedMotion'], ['high-contrast', 'highContrast'], ['readable-font', 'readableFont'], ['strong-focus', 'strongFocus'], ['launch-at-login', 'launchAtLogin'], ['alerts-after-quit', 'alertsAfterQuit']]) {
 
-  $(`#${id}`).onchange = () => { prefs[key] = $(`#${id}`).checked; applyLook(); save(); if (key === 'launchAtLogin' && state.demo) toast('Sign-in preferences are available in the packaged Windows app.'); };
+  $(`#${id}`).onchange = () => { prefs[key] = $(`#${id}`).checked; applyLook(); save(); if (key === 'launchAtLogin' && state.demo) toast('Sign-in preferences are available in the packaged Windows app.'); if (key === 'alertsAfterQuit' && state.demo) toast('Preview mode never schedules alarms after you quit.'); };
 
 }
 
@@ -866,7 +866,7 @@ async function init() {
     $('#duration').value = prefs.duration; $('#delay').value = prefs.delay; $('#delay-enabled').checked = prefs.delayEnabled; $('#intention').value = prefs.intention; $('#history-page-size').value = String(prefs.historyPageSize ?? 10);
 
     if (initial.version) $('#app-version').textContent = `STILL ${initial.version}`;
-    $('#notifications').checked = prefs.notifications; $('#launch-at-login').checked = prefs.launchAtLogin;
+    $('#notifications').checked = prefs.notifications; $('#launch-at-login').checked = prefs.launchAtLogin; $('#alerts-after-quit').checked = prefs.alertsAfterQuit;
 
     showAccessibility(); applyLook();
 

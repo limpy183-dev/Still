@@ -8,7 +8,7 @@ const { validateAlert, dueOccurrence, nextOccurrence, MEDIA_FILE } = require('./
 const { validateSession, sameFileUrl } = require('./domain.cjs');
 protocol.registerSchemesAsPrivileged([{ scheme: 'still-media', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } }]);
 
-async function setupAlerts({ handle, getWindow, showWindow, getPreferences, status, getStatusGeneration = () => 0, start, snooze, prepare }) {
+async function setupAlerts({ handle, getWindow, showWindow, getPreferences, status, getStatusGeneration = () => 0, start, snooze, prepare, onNextAlert = () => {} }) {
   const directory = path.join(app.getPath('userData'), 'alert-media');
   const store = path.join(app.getPath('userData'), 'alerts.json');
   await fs.mkdir(directory, { recursive: true });
@@ -33,11 +33,12 @@ async function setupAlerts({ handle, getWindow, showWindow, getPreferences, stat
   });
   let committedRecords = structuredClone(records);
   const notify = () => { const win = getWindow(); if (win && !win.isDestroyed()) win.webContents.send('alerts-changed', list()); };
+  const nextAlert = () => onNextAlert(Math.min(...list().map(record => record.nextAt ?? Infinity)));
   async function persist(next = records) {
     try {
       await fs.writeFile(store + '.tmp', JSON.stringify(next, null, 2));
       await fs.rename(store + '.tmp', store);
-      records = next; committedRecords = structuredClone(next); notify();
+      records = next; committedRecords = structuredClone(next); notify(); nextAlert();
     } catch (error) { records = structuredClone(committedRecords); throw error; }
   }
   function serial(action) { const result = queue.then(action); queue = result.catch(error => console.warn('Alert operation failed:', error.message)); return result; }
@@ -65,7 +66,7 @@ async function setupAlerts({ handle, getWindow, showWindow, getPreferences, stat
   function showNext() {
     if (active || !presentations.length) return;
     const item = presentations.shift();
-    if (!item.preview) item.message = item.occurrence.end <= Date.now() ? 'This focus window has ended. This is a reminder only; scheduled blocking has ended.' : records.find(record => record.id === item.alert.id)?.lastResult || item.message;
+    if (!item.preview && !item.occurrence.missed) item.message = item.occurrence.end <= Date.now() ? 'This focus window has ended. This is a reminder only; scheduled blocking has ended.' : records.find(record => record.id === item.alert.id)?.lastResult || item.message;
     const current = active = { item, windows: [] };
     notify();
     const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
@@ -198,7 +199,11 @@ async function setupAlerts({ handle, getWindow, showWindow, getPreferences, stat
         record.snoozeCount = 0;
         record.snoozeAt = 0;
         record.sessionId = null;
-        if (occurrence.end <= now) { record.lastResult = 'Missed while Still was closed or this PC was asleep.'; changed = true; continue; }
+        if (occurrence.end <= now) {
+          // Ring late rather than never; a missed focus window never starts blocking.
+          record.pending = null; record.lastResult = 'Missed while Still was closed or this PC was asleep.';
+          await persist(); present(record, { ...occurrence, missed: true }, record.lastResult); continue;
+        }
         const prefs = getPreferences();
         const apps = record.blockMode === 'none' ? [] : record.blockMode === 'current' ? (prefs.apps || []).filter(app => (prefs.selected || []).includes(app.path)) : record.apps;
         record.occurrenceApps = apps;
@@ -242,6 +247,7 @@ async function setupAlerts({ handle, getWindow, showWindow, getPreferences, stat
     return serial(tick).catch(error => getWindow()?.webContents.send('alert-error', 'Alerts could not be updated: ' + error.message)).finally(() => { ticking = false; });
   }
   setInterval(scheduleTick, 2000).unref();
+  nextAlert();
   app.on('before-quit', () => { presentations = []; closePresentation(); });
 }
 module.exports = { setupAlerts };

@@ -19,6 +19,7 @@
     "test:startup": "node tests/startup.cjs",
     "test:todos": "node tests/todos.cjs",
     "test:alerts": "node tests/alerts-ui.cjs",
+    "test:alerts-wake": "node tests/alerts-wake.cjs",
     "test:websites": "node tests/websites-ui.cjs && node tests/website-browser.cjs && node tests/website-host.cjs && node tests/website-setup.cjs"
   },
   "keywords": [],

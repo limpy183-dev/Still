@@ -287,6 +287,8 @@ static partial class Setup {
                             run.DeleteValue(name, false);
                             if (approved != null) approved.DeleteValue(name, false);
                         }
+                // "Alarms after you quit" keeps a scheduled task that reopens Still.exe.
+                try { using (var task = Process.Start(new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "schtasks.exe"), "/Delete /TN \"Still Alerts\" /F") { CreateNoWindow = true, UseShellExecute = false })) task.WaitForExit(10000); } catch (Exception ex) { Log(ex); }
                 if (data) {
                     Report("Removing your data…", 65);
                     // Electron names the data folder after package.json "name".

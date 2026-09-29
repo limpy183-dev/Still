@@ -182,3 +182,12 @@ test('website alerts preserve domains through pending and snooze, and inherit th
   await s.snooze(); s.advance(5 * 60000); await s.tick();
   assert.deepEqual(s.starts[1].apps, [website]); assert.equal(s.starts[1].scheduledEndsAt, deadline);
 });
+test('an alarm missed while Still was closed rings late without blocking', async () => {
+  const s = await scheduler([base]);
+  s.advance(30 * 60000); // The 09:00–09:20 window ended before Still reopened.
+  await s.tick();
+  assert.equal(s.starts.length, 0);
+  assert.equal(s.windows.length, 1);
+  assert.match(s.windows[0]['alarm-data'].message, /^Missed while Still was closed/);
+  assert.equal(s.list()[0].pending, null);
+});

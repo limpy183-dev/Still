@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { validateAlert, dueOccurrence, nextOccurrence, occurrenceOn } = require('../app/alert-domain.cjs');
+const { validateAlert, dueOccurrence, nextOccurrence, occurrenceOn, wakeTaskXml } = require('../app/alert-domain.cjs');
+const { validatePreferences } = require('../app/domain.cjs');
 const base = { title: 'Write a chapter', note: '', date: '2026-09-23', time: '09:00', repeat: 'once', lengthMode: 'duration', durationMinutes: 50, endTime: '10:00', style: 'card', blockMode: 'none', apps: [], unlockDelayMinutes: 5, sound: 'chime', volume: 65, enabled: true };
 const at = value => +new Date(value);
 test('alert boundary rejects unsafe apps, invalid schedules and silent full-screen alarms', () => {
@@ -40,4 +41,13 @@ test('short focus windows retain seconds and DST ranges follow the chosen wall c
     const spring = occurrenceOn({ ...base, date: '2026-03-28', time: '23:30', lengthMode: 'range', endTime: '02:30' }, new Date('2026-03-28T00:00:00'));
     assert.equal(spring.end - spring.start, 2 * 3600000);
   } finally { if (previous === undefined) delete process.env.TZ; else process.env.TZ = previous; }
+});
+test('alarms-after-quit is opt-in and its wake task survives unusual paths and never expires', () => {
+  assert.equal(validatePreferences({}).alertsAfterQuit, false);
+  assert.equal(validatePreferences({ alertsAfterQuit: 'yes' }).alertsAfterQuit, false);
+  assert.equal(validatePreferences({ alertsAfterQuit: true }).alertsAfterQuit, true);
+  const xml = wakeTaskXml(at('2026-09-23T08:59:30'), "C:\\Users\\Zoë O'Neil\\R&D <1>\\Still.exe", '--alarm-wake');
+  assert.ok(xml.includes('<StartBoundary>2026-09-23T08:59:30</StartBoundary>'));
+  assert.ok(xml.includes('<Command>C:\\Users\\Zoë O&#39;Neil\\R&#38;D &#60;1&#62;\\Still.exe</Command>'));
+  for (const setting of ['<StartWhenAvailable>true', '<ExecutionTimeLimit>PT0S', '<DisallowStartIfOnBatteries>false', '<RunLevel>LeastPrivilege', '<Arguments>--alarm-wake<']) assert.ok(xml.includes(setting), setting);
 });
