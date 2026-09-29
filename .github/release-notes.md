@@ -1,8 +1,6 @@
-## What's new in v1.1.4
+## What's new in v1.1.5
 
-- **Accessibility on Android.** The Android preview has a Settings page (the sliders button at the top right) with the same *Made to fit you* options as Windows: text size up to 175%, high contrast (in light and dark), an easier-to-read font, stronger focus outlines, a gentler pace and reset. Alarm screens follow them too.
-- **Android alerts catch up with Windows.** An alarm missed while the phone was off now rings as a late reminder instead of being skipped, and Settings → *Reminders count as focus* adds a reminder's focus window to Your progress when you press Let's focus.
-- **Fix (Windows and Android):** saving a new alert, or switching a paused one back on, no longer rings a window that already ended today as a late reminder. It starts from the next one.
+- **A font made for reading, on Windows and Android.** Settings → Made to fit you → *Easier-to-read font* now switches to [Atkinson Hyperlegible](https://www.brailleinstitute.org/freefont/), a typeface the Braille Institute designed so letters and numbers like I, l and 1 or O and 0 are easy to tell apart. It's bundled with Still, so it looks the same on every PC and phone. (It used Verdana on Windows and the phone's own font on Android.)
 
 ## Install or update
 
