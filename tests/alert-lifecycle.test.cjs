@@ -188,6 +188,6 @@ test('an alarm missed while Still was closed rings late without blocking', async
   await s.tick();
   assert.equal(s.starts.length, 0);
   assert.equal(s.windows.length, 1);
-  assert.match(s.windows[0]['alarm-data'].message, /^Missed while Still was closed/);
+  assert.match(s.windows[0]['alarm-data'].message, /^Late reminder · Still was closed/);
   assert.equal(s.list()[0].pending, null);
 });

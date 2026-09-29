@@ -201,7 +201,7 @@ async function setupAlerts({ handle, getWindow, showWindow, getPreferences, stat
         record.sessionId = null;
         if (occurrence.end <= now) {
           // Ring late rather than never; a missed focus window never starts blocking.
-          record.pending = null; record.lastResult = 'Missed while Still was closed or this PC was asleep.';
+          record.pending = null; record.lastResult = 'Late reminder · Still was closed or this PC was asleep when this was due.';
           await persist(); present(record, { ...occurrence, missed: true }, record.lastResult); continue;
         }
         const prefs = getPreferences();
