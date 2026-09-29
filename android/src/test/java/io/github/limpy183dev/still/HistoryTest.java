@@ -75,6 +75,18 @@ public class HistoryTest {
         assertEquals(b, groups.get(0).last);
     }
 
+    @Test public void intentionsIgnoreCapitalsAndSpacesAndShowTheLatestSpelling() {
+        long now = at(TODAY, 20, 0), a = at(TODAY, 9, 0), b = at(TODAY, 14, 0);
+        List<History.Group> groups = History.intentions(Arrays.asList(
+                record("Clean School Equipment", "completed", b, 10, b + 10 * MIN),
+                record("clean school equipment ", "completed", a, 20, a + 20 * MIN)), 0, now);
+        assertEquals(1, groups.size());
+        assertEquals("Clean School Equipment", groups.get(0).label);
+        assertEquals(30, groups.get(0).minutes, 0.001);
+        assertEquals(2, groups.get(0).sessions);
+        assertEquals(b, groups.get(0).last);
+    }
+
     @Test public void settingsAndLabelsAreClamped() {
         assertEquals(30, History.range(14));
         assertEquals(90, History.range(90));

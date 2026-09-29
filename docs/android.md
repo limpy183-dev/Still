@@ -80,7 +80,7 @@ Open **Progress** from the bar at the bottom, during a session or not. It follow
 - **At a glance:** total focus time, completed sessions, and focus time over the last seven days.
 
 - **Daily focus:** the last 7, 30 or 90 days as bars, with your daily goal (1–1,440 minutes, default 60) as a dashed line, plus days with focus, daily goals met, completion rate and the average finished session. Time is split across local calendar days, completed sessions count on the day they finish, and recovered sessions add no focus time. The running session counts up to now.
-- **Where your attention went:** focus time per intention over the chosen range, most time first.
+- **Where your attention went:** focus time per intention over the chosen range, most time first. Intentions that differ only in capitals or spaces count as one task, shown with the latest spelling.
 - **Your sessions:** Unarchived, Archived or All, newest first, 20 at a time. **Archive** hides a session but keeps it in every figure; **Restore** brings it back; **Delete** asks first and removes it and its contribution for good. A change that can't be saved is undone.
 - **Export history** saves `Still-sessions.json` wherever you choose, in the same shape as the Windows export.
 
@@ -182,6 +182,7 @@ adb shell settings put secure enabled_accessibility_services io.github.limpy183d
 
 The Android app is a preview. Its changes are listed here, and the larger ones on the website changelog too.
 
+- **One task, any capitals (2026-09-29, v1.1.6).** *Where your attention went* counts "Clean school equipment" and "Clean School Equipment" as the same task.
 - **Atkinson Hyperlegible (2026-09-29, v1.1.5).** The easier-to-read font is now Atkinson Hyperlegible Next, bundled with the app, instead of the phone's own font.
 - **Settings and accessibility (2026-09-29, v1.1.4).** A Settings page (the sliders button at the top right) with the Windows *Made to fit you* options: text size up to 175%, high contrast (light and dark), an easier-to-read font, stronger focus outlines, a gentler pace and reset. Also from Windows: missed alarms ring late as a *Late reminder* instead of being skipped, *Reminders count as focus*, and saving or switching on an alert no longer rings a window that already ended.
 

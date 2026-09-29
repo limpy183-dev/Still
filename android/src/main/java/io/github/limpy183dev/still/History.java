@@ -5,6 +5,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -32,7 +33,7 @@ final class History {
     }
 
     static final class Group {
-        final String label;
+        String label;
         double minutes;
         int sessions;
         long last;
@@ -93,16 +94,20 @@ final class History {
                 finished == 0 ? 0 : (int) (total / finished / 60000) };
     }
 
-    /** Time per intention in [from, now), most time first (then most recent). */
+    /** "Wash dishes" and "Wash Dishes " are the same task, as intentionKey in app/renderer.js. */
+    static String key(String label) { return label.trim().toLowerCase(Locale.ROOT); }
+
+    /** Time per intention in [from, now), most time first (then most recent); each row shows its latest spelling. */
     static List<Group> intentions(List<Record> records, long from, long now) {
         Map<String, Group> groups = new LinkedHashMap<>();
         for (Record r : records) {
             double minutes = focusMs(r, from, now, now) / 60000.0;
             if (minutes <= 0) continue;
-            Group g = groups.computeIfAbsent(label(r), Group::new);
+            String label = label(r);
+            Group g = groups.computeIfAbsent(key(label), k -> new Group(label));
             g.minutes += minutes;
             g.sessions++;
-            g.last = Math.max(g.last, r.startedAt);
+            if (r.startedAt >= g.last) { g.label = label; g.last = r.startedAt; }
         }
         List<Group> out = new ArrayList<>(groups.values());
         out.sort((a, b) -> a.minutes != b.minutes ? Double.compare(b.minutes, a.minutes) : Long.compare(b.last, a.last));
