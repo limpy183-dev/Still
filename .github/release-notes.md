@@ -1,10 +1,7 @@
-## What's new in v1.1.0
+## What's new in v1.1.1
 
-- **Accessibility options.** A new **Made to fit you** section at the bottom of Settings has a text size menu (100% to 175%, scaling the whole app so the layout rearranges to fit), high contrast, an easier-to-read font, stronger focus outlines and reduced motion. They also apply to alarm screens.
-- **Small windows.** The website block screen choices now wrap instead of running off the edge in narrow windows.
-- **Browser extension on the Chrome Web Store.** [Still · Website focus](https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb) works on its own (website list, sessions, daily limits, bedtime, block screen), or as Still's companion. **Settings → Set up browser companion** now opens the store page; loading the extension from this PC is still there, under a dropdown. Until the extension is added in Chrome or Edge, the button gently pulses to show it’s needed.
-- **Alarms after you quit.** A new setting keeps alerts ringing after you quit Still from the tray, and alarms missed while the PC slept ring when it wakes, labelled as late.
-- **Reminders count as focus.** Pressing **Let’s focus** on a reminder-only alarm can add its focus window to Your progress when you switch on **Reminders count as focus** in Settings.
+- **Still and the browser extension, together.** The [Still · Website focus](https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb) extension works on its own, and with Still for Windows it gains app blocking and sessions you can't end early. When you use both, a website stays on hold while either one holds it, the stricter daily limit wins, and neither can end the other's session.
+- **High contrast.** The "Can't use the store? Load it from this PC instead" dropdown in Settings is now full black like the rest of the text.
 
 ## Install or update
 

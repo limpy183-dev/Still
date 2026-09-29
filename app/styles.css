@@ -92,7 +92,7 @@ body.strong-focus .switch input:focus-visible+span{outline:3px solid #000;outlin
 body.strong-focus :is(.intention-field,.search-field):focus-within{outline:3px solid #000;outline-offset:2px}
 /* High contrast: black on white text, black borders and switches; the few dark surfaces flip to white text. */
 body.high-contrast{--bg:#fff;--paper:#fff;--ink:#000;--muted:#000;--line:#000;--soft:#f1f3ea;--green:#1f3008;background:#fff}
-:root:root body.high-contrast :where(div,p,span,small,label,li,h1,h2,h3,h4,strong,em,code,legend,a,button,select,input,textarea,time){color:#000}
+:root:root body.high-contrast :where(div,p,span,small,label,li,h1,h2,h3,h4,strong,em,code,legend,summary,a,button,select,input,textarea,time){color:#000}
 body.high-contrast :is(.primary-button,.toast,.calendar-day.has-session,.todo-select[aria-checked=true],.bedtime-row,.website-screen-preview.dusk,.website-screen-options .dusk,.nav-item.active),body.high-contrast :is(.primary-button,.toast,.calendar-day.has-session,.todo-select[aria-checked=true],.bedtime-row,.website-screen-preview.dusk,.website-screen-options .dusk,.nav-item.active) :where(*){color:#fff}
 body.high-contrast :is(.primary-button,.toast,.nav-item.active){background:#000;border-color:#000}
 body.high-contrast :is(.titlebar,.sidebar){background:#fff;color:#000}

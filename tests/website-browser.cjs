@@ -84,10 +84,25 @@ async function run() {
     await blocked.waitForURL(`chrome-extension://${extensionId}/blocked.html?by=me`);
     await blocked.waitForFunction(() => document.querySelector('h1').textContent === 'Mine first');
     await blocked.screenshot({ path: 'test-results/website-own-block-page.png' }); await settings2.screenshot({ path: 'test-results/website-settings.png', fullPage: true });
+    // With the app too: both sessions hold at once, and neither side's release frees what the other holds.
+    const ruleCount = () => updated.evaluate(() => chrome.declarativeNetRequest.getDynamicRules().then(rules => rules.length));
+    const until = async (check, message) => { for (let wait = 0; !(await check()); wait += 100) { if (wait > 5000) throw Error(message); await new Promise(resolve => setTimeout(resolve, 100)); } };
+    await updated.evaluate(() => apply({ sessionId: 'app', websites: ['x.com'], screen: { mode: 'garden' }, endsAt: Date.now() + 600000 }));
+    assert.equal(await ruleCount(), 4);
+    await settings2.getByText('Still for Windows is holding 1 website').waitFor();
+    const other = await context.newPage(); await other.goto('https://x.com/home').catch(() => {}); await other.waitForURL(`chrome-extension://${extensionId}/blocked.html`);
+    await updated.evaluate(() => apply({ sessionId: null, websites: [], screen: null, endsAt: 0 }));
+    assert.equal(await ruleCount(), 2, 'Releasing the app session keeps the extension session');
+    await blocked.goto('https://youtube.com').catch(() => {}); await blocked.waitForURL(`chrome-extension://${extensionId}/blocked.html?by=me`);
+    await updated.evaluate(() => apply({ sessionId: 'app', websites: ['x.com'], screen: { mode: 'garden' }, endsAt: Date.now() + 600000 }));
     await settings2.click('#stop'); await settings2.locator('#start').waitFor();
-    for (let wait = 0; (await updated.evaluate(() => chrome.declarativeNetRequest.getDynamicRules())).length; wait += 100) { if (wait > 5000) throw Error('Ending the session did not release its rules.'); await new Promise(resolve => setTimeout(resolve, 100)); }
+    await until(async () => await ruleCount() === 2, 'Ending the extension session did not release only its own rules.');
+    await other.goto('https://x.com/home').catch(() => {}); await other.waitForURL(`chrome-extension://${extensionId}/blocked.html`);
+    await updated.evaluate(() => apply({ sessionId: null, websites: [], screen: null, endsAt: 0 }));
+    await until(async () => await ruleCount() === 0, 'Ending both sessions did not release their rules.');
     await blocked.goto('https://youtube.com'); assert.equal(await blocked.locator('h1').innerText(), 'Allowed page');
-    console.log('Real Chromium extension passed: existing tabs, subdomains, custom text, redirect, unrelated domains, self-reload after updates, release, and standalone sessions from the settings page.');
+    await other.goto('https://x.com/home'); assert.equal(await other.locator('h1').innerText(), 'Allowed page');
+    console.log('Real Chromium extension passed: existing tabs, subdomains, custom text, redirect, unrelated domains, self-reload after updates, release, standalone sessions from the settings page, and both sessions together.');
   } finally {
     await context.close();
     // Unique temporary directory created above, never a user browser profile.
