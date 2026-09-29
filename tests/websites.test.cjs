@@ -126,7 +126,7 @@ test('companion counts time while a limited site is open in any tab, even unfocu
 });
 test('extension works on its own and alongside Still for Windows: sessions and limits combine, neither side releases the other, and redirect loops fall back to the block page', async () => {
   const listeners = {}, events = name => ({ addListener: listener => { listeners[name] = listener; } });
-  const updates = [], badges = []; let dynamic = [], clock = new Date('2026-09-24T12:00:00').getTime();
+  const updates = [], badges = [], titles = []; let dynamic = [], clock = new Date('2026-09-24T12:00:00').getTime();
   const storage = { own: { websites: ['reddit.com', 'example.com'], screen: { mode: 'redirect', redirect: 'https://news.org/' }, session: { endsAt: clock + 600000 }, limits: { sites: [{ domain: 'youtube.com', minutes: 1 }] } } };
   const port = { onMessage: events('message'), onDisconnect: events('disconnect'), postMessage() {} };
   const chrome = {
@@ -134,7 +134,7 @@ test('extension works on its own and alongside Still for Windows: sessions and l
     runtime: { connectNative: () => port, getURL: path => 'chrome-extension://still/' + path, onStartup: events('startup'), onInstalled: events('installed') },
     storage: { local: { get: async () => ({ ...storage }), set: async value => Object.assign(storage, JSON.parse(JSON.stringify(value))) }, onChanged: events('storage') },
     declarativeNetRequest: { getDynamicRules: async () => dynamic, updateDynamicRules: async value => { dynamic = JSON.parse(JSON.stringify(value.addRules)); } },
-    action: { setBadgeText: async value => badges.push(value.text), setTitle: async () => {}, onClicked: events('click') },
+    action: { setBadgeText: async value => badges.push(value.text), setTitle: async value => titles.push(value.title), onClicked: events('click') },
     alarms: { create: () => {}, get: async () => null, onAlarm: events('alarm') },
     tabs: { query: async () => [{ id: 1, url: 'https://old.reddit.com/' }, { id: 2, url: 'https://youtube.com/' }], update: async (id, value) => updates.push({ id, ...value }) },
     webNavigation: { onCommitted: events('committed'), onHistoryStateUpdated: events('history'), onErrorOccurred: events('error') }
@@ -146,6 +146,7 @@ test('extension works on its own and alongside Still for Windows: sessions and l
   chrome.runtime.lastError = { message: 'Specified native messaging host not found.' }; listeners.disconnect(); delete chrome.runtime.lastError;
   await new Promise(setImmediate);
   assert.equal(vm.runInContext('app', context), 'none'); assert.equal(badges.at(-1), 'ON', 'Without the app there is no warning badge, even without private-window access');
+  assert.match(titles.at(-1), /Allow in Incognito/, 'The tooltip still says how to cover private windows');
   assert.deepEqual(dynamic.map(rule => rule.condition.requestDomains[0]), ['reddit.com', 'reddit.com', 'example.com', 'example.com']);
   assert.equal(dynamic[0].action.redirect.url, 'https://news.org/'); assert.equal(updates[0].id, 1);
   // The app holds news.org (our redirect target) and reddit.com; its session wins where both hold, and our redirect falls back to the block page.
@@ -167,6 +168,11 @@ test('extension works on its own and alongside Still for Windows: sessions and l
   assert.deepEqual(dynamic.filter(rule => rule.priority === 2).map(rule => rule.condition.requestDomains[0]), ['reddit.com', 'example.com']);
   clock += 600000; listeners.alarm({ name: 'own-session' }); await vm.runInContext('queue', context);
   assert.equal(dynamic.filter(rule => rule.priority === 2).length, 0, 'Our session ends on time');
+  // A snapshot that can't be applied says so, rather than "reconnect", and the next good one clears it.
+  listeners.message({ sessionId: 'focus', websites: ['not a domain'], screen: null, endsAt: 0 }); await vm.runInContext('queue', context);
+  assert.equal(vm.runInContext('app', context), 'failed'); assert.match(titles.at(-1), /couldn’t apply/);
+  listeners.message({ sessionId: null, websites: [], screen: null, endsAt: 0 }); await vm.runInContext('queue', context);
+  assert.equal(vm.runInContext('app', context), 'connected'); assert.match(titles.at(-1), /Allow in Incognito/);
 });
 test('extension settings normalize safely', () => {
   const own = Websites.own({ websites: ['https://www.YouTube.com/x', 'youtube.com', 'localhost', 42], screen: { mode: 'redirect', redirect: 'https://m.youtube.com/' }, session: { endsAt: 'soon' }, limits: { sites: [{ domain: 'x.com', minutes: 5 }] } });

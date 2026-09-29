@@ -59,10 +59,13 @@ function setupWebsites({ handle, getWindow }) {
     await fs.mkdir(path.join(directory, 'icons'), { recursive: true });
     // Copy files individually: Electron's Windows ASAR support cannot recursively cp a directory.
     const source = path.join(__dirname, 'browser-extension');
-    await Promise.all(['background.js', 'blocked.html', 'blocked.css', 'blocked.js', 'still.html', 'still.css', 'still.js', 'Manrope.woff2', 'Manrope-LICENSE.txt', ...['icon-16.png', 'icon-32.png', 'icon-48.png', 'icon-128.png'].map(icon => path.join('icons', icon))].map(file => fs.copyFile(path.join(source, file), path.join(directory, file))));
-    await fs.copyFile(path.join(__dirname, 'websites.js'), path.join(directory, 'websites.js'));
-    // The manifest goes last: the companion reloads itself once its version_name on disk changes.
-    const manifest = { ...JSON.parse(await fs.readFile(path.join(source, 'manifest.json'), 'utf8')), version_name: app.getVersion() };
+    const files = [...['background.js', 'blocked.html', 'blocked.css', 'blocked.js', 'still.html', 'still.css', 'still.js', 'Manrope.woff2', 'Manrope-LICENSE.txt', ...['icon-16.png', 'icon-32.png', 'icon-48.png', 'icon-128.png'].map(icon => path.join('icons', icon))].map(file => [path.join(source, file), file]), [path.join(__dirname, 'websites.js'), 'websites.js']];
+    const contents = await Promise.all(files.map(([from]) => fs.readFile(from)));
+    await Promise.all(files.map(([, file], index) => fs.writeFile(path.join(directory, file), contents[index])));
+    // The manifest goes last: the companion reloads itself once its version_name on disk changes. The fingerprint changes it
+    // whenever the files do, even when an installer is rebuilt without a new version.
+    const fingerprint = contents.reduce((hash, content) => hash.update(content), require('node:crypto').createHash('sha256')).digest('hex').slice(0, 8);
+    const manifest = { ...JSON.parse(await fs.readFile(path.join(source, 'manifest.json'), 'utf8')), version_name: `${app.getVersion()} (${fingerprint})` };
     await fs.writeFile(path.join(directory, 'manifest.json.tmp'), JSON.stringify(manifest, null, 2));
     await fs.rename(path.join(directory, 'manifest.json.tmp'), path.join(directory, 'manifest.json'));
     // Rewritten on every refresh so an update's new store IDs reach users who set up earlier.

@@ -58,9 +58,10 @@ async function tickLimits() {
 const tick = () => { queue = queue.catch(() => {}).then(tickLimits).catch(console.error); return queue; };
 async function badge() {
   const privateReady = await chrome.extension.isAllowedIncognitoAccess(), on = blocked().length > 0;
-  // Without the app, private-window access is optional, so only the settings page mentions it.
   const [text, title] = app === 'lost' ? ['!', 'Still · reconnect Windows protection; existing blocks stay in place']
-    : app === 'connected' && !privateReady ? ['!', 'Still · enable incognito / InPrivate access in extension details']
+    : app === 'failed' ? ['!', 'Still · couldn’t apply Windows protection’s websites; existing blocks stay in place']
+    // Private-window access is required for the app's sessions ('!'); on its own it's optional, so only the tooltip mentions it.
+    : !privateReady ? [app === 'connected' ? '!' : on ? 'ON' : '', 'Still · to block websites in private windows, turn on “Allow in Incognito” (Edge: “Allow in InPrivate”) in this extension’s Details']
     : on ? ['ON', 'Still · websites blocked'] : ['', app === 'connected' ? 'Still · connected, ready to focus' : 'Still · Website focus'];
   await chrome.action.setBadgeText({ text }); await chrome.action.setTitle({ title });
   return privateReady;
@@ -95,13 +96,15 @@ function connect() {
   clearTimeout(retryTimer);
   try {
     port = chrome.runtime.connectNative('app.still.focus');
-    port.onMessage.addListener(snapshot => { queue = queue.catch(() => {}).then(() => apply(snapshot)).catch(error => { console.error(error); chrome.action.setBadgeText({ text: '!' }); }); });
+    // A message means the connection works, even if this snapshot can't be applied; say which it is instead of "reconnect".
+    port.onMessage.addListener(snapshot => { queue = queue.catch(() => {}).then(() => apply(snapshot)).catch(error => { console.error(error); app = 'failed'; return badge(); }).catch(console.error); });
     port.onDisconnect.addListener(() => {
       // No registered host means Still for Windows isn't set up here: work on our own and check again every 30 s.
-      const missing = /not found/i.test(chrome.runtime.lastError?.message || ''); port = null;
+      const missing = /not found/i.test(chrome.runtime.lastError?.message || ''), wasLost = app === 'lost'; port = null;
       if (app !== (app = missing ? 'none' : 'lost')) chrome.storage.local.set({ app });
       badge().catch(() => {});
-      if (!missing) retryTimer = setTimeout(connect, 5000);
+      // Retry quickly once (an app update or restart), then only on the 30 s alarm, so a host that can't start isn't relaunched every 5 s.
+      if (!missing && !wasLost) retryTimer = setTimeout(connect, 5000);
       chrome.alarms.create('reconnect', { delayInMinutes: 0.5 });
     });
   } catch { retryTimer = setTimeout(connect, 5000); }

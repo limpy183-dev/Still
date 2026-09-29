@@ -52,7 +52,7 @@ const assert = require('node:assert/strict');
     assert.ok(result.host.allowed_origins.includes('chrome-extension://gkkjcgapilgkjafncmbkgcijnoijgejb/'), 'store companion may connect');
     assert.ok(result.refreshed, 'companion files are refreshed on start');
     assert.deepEqual(result.extension, { none: false, disabled: false, store: true }, 'extension check finds only an enabled companion');
-    assert.equal(result.stamp, result.version); assert.equal(result.name, 'Still · Website focus');
+    assert.ok(result.stamp.startsWith(result.version + ' (') && /\([0-9a-f]{8}\)$/.test(result.stamp), 'version and file fingerprint: ' + result.stamp); assert.equal(result.name, 'Still · Website focus');
     console.log(`Browser setup passed (${result.packaged ? 'packaged ASAR' : 'source'}): extracted companion, stable identity, both native-host registrations, refresh after updates and the installed-extension check. Registry calls were stubbed; live browser settings unchanged.`);
   } finally { await application.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
