@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Still · Website focus</title><link rel="stylesheet" href="still.css"></head>
+<body>
+<main>
+  <header><span class="brand">still.</span><p id="app" role="status"></p></header>
+  <aside id="pitch" class="card soft" hidden><b>Want more control?</b> Still for Windows also blocks apps and runs sessions you can’t end early, even by turning this extension off. It’s free, and works together with this extension. <a href="https://stillfocus.fyi/download" target="_blank" rel="noopener">Get Still for Windows</a></aside>
+  <p id="private" class="hint" hidden>To block websites in private windows too, open this extension’s Details page and turn on “Allow in Incognito” (in Edge: “Allow in InPrivate”).</p>
+  <p id="error" class="error" role="alert"></p>
+
+  <section class="card" aria-labelledby="focus-title">
+    <h2 id="focus-title">Focus session</h2>
+    <p id="app-session" class="hint" hidden></p>
+    <form id="add-site" class="row"><label class="grow">Add a website<input id="site" placeholder="youtube.com" autocomplete="off" required></label><button>Add</button></form>
+    <ul id="sites" class="list" aria-label="Websites for your sessions"></ul>
+    <div id="idle" class="row"><label>Focus for<select id="minutes"><option value="15">15 minutes</option><option value="25" selected>25 minutes</option><option value="45">45 minutes</option><option value="60">1 hour</option><option value="90">1½ hours</option><option value="120">2 hours</option><option value="240">4 hours</option></select></label><button id="start" class="primary">Start session</button></div>
+    <div id="running" class="row" hidden><p id="until" class="grow"></p><button id="stop">End session</button></div>
+  </section>
+
+  <section class="card" aria-labelledby="limits-title">
+    <h2 id="limits-title">Daily limits and bedtime</h2>
+    <p class="hint">Time counts while a site is open in any tab. When it runs out, the site rests until midnight.</p>
+    <form id="add-limit" class="row"><label class="grow">Website<input id="limit-site" placeholder="instagram.com" autocomplete="off" required></label><label>Minutes a day<input id="limit-minutes" type="number" min="0" max="1440" value="30" required></label><label class="check"><input id="limit-bedtime" type="checkbox"> Rests at bedtime</label><button>Add limit</button></form>
+    <ul id="limits" class="list" aria-label="Your limits"></ul>
+    <fieldset class="row"><legend>Bedtime</legend><label class="check"><input id="bed-on" type="checkbox"> On</label><label>From<input id="bed-from" type="time" required></label><label>Until<input id="bed-to" type="time" required></label></fieldset>
+  </section>
+
+  <section class="card" aria-labelledby="screen-title">
+    <h2 id="screen-title">Block screen</h2>
+    <form id="screen">
+      <fieldset class="row"><legend>What you see on a held website</legend>
+        <label class="check"><input type="radio" name="mode" value="garden"> Garden</label>
+        <label class="check"><input type="radio" name="mode" value="dusk"> Dusk</label>
+        <label class="check"><input type="radio" name="mode" value="paper"> Paper</label>
+        <label class="check"><input type="radio" name="mode" value="custom"> My own message</label>
+        <label class="check"><input type="radio" name="mode" value="redirect"> Go to another page</label>
+      </fieldset>
+      <div id="custom" class="stack" hidden>
+        <label>Headline<input id="title" maxlength="120"></label>
+        <label>Message<textarea id="text" maxlength="1000" rows="3"></textarea></label>
+        <div class="row"><label>Image<input id="image" type="file" accept="image/png,image/jpeg,image/webp"></label><button id="no-image" type="button" hidden>Remove image</button></div>
+        <img id="preview" alt="Your block-screen image" hidden>
+      </div>
+      <label id="redirect-row" hidden>Page to open instead<input id="redirect" type="url" placeholder="https://"></label>
+      <div class="row"><button class="primary">Save block screen</button><p id="saved" role="status"></p></div>
+    </form>
+  </section>
+  <footer class="hint">Your settings stay in this browser and are never uploaded. <a href="https://stillfocus.fyi/privacy#browser" target="_blank" rel="noopener">Privacy</a></footer>
+</main>
+<script src="websites.js"></script><script src="still.js"></script>
+</body></html>

@@ -124,3 +124,53 @@ test('companion counts time while a limited site is open in any tab, even unfocu
   clock = new Date('2026-09-25T12:00:00').getTime(); listeners.alarm({ name: 'limits' }); await vm.runInContext('queue', context);
   assert.equal(dynamic.length, 0, 'Limits reset at midnight');
 });
+test('extension works on its own and alongside Still for Windows: sessions and limits combine, neither side releases the other, and redirect loops fall back to the block page', async () => {
+  const listeners = {}, events = name => ({ addListener: listener => { listeners[name] = listener; } });
+  const updates = [], badges = []; let dynamic = [], clock = new Date('2026-09-24T12:00:00').getTime();
+  const storage = { own: { websites: ['reddit.com', 'example.com'], screen: { mode: 'redirect', redirect: 'https://news.org/' }, session: { endsAt: clock + 600000 }, limits: { sites: [{ domain: 'youtube.com', minutes: 1 }] } } };
+  const port = { onMessage: events('message'), onDisconnect: events('disconnect'), postMessage() {} };
+  const chrome = {
+    extension: { isAllowedIncognitoAccess: async () => false },
+    runtime: { connectNative: () => port, getURL: path => 'chrome-extension://still/' + path, onStartup: events('startup'), onInstalled: events('installed') },
+    storage: { local: { get: async () => ({ ...storage }), set: async value => Object.assign(storage, JSON.parse(JSON.stringify(value))) }, onChanged: events('storage') },
+    declarativeNetRequest: { getDynamicRules: async () => dynamic, updateDynamicRules: async value => { dynamic = JSON.parse(JSON.stringify(value.addRules)); } },
+    action: { setBadgeText: async value => badges.push(value.text), setTitle: async () => {}, onClicked: events('click') },
+    alarms: { create: () => {}, get: async () => null, onAlarm: events('alarm') },
+    tabs: { query: async () => [{ id: 1, url: 'https://old.reddit.com/' }, { id: 2, url: 'https://youtube.com/' }], update: async (id, value) => updates.push({ id, ...value }) },
+    webNavigation: { onCommitted: events('committed'), onHistoryStateUpdated: events('history'), onErrorOccurred: events('error') }
+  };
+  const FakeDate = class extends Date { constructor(...args) { super(...(args.length ? args : [clock])); } static now() { return clock; } };
+  const context = vm.createContext({ chrome, Websites, importScripts() {}, URL, URLSearchParams, JSON, console, Date: FakeDate, setTimeout: () => 1, clearTimeout() {} });
+  vm.runInContext(fs.readFileSync(require.resolve('../app/browser-extension/background.js'), 'utf8'), context);
+  await new Promise(setImmediate); await vm.runInContext('queue', context);
+  chrome.runtime.lastError = { message: 'Specified native messaging host not found.' }; listeners.disconnect(); delete chrome.runtime.lastError;
+  await new Promise(setImmediate);
+  assert.equal(vm.runInContext('app', context), 'none'); assert.equal(badges.at(-1), 'ON', 'Without the app there is no warning badge, even without private-window access');
+  assert.deepEqual(dynamic.map(rule => rule.condition.requestDomains[0]), ['reddit.com', 'reddit.com', 'example.com', 'example.com']);
+  assert.equal(dynamic[0].action.redirect.url, 'https://news.org/'); assert.equal(updates[0].id, 1);
+  // The app holds news.org (our redirect target) and reddit.com; its session wins where both hold, and our redirect falls back to the block page.
+  listeners.message({ sessionId: 'focus', websites: ['news.org', 'reddit.com'], screen: { mode: 'garden' }, endsAt: clock + 1e6, limits: { sites: [{ domain: 'youtube.com', minutes: 30 }] } });
+  await vm.runInContext('queue', context);
+  assert.deepEqual(dynamic.filter(rule => rule.priority === 2).map(rule => [rule.condition.requestDomains[0], rule.action.redirect.extensionPath]), [['news.org', '/blocked.html'], ['reddit.com', '/blocked.html'], ['example.com', '/blocked.html?by=me']]);
+  assert.equal(badges.at(-1), '!', 'Connected to the app, private-window access is required again');
+  // Ending our own session never releases the app's sites.
+  storage.own = { ...storage.own, session: null }; listeners.storage({ own: { newValue: storage.own } }, 'local');
+  await vm.runInContext('queue', context);
+  assert.deepEqual(dynamic.filter(rule => rule.priority === 2).map(rule => rule.condition.requestDomains[0]), ['news.org', 'reddit.com']);
+  // Our 1-minute limit is stricter than the app's 30 minutes, so it holds youtube.com.
+  for (let i = 0; i < 2; i++) { clock += 30000; listeners.alarm({ name: 'limits' }); await vm.runInContext('queue', context); }
+  assert.match(dynamic.at(-1).action.redirect.extensionPath, /why=limit&site=youtube\.com/);
+  // The app's session ending never releases our own session either.
+  storage.own = { ...storage.own, session: { endsAt: clock + 600000 } }; listeners.storage({ own: { newValue: storage.own } }, 'local');
+  listeners.message({ sessionId: null, websites: [], screen: null, endsAt: 0, limits: { sites: [] } });
+  await vm.runInContext('queue', context);
+  assert.deepEqual(dynamic.filter(rule => rule.priority === 2).map(rule => rule.condition.requestDomains[0]), ['reddit.com', 'example.com']);
+  clock += 600000; listeners.alarm({ name: 'own-session' }); await vm.runInContext('queue', context);
+  assert.equal(dynamic.filter(rule => rule.priority === 2).length, 0, 'Our session ends on time');
+});
+test('extension settings normalize safely', () => {
+  const own = Websites.own({ websites: ['https://www.YouTube.com/x', 'youtube.com', 'localhost', 42], screen: { mode: 'redirect', redirect: 'https://m.youtube.com/' }, session: { endsAt: 'soon' }, limits: { sites: [{ domain: 'x.com', minutes: 5 }] } });
+  assert.deepEqual(own.websites, ['youtube.com']); assert.equal(own.screen.mode, 'garden', 'A redirect into a held site falls back');
+  assert.equal(own.session, null); assert.equal(own.limits.sites[0].minutes, 5);
+  assert.deepEqual(Websites.own(null), { websites: [], screen: Websites.screen({}), limits: Websites.limits(), session: null });
+});

@@ -28,7 +28,7 @@ const assert = require('node:assert/strict');
       const manifest = JSON.parse(await fs.readFile(path.join(directory, 'manifest.json'), 'utf8'));
       return { packaged: app.isPackaged, files: await fs.readdir(directory), icons: await fs.readdir(path.join(directory, 'icons')), registrations, host, refreshed, stamp: manifest.version_name, name: manifest.name, version: app.getVersion(), store };
     });
-    for (const file of ['background.js', 'blocked.html', 'blocked.css', 'blocked.js', 'manifest.json', 'websites.js', 'native-host.json']) assert.ok(result.files.includes(file), file);
+    for (const file of ['background.js', 'blocked.html', 'blocked.css', 'blocked.js', 'still.html', 'still.css', 'still.js', 'manifest.json', 'websites.js', 'native-host.json']) assert.ok(result.files.includes(file), file);
     for (const file of ['icon-16.png', 'icon-32.png', 'icon-48.png', 'icon-128.png']) assert.ok(result.icons.includes(file), `icons/${file}`);
     assert.equal(result.registrations.length, 2);
     assert.match(result.host.allowed_origins[0], /^chrome-extension:\/\/[a-p]{32}\/$/);

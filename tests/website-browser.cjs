@@ -72,7 +72,22 @@ async function run() {
     assert.equal((await updated.evaluate(() => chrome.declarativeNetRequest.getDynamicRules())).length, 2, 'Blocking rules survive the reload');
     await updated.evaluate(() => apply({ sessionId: null, websites: [], screen: null, endsAt: 0 }));
     await blocked.goto('https://youtube.com'); assert.equal(await blocked.locator('h1').innerText(), 'Allowed page');
-    console.log('Real Chromium extension passed: existing tabs, subdomains, custom text, redirect, unrelated domains, self-reload after updates and release.');
+    // Without the app: the settings page starts a session of the extension's own, with its own block screen, and ends it.
+    const settings2 = await context.newPage(); await settings2.goto(`chrome-extension://${extensionId}/still.html`);
+    await settings2.fill('#site', 'https://www.youtube.com/watch'); await settings2.click('#add-site button');
+    await settings2.getByRole('listitem').filter({ hasText: 'youtube.com' }).waitFor();
+    await settings2.check('input[value=custom]'); await settings2.fill('#title', 'Mine first'); await settings2.click('#screen .primary');
+    await settings2.getByText('Saved.').waitFor();
+    await settings2.fill('#limit-site', 'reddit.com'); await settings2.click('#add-limit button');
+    await settings2.getByText('reddit.com · 30 min a day').waitFor();
+    await settings2.click('#start'); await settings2.getByText(/on hold until/).waitFor();
+    await blocked.waitForURL(`chrome-extension://${extensionId}/blocked.html?by=me`);
+    await blocked.waitForFunction(() => document.querySelector('h1').textContent === 'Mine first');
+    await blocked.screenshot({ path: 'test-results/website-own-block-page.png' }); await settings2.screenshot({ path: 'test-results/website-settings.png', fullPage: true });
+    await settings2.click('#stop'); await settings2.locator('#start').waitFor();
+    for (let wait = 0; (await updated.evaluate(() => chrome.declarativeNetRequest.getDynamicRules())).length; wait += 100) { if (wait > 5000) throw Error('Ending the session did not release its rules.'); await new Promise(resolve => setTimeout(resolve, 100)); }
+    await blocked.goto('https://youtube.com'); assert.equal(await blocked.locator('h1').innerText(), 'Allowed page');
+    console.log('Real Chromium extension passed: existing tabs, subdomains, custom text, redirect, unrelated domains, self-reload after updates, release, and standalone sessions from the settings page.');
   } finally {
     await context.close();
     // Unique temporary directory created above, never a user browser profile.

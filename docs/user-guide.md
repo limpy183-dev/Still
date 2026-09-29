@@ -33,7 +33,7 @@ The packaged app creates a **Still Focus** Start Menu shortcut so Windows can id
 
 ## Website blocking
 
-Chrome and Edge website selections, logos, custom block screens, redirects, and scheduled website blocks are supported. Set up the browser companion once in Settings. See [website setup, enforcement, and limits](website-blocking.md).
+Chrome and Edge website selections, logos, custom block screens, redirects, and scheduled website blocks are supported. Set up the browser companion once in Settings. The companion also works on its own, from its toolbar icon, in any Chrome or Edge browser. See [website setup, enforcement, and limits](website-blocking.md).
 
 ## To-do list
 

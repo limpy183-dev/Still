@@ -6,6 +6,14 @@ Website selections work everywhere application selections do: Focus space, the l
 
 In **Settings → Website block screens**, choose Quiet garden, Evening calm, or A clean page; create a screen with your own headline, text, and JPG/PNG/WebP; or redirect blocked navigation to an HTTPS page. Images are resized once and kept below 180 KB encoded. Redirect destinations cannot be within a selected blocked domain. The chosen screen is copied into each session and cannot be changed during that session.
 
+## Using the extension on its own
+
+Still · Website focus from the Chrome Web Store or Edge Add-ons also works without the Windows app, including on Mac, Linux and ChromeOS. Click its toolbar icon to open its settings: add websites and start a focus session, add daily limits and bedtime, and choose a block screen (Garden, Dusk, Paper, your own message and image, or another page). These settings stay in that browser profile.
+
+Without the app, a session can be ended at any time from the settings page, and the extension can be turned off from the extensions page. For sessions that can't be ended early, app blocking and the browser-policy fallback, set up Still for Windows as below.
+
+**With both installed, they work together.** Each side keeps its own settings and only adds blocks: a site is held while either side's session holds it, and when both limit a site the stricter limit applies. Ending a session in the extension never releases the app's session, and the app's session ending never releases the extension's. The settings page shows what Still for Windows holds and which limits were set there. If a redirect page chosen on one side is held by the other, the block page is shown instead.
+
 ## Browser setup
 
 1. Finish any active session. Choose **Settings → Set up browser companion**. This updates Still Guard, registers the browser's native messaging host, and opens a stable copy of the companion folder.

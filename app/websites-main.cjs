@@ -56,7 +56,7 @@ function setupWebsites({ handle, getWindow }) {
     await fs.mkdir(path.join(directory, 'icons'), { recursive: true });
     // Copy files individually: Electron's Windows ASAR support cannot recursively cp a directory.
     const source = path.join(__dirname, 'browser-extension');
-    await Promise.all(['background.js', 'blocked.html', 'blocked.css', 'blocked.js', ...['icon-16.png', 'icon-32.png', 'icon-48.png', 'icon-128.png'].map(icon => path.join('icons', icon))].map(file => fs.copyFile(path.join(source, file), path.join(directory, file))));
+    await Promise.all(['background.js', 'blocked.html', 'blocked.css', 'blocked.js', 'still.html', 'still.css', 'still.js', ...['icon-16.png', 'icon-32.png', 'icon-48.png', 'icon-128.png'].map(icon => path.join('icons', icon))].map(file => fs.copyFile(path.join(source, file), path.join(directory, file))));
     await fs.copyFile(path.join(__dirname, 'websites.js'), path.join(directory, 'websites.js'));
     // The manifest goes last: the companion reloads itself once its version_name on disk changes.
     const manifest = { ...JSON.parse(await fs.readFile(path.join(source, 'manifest.json'), 'utf8')), version_name: app.getVersion() };

@@ -61,6 +61,14 @@
     }
     return result;
   }
-  const api = { presets, domain, target, isWebsite, allowedWebsite, matches, screen, recommended, limits, inBedtime, limitBlocks };
+  // Settings made in the extension itself, without the Windows app: its own website list, block screen, limits and a soft session.
+  function own(value) {
+    value = value && typeof value === 'object' ? value : {};
+    const websites = [...new Set((Array.isArray(value.websites) ? value.websites : []).flatMap(host => { try { return [domain(String(host))]; } catch { return []; } }))].slice(0, 100);
+    let result; try { result = screen(value.screen || {}, websites.map(target)); } catch { result = screen({}); }
+    const endsAt = Number(value.session?.endsAt);
+    return { websites, screen: result, limits: limits(value.limits), session: Number.isFinite(endsAt) && endsAt > 0 ? { endsAt } : null };
+  }
+  const api = { presets, domain, target, isWebsite, allowedWebsite, matches, screen, recommended, limits, inBedtime, limitBlocks, own };
   if (typeof module !== 'undefined') module.exports = api; else root.Websites = api;
 })(globalThis);
