@@ -14,16 +14,18 @@ const act = handler => async event => {
 };
 function list(element, items) {
   element.replaceChildren(...items.map(({ text, tag, remove, label }) => {
-    const item = document.createElement('li'), name = document.createElement('span'); name.textContent = text; item.append(name);
+    const item = document.createElement('li'), icon = document.createElement('span'), name = document.createElement('span');
+    icon.className = 'icon'; icon.setAttribute('aria-hidden', 'true'); icon.textContent = label[0]; name.textContent = text; item.append(icon, name);
     if (tag) { const note = document.createElement('small'); note.textContent = tag; item.append(note); }
-    if (remove) { const button = document.createElement('button'); button.textContent = 'Remove'; button.setAttribute('aria-label', 'Remove ' + label); button.onclick = act(remove); item.append(button); }
+    if (remove) { const button = document.createElement('button'); button.className = 'remove'; button.type = 'button'; button.textContent = '×'; button.setAttribute('aria-label', 'Remove ' + label); button.onclick = act(remove); item.append(button); }
     return item;
   }));
 }
 const describe = site => `${site.domain} · ${site.minutes ? site.minutes + ' min a day' : 'no daily limit'}${site.bedtime ? ' · rests at bedtime' : ''}`;
 async function render() {
   const { own, snapshot, limits, app } = await read(), active = own.session?.endsAt > Date.now();
-  $('app').textContent = app === 'connected' ? 'Connected to Still for Windows.' : app === 'lost' ? 'Still for Windows isn’t responding. Its blocks stay in place until it’s back.' : 'Working on its own in this browser.';
+  $('app').textContent = app === 'connected' ? 'Connected to Still for Windows' : app === 'lost' ? 'Still for Windows isn’t responding. Its blocks stay in place until it’s back.' : 'Working on its own in this browser';
+  $('app').classList.toggle('ready', app === 'connected');
   $('pitch').hidden = app === 'connected' || app === 'lost';
   $('private').hidden = await chrome.extension.isAllowedIncognitoAccess();
   const appSites = snapshot?.websites?.length || 0;
@@ -35,7 +37,7 @@ async function render() {
   clearTimeout(timer); if (active) timer = setTimeout(render, own.session.endsAt - Date.now() + 500);
   list($('limits'), [
     ...own.limits.sites.map(site => ({ text: describe(site), label: site.domain, remove: () => save(value => { value.limits.sites = value.limits.sites.filter(item => item.domain !== site.domain); }) })),
-    ...Websites.limits(limits).sites.map(site => ({ text: describe(site), tag: 'Set in Still for Windows' }))
+    ...Websites.limits(limits).sites.map(site => ({ text: describe(site), label: site.domain, tag: 'Set in Still for Windows' }))
   ]);
   const bedtime = own.limits.bedtime;
   if (document.activeElement !== $('bed-from')) $('bed-from').value = bedtime.from;
@@ -47,10 +49,15 @@ function showScreen(screen) {
   $('title').value = screen.title; $('text').value = screen.text; $('redirect').value = screen.redirect; image = screen.image;
   showMode();
 }
+// Shows the choice the way the block page will, like the preview in Still's Settings.
 function showMode() {
-  const mode = new FormData($('screen')).get('mode');
-  $('custom').hidden = mode !== 'custom'; $('redirect-row').hidden = mode !== 'redirect';
-  $('preview').hidden = $('no-image').hidden = !image; if (image) $('preview').src = image;
+  const mode = new FormData($('screen')).get('mode'), preset = Websites.presets[mode] || Websites.presets.garden, custom = mode === 'custom';
+  $('custom').hidden = !custom; $('redirect-row').hidden = mode !== 'redirect';
+  $('no-image').hidden = !image; $('image-name').textContent = image ? 'Your image is ready.' : 'JPG, PNG or WebP · resized and kept in this browser';
+  $('shot').className = 'shot ' + (Websites.presets[mode] ? mode : 'garden');
+  $('preview').hidden = !custom || !image; if (custom && image) $('preview').src = image;
+  $('shot-title').textContent = mode === 'redirect' ? 'Off somewhere better.' : custom && $('title').value.trim() || preset.title;
+  $('shot-text').textContent = mode === 'redirect' ? 'Visits go to ' + ($('redirect').value.trim() || 'the page you choose') + '.' : custom && $('text').value.trim() || preset.text;
 }
 // Same size budget as the app's image picker: a JPEG data URL of at most 180 KB.
 async function shrink(file) {
@@ -70,7 +77,7 @@ $('add-site').onsubmit = act(async () => {
   await save(value => { if (!value.websites.includes(domain) && value.websites.length >= 100) throw Error('You can hold up to 100 websites.'); value.websites = [...new Set([...value.websites, domain])]; });
   $('site').value = '';
 });
-$('start').onclick = act(() => save(value => { if (!value.websites.length) throw Error('Add a website first.'); value.session = { endsAt: Date.now() + Number($('minutes').value) * 60000 }; }));
+$('start').onclick = act(() => save(value => { if (!value.websites.length) throw Error('Add a website first.'); value.session = { endsAt: Date.now() + Number(document.querySelector('input[name="minutes"]:checked').value) * 60000 }; }));
 $('stop').onclick = act(() => save(value => { value.session = null; }));
 $('add-limit').onsubmit = act(async () => {
   const domain = Websites.domain($('limit-site').value.trim()), minutes = Math.max(0, Math.min(1440, Math.round(Number($('limit-minutes').value) || 0))), bedtime = $('limit-bedtime').checked;
@@ -84,7 +91,8 @@ $('add-limit').onsubmit = act(async () => {
 });
 const saveBedtime = act(() => { if ($('bed-from').value && $('bed-to').value) return save(value => { value.limits.bedtime = { on: $('bed-on').checked, from: $('bed-from').value, to: $('bed-to').value }; }); });
 for (const id of ['bed-on', 'bed-from', 'bed-to']) $(id).onchange = saveBedtime;
-$('screen').onchange = event => { if (event.target.name === 'mode') showMode(); };
+$('screen').oninput = showMode;
+$('pick').onclick = () => $('image').click();
 $('image').onchange = act(async () => { const file = $('image').files[0]; $('image').value = ''; if (file) { image = await shrink(file); showMode(); } });
 $('no-image').onclick = () => { image = ''; showMode(); };
 $('screen').onsubmit = act(async () => {

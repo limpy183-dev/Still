@@ -13,7 +13,7 @@ Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem
 $archive = [IO.Compression.ZipFile]::Open($zip, 'Create')
 try {
   # Forward-slash entry names; Compress-Archive on Windows PowerShell writes backslashes.
-  $files = @('background.js', 'blocked.html', 'blocked.css', 'blocked.js', 'still.html', 'still.css', 'still.js', 'icons/icon-16.png', 'icons/icon-32.png', 'icons/icon-48.png', 'icons/icon-128.png')
+  $files = @('background.js', 'blocked.html', 'blocked.css', 'blocked.js', 'still.html', 'still.css', 'still.js', 'Manrope.woff2', 'Manrope-LICENSE.txt', 'icons/icon-16.png', 'icons/icon-32.png', 'icons/icon-48.png', 'icons/icon-128.png')
   foreach ($file in $files) { [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $source $file), $file) }
   [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, (Join-Path $root 'app/websites.js'), 'websites.js')
   $writer = New-Object IO.StreamWriter($archive.CreateEntry('manifest.json').Open(), (New-Object Text.UTF8Encoding($false)))

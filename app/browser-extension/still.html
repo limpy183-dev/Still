@@ -2,49 +2,77 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Still · Website focus</title><link rel="stylesheet" href="still.css"></head>
 <body>
 <main>
-  <header><span class="brand">still.</span><p id="app" role="status"></p></header>
-  <aside id="pitch" class="card soft" hidden><b>For more control, add Still for Windows.</b> On its own, this extension blocks websites, and you can end its sessions whenever you like. Still for Windows also blocks apps, starts sessions on a schedule, and runs sessions you can’t end early, even by turning this extension off. It’s free, and we recommend using the two together. <a href="https://stillfocus.fyi/download" target="_blank" rel="noopener">Get Still for Windows</a></aside>
-  <p id="private" class="hint" hidden>To block websites in private windows too, open this extension’s Details page and turn on “Allow in Incognito” (in Edge: “Allow in InPrivate”).</p>
+  <header class="top"><span class="brand"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>still<b>.</b></span><p id="app" class="pill" role="status"></p></header>
+  <div class="heading">
+    <p class="eyebrow"><span class="dot"></span>STILL · WEBSITE FOCUS</p>
+    <h1>A gentler way <span>back to focus.</span></h1>
+    <p>Put distracting websites on hold, give them a daily limit, and choose what you see instead.</p>
+  </div>
+  <aside id="pitch" class="panel pitch" hidden><div><b>For more control, add Still for Windows.</b><p>On its own, this extension blocks websites, and you can end its sessions whenever you like. Still for Windows also blocks apps, starts sessions on a schedule, and runs sessions you can’t end early, even by turning this extension off. It’s free, and we recommend using the two together.</p></div><a class="primary" href="https://stillfocus.fyi/download" target="_blank" rel="noopener">Get Still for Windows ↗</a></aside>
+  <p id="private" class="note" hidden>To block websites in private windows too, open this extension’s Details page and turn on <b>Allow in Incognito</b> (in Edge: <b>Allow in InPrivate</b>).</p>
   <p id="error" class="error" role="alert"></p>
 
-  <section class="card" aria-labelledby="focus-title">
-    <h2 id="focus-title">Focus session</h2>
-    <p id="app-session" class="hint" hidden></p>
-    <form id="add-site" class="row"><label class="grow">Add a website<input id="site" placeholder="youtube.com" autocomplete="off" required></label><button>Add</button></form>
+  <section class="panel" aria-labelledby="focus-title">
+    <div class="card-heading"><h2 id="focus-title">Focus session</h2><span class="tag">YOUR WEBSITES</span></div>
+    <p class="hint">Add the websites that pull you in, then start a session. They stay paused until it ends, including tabs you already have open.</p>
+    <p id="app-session" class="note" hidden></p>
+    <form id="add-site" class="add-row"><label class="sr-only" for="site">Add a website</label><input id="site" class="field" placeholder="Add a website, e.g. youtube.com" autocomplete="off" required><button class="secondary">Add website</button></form>
     <ul id="sites" class="list" aria-label="Websites for your sessions"></ul>
-    <div id="idle" class="row"><label>Focus for<select id="minutes"><option value="15">15 minutes</option><option value="25" selected>25 minutes</option><option value="45">45 minutes</option><option value="60">1 hour</option><option value="90">1½ hours</option><option value="120">2 hours</option><option value="240">4 hours</option></select></label><button id="start" class="primary">Start session</button></div>
-    <div id="running" class="row" hidden><p id="until" class="grow"></p><button id="stop">End session</button></div>
-  </section>
-
-  <section class="card" aria-labelledby="limits-title">
-    <h2 id="limits-title">Daily limits and bedtime</h2>
-    <p class="hint">Time counts while a site is open in any tab. When it runs out, the site rests until midnight.</p>
-    <form id="add-limit" class="row"><label class="grow">Website<input id="limit-site" placeholder="instagram.com" autocomplete="off" required></label><label>Minutes a day<input id="limit-minutes" type="number" min="0" max="1440" value="30" required></label><label class="check"><input id="limit-bedtime" type="checkbox"> Rests at bedtime</label><button>Add limit</button></form>
-    <ul id="limits" class="list" aria-label="Your limits"></ul>
-    <fieldset class="row"><legend>Bedtime</legend><label class="check"><input id="bed-on" type="checkbox"> On</label><label>From<input id="bed-from" type="time" required></label><label>Until<input id="bed-to" type="time" required></label></fieldset>
-  </section>
-
-  <section class="card" aria-labelledby="screen-title">
-    <h2 id="screen-title">Block screen</h2>
-    <form id="screen">
-      <fieldset class="row"><legend>What you see on a held website</legend>
-        <label class="check"><input type="radio" name="mode" value="garden"> Garden</label>
-        <label class="check"><input type="radio" name="mode" value="dusk"> Dusk</label>
-        <label class="check"><input type="radio" name="mode" value="paper"> Paper</label>
-        <label class="check"><input type="radio" name="mode" value="custom"> My own message</label>
-        <label class="check"><input type="radio" name="mode" value="redirect"> Go to another page</label>
+    <div id="idle" class="session-row">
+      <fieldset class="presets"><legend class="sr-only">Focus for</legend>
+        <label><input type="radio" name="minutes" value="15"><span>15<small>min</small></span></label>
+        <label><input type="radio" name="minutes" value="25" checked><span>25<small>min</small></span></label>
+        <label><input type="radio" name="minutes" value="45"><span>45<small>min</small></span></label>
+        <label><input type="radio" name="minutes" value="60"><span>1<small>hour</small></span></label>
+        <label><input type="radio" name="minutes" value="120"><span>2<small>hours</small></span></label>
+        <label><input type="radio" name="minutes" value="240"><span>4<small>hours</small></span></label>
       </fieldset>
-      <div id="custom" class="stack" hidden>
-        <label>Headline<input id="title" maxlength="120"></label>
-        <label>Message<textarea id="text" maxlength="1000" rows="3"></textarea></label>
-        <div class="row"><label>Image<input id="image" type="file" accept="image/png,image/jpeg,image/webp"></label><button id="no-image" type="button" hidden>Remove image</button></div>
-        <img id="preview" alt="Your block-screen image" hidden>
+      <button id="start" class="primary" type="button">Start session →</button>
+    </div>
+    <div id="running" class="session-row running" hidden><span class="dot live"></span><p id="until"></p><button id="stop" class="secondary" type="button">End session</button></div>
+  </section>
+
+  <section class="panel" aria-labelledby="limits-title">
+    <div class="card-heading"><h2 id="limits-title">Your websites, your pace</h2><span class="tag">DAILY LIMITS &amp; BEDTIME</span></div>
+    <p class="hint">Pick a website and how long it gets each day. When the time is up, it rests until midnight. Websites with bedtime switched on also rest overnight.</p>
+    <fieldset class="bedtime-row"><legend class="sr-only">Bedtime</legend>
+      <label class="switch"><input id="bed-on" type="checkbox" role="switch" aria-label="Bedtime on"><span></span></label><b>Bedtime</b>
+      <label>from <input id="bed-from" type="time" required></label><label>until <input id="bed-to" type="time" required></label>
+    </fieldset>
+    <ul id="limits" class="list" aria-label="Your limits"></ul>
+    <form id="add-limit" class="add-row">
+      <label class="sr-only" for="limit-site">Website</label><input id="limit-site" class="field" placeholder="Add a website, e.g. instagram.com" autocomplete="off" required>
+      <label class="minutes"><input id="limit-minutes" type="number" min="0" max="1440" value="30" required aria-label="Minutes a day"> min a day</label>
+      <label class="toggle"><span class="switch"><input id="limit-bedtime" type="checkbox" role="switch"><span></span></span>Bedtime</label>
+      <button class="secondary">Add limit</button>
+    </form>
+    <p class="hint small">Time counts while the website is open in any tab, even in the background. Several tabs of one site count once.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="screen-title">
+    <div class="card-heading"><h2 id="screen-title">A gentler way back</h2><span class="tag">BLOCK SCREEN</span></div>
+    <p class="hint">Choose what appears when you visit a website on hold.</p>
+    <form id="screen" class="screen-layout">
+      <div>
+        <fieldset class="tiles"><legend class="sr-only">What you see on a held website</legend>
+          <label><input type="radio" name="mode" value="garden"><span class="garden">Quiet garden<small>A fresh start</small></span></label>
+          <label><input type="radio" name="mode" value="dusk"><span class="dusk">Evening calm<small>Stay intentional</small></span></label>
+          <label><input type="radio" name="mode" value="paper"><span class="paper">A clean page<small>One small step</small></span></label>
+          <label><input type="radio" name="mode" value="custom"><span>Make it yours<small>Image + words</small></span></label>
+          <label><input type="radio" name="mode" value="redirect"><span>Go somewhere<small>Redirect</small></span></label>
+        </fieldset>
+        <div id="custom" hidden>
+          <label class="field-label">Your headline<input id="title" class="field" maxlength="120" placeholder="Remember why you started."></label>
+          <label class="field-label">A note to yourself<textarea id="text" class="field" maxlength="1000" rows="3" placeholder="One focused step is enough."></textarea></label>
+          <div class="file-row"><span id="image-name">JPG, PNG or WebP · resized and kept in this browser</span><button id="no-image" class="link" type="button" hidden>Remove</button><button id="pick" class="link" type="button">Choose file</button><input id="image" type="file" accept="image/png,image/jpeg,image/webp" hidden></div>
+        </div>
+        <label id="redirect-row" class="field-label" hidden>Open this page instead<input id="redirect" class="field" type="url" placeholder="https://en.wikipedia.org/"></label>
+        <div class="save-row"><button class="primary">Save block screen</button><p id="saved" role="status"></p></div>
       </div>
-      <label id="redirect-row" hidden>Page to open instead<input id="redirect" type="url" placeholder="https://"></label>
-      <div class="row"><button class="primary">Save block screen</button><p id="saved" role="status"></p></div>
+      <div id="shot" class="shot garden" aria-hidden="true"><span class="shot-brand">still.</span><img id="preview" alt="" hidden><h3 id="shot-title"></h3><p id="shot-text"></p><small>A LITTLE SPACE FOR YOUR ATTENTION</small></div>
     </form>
   </section>
-  <footer class="hint">Your settings stay in this browser and are never uploaded. <a href="https://stillfocus.fyi/privacy#browser" target="_blank" rel="noopener">Privacy</a></footer>
+  <footer class="privacy"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><div><b>Your attention is yours. So is your data.</b><p>No account. No analytics. Your settings stay in this browser and are never uploaded. <a href="https://stillfocus.fyi/privacy#browser" target="_blank" rel="noopener">Privacy</a></p></div></footer>
 </main>
 <script src="websites.js"></script><script src="still.js"></script>
 </body></html>

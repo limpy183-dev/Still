@@ -76,7 +76,7 @@ async function run() {
     const settings2 = await context.newPage(); await settings2.goto(`chrome-extension://${extensionId}/still.html`);
     await settings2.fill('#site', 'https://www.youtube.com/watch'); await settings2.click('#add-site button');
     await settings2.getByRole('listitem').filter({ hasText: 'youtube.com' }).waitFor();
-    await settings2.check('input[value=custom]'); await settings2.fill('#title', 'Mine first'); await settings2.click('#screen .primary');
+    await settings2.check('input[value=custom]'); await settings2.fill('#title', 'Mine first'); assert.equal(await settings2.locator('#shot-title').innerText(), 'Mine first', 'The preview follows the headline'); await settings2.click('#screen .primary');
     await settings2.getByText('Saved.').waitFor();
     await settings2.fill('#limit-site', 'reddit.com'); await settings2.click('#add-limit button');
     await settings2.getByText('reddit.com · 30 min a day').waitFor();
