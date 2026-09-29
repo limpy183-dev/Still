@@ -283,7 +283,9 @@ async function startSession(request, scheduled = false) {
     return status();
 }
 const wakeTask = testing ? 'Still Alerts Test' : 'Still Alerts', schtasks = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'schtasks.exe');
-let nextAlertAt = Infinity, wakeAt, wakeQueue = Promise.resolve();
+let nextAlertAt = Infinity, wakeAt, wakeQueue = Promise.resolve(), quitChecked = false;
+const wakeExe = () => process.env.PORTABLE_EXECUTABLE_FILE || process.execPath;
+const wakeArgs = () => [...(app.isPackaged ? [] : [app.getAppPath()]), '--alarm-wake', ...(testing ? ['--test', '--test-data=' + app.getPath('userData')] : [])];
 // Keeps one Task Scheduler entry at the next alert (30 s early, so Still is ready) while "Alarms after you quit" is on.
 function scheduleWake(at = nextAlertAt) {
   nextAlertAt = at;
@@ -292,10 +294,9 @@ function scheduleWake(at = nextAlertAt) {
   if (next === wakeAt) return;
   wakeAt = next;
   wakeQueue = wakeQueue.then(async () => {
-    if (next === null) return execute(schtasks, ['/Delete', '/TN', wakeTask, '/F'], { windowsHide: true }).catch(() => {});
-    const args = [...(app.isPackaged ? [] : [app.getAppPath()]), '--alarm-wake', ...(testing ? ['--test', '--test-data=' + app.getPath('userData')] : [])];
+    if (next === null) return execute(schtasks, ['/Delete', '/TN', wakeTask, '/F'], { windowsHide: true, timeout: 20000 }).catch(() => {});
     const file = path.join(app.getPath('userData'), 'alerts-wake-task.xml');
-    await fs.writeFile(file, '\ufeff' + wakeTaskXml(next, process.env.PORTABLE_EXECUTABLE_FILE || process.execPath, args.map(arg => /[\s"]/.test(arg) ? `"${arg}"` : arg).join(' ')), 'utf16le');
+    await fs.writeFile(file, '\ufeff' + wakeTaskXml(next, wakeExe(), wakeArgs().map(arg => /[\s"]/.test(arg) ? `"${arg}"` : arg).join(' ')), 'utf16le');
     await execute(schtasks, ['/Create', '/TN', wakeTask, '/XML', file, '/F'], { windowsHide: true, timeout: 20000 });
   }).catch(error => {
     if (wakeAt === next) wakeAt = undefined; // Retry on the next change.
@@ -382,6 +383,16 @@ else {
     dialog.showErrorBox('Still could not start', `${error.message}\n\nCheck that your Windows account can write to its app-data folder, then reopen Still.`);
     app.quit();
   });
-  app.on('before-quit', () => { quitting = true; });
+  app.on('before-quit', event => {
+    quitting = true;
+    if (quitChecked || demo) return;
+    // Finish registering the wake task first. If its time has already passed (quitting in the last
+    // 30 s before an alert), Task Scheduler won't reopen Still, so reopen it in the tray right away.
+    event.preventDefault(); quitChecked = true;
+    wakeQueue.then(() => {
+      if (Number.isFinite(wakeAt) && wakeAt <= Date.now() + 5000) app.relaunch({ execPath: wakeExe(), args: wakeArgs() });
+      app.quit();
+    });
+  });
   app.on('window-all-closed', () => {});
 }
