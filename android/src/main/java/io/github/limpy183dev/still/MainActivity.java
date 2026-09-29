@@ -3,7 +3,6 @@ package io.github.limpy183dev.still;
 import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -46,7 +45,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /** Focus space: the desktop focus page in one column, with the timer ring, presets and the side cards below. */
-public final class MainActivity extends Activity {
+public final class MainActivity extends StillActivity {
     private static final int[] PRESETS = { 25, 50, 90 };
     private static final int[] PRESET_IDS = { R.id.preset_25, R.id.preset_50, R.id.preset_90 };
     private static final int[] PRESET_NOTES = { R.string.preset_25_note, R.string.preset_50_note, R.string.preset_90_note };

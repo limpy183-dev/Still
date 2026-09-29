@@ -78,6 +78,7 @@ final class AlertStore {
         } else {
             alert.id = UUID.randomUUID().toString();
         }
+        Alerts.skipEnded(alert, System.currentTimeMillis(), ZoneId.systemDefault());
         alert.snoozeAt = 0;
         alert.pending = 0;
         List<Alerts.Alert> next = new ArrayList<>();
@@ -94,6 +95,7 @@ final class AlertStore {
             changed.enabled = !a.enabled;
             changed.snoozeAt = 0;
             changed.pending = 0;
+            Alerts.skipEnded(changed, System.currentTimeMillis(), ZoneId.systemDefault());
             next.add(changed);
         }
         commit(c, before, next);
@@ -181,7 +183,10 @@ final class AlertStore {
                 a.occurrenceApps.clear();
                 show = null;
                 if (o.end <= now) {
-                    a.lastResult = c.getString(R.string.alert_missed);
+                    // Rings late rather than never, as on Windows; a missed focus window never starts blocking.
+                    a.lastResult = c.getString(R.string.alert_late);
+                    show = "";
+                    showEnd = o.end;
                 } else {
                     a.occurrenceApps.putAll(targets(c, a));
                     a.pending = a.occurrenceApps.isEmpty() ? 0 : o.end;

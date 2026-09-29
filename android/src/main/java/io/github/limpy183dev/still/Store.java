@@ -65,7 +65,8 @@ final class Store {
         if (running != null) try { out.add(record(toJson(running))); } catch (JSONException ignored) { }
         for (int i = 0; i < history.length(); i++) {
             JSONObject o = history.optJSONObject(i);
-            if (o != null && o.optString("id").length() > 0) out.add(record(o));
+            // A reminder's focus window counts once it has ended, like a completed session.
+            if (o != null && o.optString("id").length() > 0 && o.optLong("finishedAt") <= System.currentTimeMillis()) out.add(record(o));
         }
         return out;
     }
@@ -79,6 +80,7 @@ final class Store {
         r.endsAt = o.optLong("endsAt");
         r.finishedAt = o.optLong("finishedAt");
         r.archived = o.optBoolean("archived");
+        r.alarm = o.optBoolean("alarm");
         JSONObject apps = o.optJSONObject("apps");
         JSONArray sites = o.optJSONArray("websites");
         r.targets = (apps == null ? 0 : apps.length()) + (sites == null ? 0 : sites.length());
@@ -102,6 +104,32 @@ final class Store {
         }
         history = next;
         try { save(c); } catch (IOException e) { history = before; throw e; }
+    }
+
+    /**
+     * Settings > Reminders count as focus: Let's focus on a reminder-only alarm adds the rest of its window to history
+     * as a completed session (alarm-focus.json on Windows). Alarms that block already count through their session.
+     */
+    static void alarmFocus(Context c, Alerts.Alert a, long end) {
+        load(c);
+        long now = System.currentTimeMillis();
+        if (a.sessionId != null || a.pending > 0 || end <= now) return;
+        String id = "alarm-" + a.id + "-" + a.lastOccurrence;
+        for (int i = 0; i < history.length(); i++) {
+            JSONObject o = history.optJSONObject(i);
+            if (o != null && id.equals(o.optString("id"))) return; // Counted already, e.g. after a snooze.
+        }
+        JSONArray before = history;
+        try {
+            JSONArray next = new JSONArray().put(new JSONObject().put("id", id).put("alarm", true).put("intention", a.title)
+                    .put("apps", new JSONObject()).put("websites", new JSONArray()).put("startedAt", now).put("endsAt", end)
+                    .put("finishedAt", end).put("durationMinutes", (end - now + 59999) / 60000).put("outcome", "completed"));
+            for (int i = 0; i < before.length() && next.length() < HISTORY_LIMIT; i++) next.put(before.get(i));
+            history = next;
+            save(c);
+        } catch (JSONException | IOException e) {
+            history = before; // Not counted rather than half-saved.
+        }
     }
 
     static void start(Context c, Session s) throws IOException {

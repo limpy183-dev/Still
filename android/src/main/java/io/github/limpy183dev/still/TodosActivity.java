@@ -1,6 +1,5 @@
 package io.github.limpy183dev.still;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Paint;
@@ -44,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 /** The to-do list. Edits save automatically, including during focus sessions, like on Windows. */
-public final class TodosActivity extends Activity {
+public final class TodosActivity extends StillActivity {
     private static final long SAVE_DELAY_MS = 400, GLIDE_MS = 200, LIFT_MS = 150;
     private static final float LIFT_SCALE = 1.03f; // Like .todo-row.dragging on Windows.
     private static final PathInterpolator GLIDE = new PathInterpolator(.2f, .8f, .2f, 1f); // Windows: cubic-bezier(.2,.8,.2,1).
@@ -279,7 +278,7 @@ public final class TodosActivity extends Activity {
         row.getParent().requestDisallowInterceptTouchEvent(true); // The page doesn't scroll while dragging.
         dragRow = row;
         row.setBackgroundColor(getColor(R.color.paper));
-        row.animate().scaleX(LIFT_SCALE).scaleY(LIFT_SCALE).translationZ(8 * dp).setDuration(LIFT_MS);
+        row.animate().scaleX(LIFT_SCALE).scaleY(LIFT_SCALE).translationZ(8 * dp).setDuration(pace(LIFT_MS));
     }
 
     /**
@@ -322,10 +321,13 @@ public final class TodosActivity extends Activity {
         settled.setScaleY(dropped.getScaleY());
         settled.setTranslationZ(dropped.getTranslationZ());
         settled.setBackgroundColor(getColor(R.color.paper)); // Its shadow needs a solid shape until it lands.
-        settled.animate().scaleX(1).scaleY(1).translationZ(0).setDuration(GLIDE_MS)
+        settled.animate().scaleX(1).scaleY(1).translationZ(0).setDuration(pace(GLIDE_MS))
             .withEndAction(() -> settled.setBackgroundResource(R.drawable.row_line));
         if (from != to) changed();
     }
+
+    /** A gentler pace (or Remove animations) moves lines straight to their place. */
+    private long pace(long ms) { return motion(this) ? ms : 0; }
 
     /** Rows glide from where they were drawn to their new place (FLIP), even mid-glide, like the Windows list. */
     private void glide(Runnable change) {
@@ -343,7 +345,7 @@ public final class TodosActivity extends Activity {
                     Float top = before.get(row.getTag());
                     if (top == null || top == row.getTop()) continue;
                     row.setTranslationY(top - row.getTop());
-                    row.animate().translationY(0).setDuration(GLIDE_MS).setInterpolator(GLIDE);
+                    row.animate().translationY(0).setDuration(pace(GLIDE_MS)).setInterpolator(GLIDE);
                 }
                 return true;
             }

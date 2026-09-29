@@ -10,6 +10,7 @@ import android.os.Build;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.animation.DecelerateInterpolator;
@@ -21,7 +22,7 @@ import android.widget.TextView;
  * Focus space (MainActivity) is the root; another page sits on top of it, so Back always returns to Focus space.
  */
 final class Nav {
-    static final int FOCUS = 0, TODOS = 1, ALERTS = 2, LIMITS = 3, PROGRESS = 4;
+    static final int FOCUS = 0, TODOS = 1, ALERTS = 2, LIMITS = 3, PROGRESS = 4, SETTINGS = 5;
     private static final int[] TABS = { R.id.tab_focus, R.id.tab_todos, R.id.tab_alerts, R.id.tab_limits, R.id.tab_progress };
     private static final Class<?>[] PAGES = { MainActivity.class, TodosActivity.class, AlertsActivity.class, LimitsActivity.class, HistoryActivity.class };
     /** Each page's heading on Windows: eyebrow, title, its softer second half, and the line below. */
@@ -31,6 +32,7 @@ final class Nav {
             { R.string.alerts_eyebrow, R.string.alerts_heading, R.string.alerts_heading_soft, R.string.alerts_subtitle },
             { R.string.limits_eyebrow, R.string.limits_heading, R.string.limits_heading_soft, R.string.limits_subtitle },
             { R.string.history_eyebrow, R.string.history_heading, R.string.history_heading_soft, R.string.history_subtitle },
+            { R.string.settings_eyebrow, R.string.settings_heading, R.string.settings_heading_soft, R.string.settings_subtitle },
     };
     /** Set when a tab is tapped, so Focus space (which is resumed rather than created) fades in too. */
     private static boolean arriving;
@@ -43,12 +45,20 @@ final class Nav {
         ((TextView) a.findViewById(R.id.eyebrow)).setText(h[0]);
         ((TextView) a.findViewById(R.id.heading)).setText(twoTone(a, a.getString(h[1]), a.getString(h[2])));
         ((TextView) a.findViewById(R.id.subtitle)).setText(h[3]);
+        // Bar labels grow with the text size up to 130%, so "Progress" still fits beside its icon.
+        float labelSize = 11 * Math.min(a.getResources().getConfiguration().fontScale, 1.3f);
         for (int i = 0; i < TABS.length; i++) {
             int to = i;
-            View tab = a.findViewById(TABS[i]);
+            TextView tab = a.findViewById(TABS[i]);
+            tab.setTextSize(TypedValue.COMPLEX_UNIT_DIP, labelSize);
             tab.setSelected(i == page);
             tab.setOnClickListener(v -> go(a, page, to));
         }
+        // Settings isn't in the bar: it opens over the page you're on, so Back returns there.
+        a.findViewById(R.id.settings).setOnClickListener(v -> {
+            if (page == SETTINGS) ((ScrollView) a.findViewById(R.id.scroll)).smoothScrollTo(0, 0);
+            else a.startActivity(new Intent(a, SettingsActivity.class));
+        });
         edgeToEdge(a);
         enter(a);
     }
@@ -67,7 +77,9 @@ final class Nav {
         }
         arriving = true;
         // Focus space is singleTask, so starting it closes whatever page is on top of it.
-        a.startActivity(new Intent(a, PAGES[to]));
+        // From Settings, the pages under it close too, so Back from the new page still returns to Focus space.
+        if (from == SETTINGS && to != FOCUS) a.startActivities(new Intent[] { new Intent(a, MainActivity.class), new Intent(a, PAGES[to]) });
+        else a.startActivity(new Intent(a, PAGES[to]));
         if (from != FOCUS && to != FOCUS) a.finish();
     }
 
@@ -80,7 +92,7 @@ final class Nav {
 
     /** page-in on Windows: a short rise and fade. The active tab settles into place with it. */
     private static void enter(Activity a) {
-        if (!ValueAnimator.areAnimatorsEnabled()) return; // Remove animations is on.
+        if (!StillActivity.motion(a)) return; // Remove animations or a gentler pace is on.
         View page = a.findViewById(R.id.page);
         page.setAlpha(0);
         page.setTranslationY(8 * a.getResources().getDisplayMetrics().density);
@@ -117,7 +129,7 @@ final class Nav {
         loop.setRepeatCount(ValueAnimator.INFINITE);
         loop.setRepeatMode(ValueAnimator.REVERSE);
         loop.setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator());
-        if (ValueAnimator.areAnimatorsEnabled()) loop.start();
+        if (StillActivity.motion(view.getContext())) loop.start();
         return loop;
     }
 }

@@ -1,6 +1,5 @@
 package io.github.limpy183dev.still;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
@@ -20,7 +19,7 @@ import android.widget.Toast;
 import java.time.LocalTime;
 
 /** Daily website limits and bedtime. Changes apply at once, whether or not a focus session is running. */
-public final class LimitsActivity extends Activity {
+public final class LimitsActivity extends StillActivity {
     private Limits limits;
     private CompoundButton bedtimeOn;
     private Button from, to;
@@ -93,6 +92,7 @@ public final class LimitsActivity extends Activity {
             Button add = new Button(this, null, 0, R.style.Secondary);
             add.setText(getString(R.string.suggest_add, domain));
             add.setOnClickListener(v -> edit(domain, 30, true, false));
+            if (!motion(this)) add.setStateListAnimator(null);
             LinearLayout.LayoutParams gap = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             gap.setMarginEnd(pad / 2);
             suggestions.addView(add, gap);

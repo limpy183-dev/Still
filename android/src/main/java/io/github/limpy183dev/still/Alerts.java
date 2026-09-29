@@ -131,6 +131,15 @@ final class Alerts {
         return null;
     }
 
+    /**
+     * Saving or switching on an alert skips a window that has already ended, so it doesn't ring as a late reminder
+     * (late reminders are for alarms missed while the phone was off). A window that is still open rings as usual.
+     */
+    static void skipEnded(Alert a, long now, ZoneId zone) {
+        Occurrence o = due(a, now, zone);
+        if (o != null && o.end <= now) a.lastOccurrence = o.start;
+    }
+
     /** When the alert next starts (or the running occurrence's start), or 0 if never. */
     static long next(Alert a, long now, ZoneId zone) {
         if (!a.enabled) return 0;

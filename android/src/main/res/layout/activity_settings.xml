@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Settings, like the desktop Settings page: the alert option that applies on a phone, then "Made to fit you". -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ScrollView
+        android:id="@+id/scroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/page"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="18dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp">
+
+            <include layout="@layout/page_heading" />
+
+            <LinearLayout style="@style/Panel">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        style="@style/CardTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:accessibilityHeading="true"
+                        android:drawableStart="@drawable/ic_clock"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="@color/leaf"
+                        android:gravity="center_vertical"
+                        android:text="@string/settings_alerts_title" />
+
+                    <TextView
+                        style="@style/Tag"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_alerts_tag" />
+                </LinearLayout>
+
+                <Switch
+                    android:id="@+id/count_alarm_focus"
+                    style="@style/SettingSwitch"
+                    android:text="@string/count_alarm_focus" />
+
+                <TextView
+                    style="@style/Hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/count_alarm_focus_hint" />
+            </LinearLayout>
+
+            <!-- .accessibility-settings -->
+            <LinearLayout style="@style/Panel">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        style="@style/CardTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:accessibilityHeading="true"
+                        android:drawableStart="@drawable/ic_eye"
+                        android:drawablePadding="8dp"
+                        android:drawableTint="@color/leaf"
+                        android:gravity="center_vertical"
+                        android:text="@string/a11y_title" />
+
+                    <TextView
+                        style="@style/Tag"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/a11y_tag" />
+                </LinearLayout>
+
+                <TextView
+                    style="@style/Hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/a11y_intro" />
+
+                <TextView
+                    style="@style/Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:labelFor="@+id/text_size"
+                    android:text="@string/text_size"
+                    android:textFontWeight="700" />
+
+                <TextView
+                    style="@style/Hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_size_hint" />
+
+                <Button
+                    android:id="@id/text_size"
+                    style="@style/Secondary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:drawableEnd="@drawable/ic_chevron"
+                    android:gravity="start|center_vertical" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@color/line" />
+
+                <Switch
+                    android:id="@+id/high_contrast"
+                    style="@style/SettingSwitch"
+                    android:text="@string/high_contrast" />
+
+                <TextView
+                    style="@style/Hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/high_contrast_hint" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@color/line" />
+
+                <Switch
+                    android:id="@+id/readable_font"
+                    style="@style/SettingSwitch"
+                    android:text="@string/readable_font" />
+
+                <TextView
+                    style="@style/Hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/readable_font_hint" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@color/line" />
+
+                <Switch
+                    android:id="@+id/strong_focus"
+                    style="@style/SettingSwitch"
+                    android:text="@string/strong_focus" />
+
+                <TextView
+                    style="@style/Hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/strong_focus_hint" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@color/line" />
+
+                <Switch
+                    android:id="@+id/reduced_motion"
+                    style="@style/SettingSwitch"
+                    android:text="@string/reduced_motion" />
+
+                <TextView
+                    style="@style/Hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reduced_motion_hint" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@color/line" />
+
+                <TextView
+                    style="@style/Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="@string/a11y_reset_title"
+                    android:textFontWeight="700" />
+
+                <TextView
+                    style="@style/Hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/a11y_reset_hint" />
+
+                <Button
+                    android:id="@+id/a11y_reset"
+                    style="@style/Secondary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/a11y_reset" />
+            </LinearLayout>
+
+            <!-- .privacy-note -->
+            <TextView
+                style="@style/Hint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:drawableStart="@drawable/ic_lock_small"
+                android:drawablePadding="10dp"
+                android:drawableTint="@color/leaf"
+                android:text="@string/settings_privacy" />
+        </LinearLayout>
+    </ScrollView>
+
+    <include layout="@layout/nav_bar" />
+</LinearLayout>

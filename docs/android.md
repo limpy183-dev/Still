@@ -17,7 +17,7 @@ Android 11 or newer. It is written in plain Java against the Android framework, 
 
 ## Look and navigation
 
-The phone app uses the Windows app's design, fitted to a phone: the same Manrope typeface, quiet olive palette, paper panels, dark primary button and wording, with a dark theme that follows the phone's setting. A bar at the bottom holds the pages from the Windows sidebar: **Focus**, **To-dos**, **Alerts**, **Limits** and **Progress**. Back from any page returns to Focus; tapping the page you're on scrolls it to the top. The bar steps aside while the keyboard is open.
+The phone app uses the Windows app's design, fitted to a phone: the same Manrope typeface, quiet olive palette, paper panels, dark primary button and wording, with a dark theme that follows the phone's setting. A bar at the bottom holds the pages from the Windows sidebar: **Focus**, **To-dos**, **Alerts**, **Limits** and **Progress**. **Settings** is the sliders button at the top right of every page. Back from any page returns to Focus; tapping the page you're on scrolls it to the top. The bar steps aside while the keyboard is open.
 
 - **Focus** is the Windows focus page in one column: the timer ring with its orbits and floating leaf, the 25/50/90-minute presets, your intention and **Start focus**, then *Quiet the distractions* (apps and websites), *A pause before you quit* (release delay and strict protection), the block screen, *Space you made today* with the last seven days, and the small reminder card. A status pill at the top says whether protection is set up, ready or protecting a session.
 - **During a session** the ring counts down and the glow breathes, the card shows your intention, end time and what's blocked, and *Your pause before the pause* holds the release request. The end button counts down to when release is available.
@@ -95,12 +95,24 @@ Open **Alerts** from the bar at the bottom, during a session or not. They follow
 - **Sound and media:** Chime, Bloom, Bell and Pulse are the Windows sounds, or choose your own audio file. Alarm screens can show an image, animated GIF/WebP or a muted looping video. Files are picked with Android's file picker (no storage permission) and copied into Still, up to 200 MB each. Copies no alert uses are deleted a day later.
 - **Snooze and Dismiss:** snooze for 5 minutes, as many times as you allow (0–100, or unlimited). **Show Dismiss** can be switched off, so the alarm needs **Let's focus** or a snooze. Back works like Dismiss.
 - **Blocking:** an alert can block nothing, the apps and websites selected on the Focus page at the time it starts, or its own list. It starts a focus session that ends at the alert's end time, with the alert's release delay and the Focus page's strict setting. **Snooze releases the apps for 5 minutes** (the session is saved as *Snoozed*), then blocks them again until the end time if any remains. If another session is running, or app blocking is off, blocking starts as soon as that changes, if time remains.
-- **Missed alerts:** if the phone was off for a whole alert, it's marked *Missed* instead of ringing late. If Still catches up while an alert's time is still running (after a restart, say), it rings with the time that's left.
+- **Missed alerts:** if the phone was off (or Still couldn't run) for a whole alert, it rings when Still next runs, as a *Late reminder*, and never starts blocking; a one-time alert then shows *Delivered late*. If Still catches up while an alert's time is still running (after a restart, say), it rings with the time that's left. Saving an alert, or switching one on, never rings a window that has already ended today; it starts from the next one, as on Windows.
+- **Reminders count as focus** (Settings, off by default): pressing **Let's focus** on a reminder-only alarm adds the rest of its focus window to Your progress as a completed session (*From an alarm · nothing blocked*) once the window ends. Alarms that block always count, through the session they start.
 - **Daylight saving and time zones:** times are local. A start time that doesn't exist on the night clocks go forward (02:30, say) rings at the same distance past the change (03:30); a time that happens twice when clocks go back rings once, at the first. A range across the change lasts an hour less or more, up to 25 hours. Changing time zone moves alerts to the new local time.
 
 Still keeps 100 alerts. They are saved in `alerts.json` with the same fields as the Windows `alerts.json`.
 
 Android shows alarm screens through a full-screen notification. With the screen off or locked, the screen opens at once. While you're using the phone, Android may show a heads-up notification instead (tap it to open the alarm); with app blocking switched on, Still can open the alarm screen directly. The notification has Snooze and Dismiss too. If notifications or full-screen notifications are switched off, the Alerts screen says so and links to the setting.
+
+## Settings and accessibility
+
+Tap the sliders button at the top right of any page. **Settings** holds *Reminders count as focus* (see Alerts) and **Made to fit you**, the Windows accessibility options fitted to a phone. They apply straight away to every Still screen, alarm screens included, and are saved on the phone:
+
+- **Text size:** 100%, 115%, 130%, 150% or 175%, multiplied by the phone's own font size. Longer lines wrap, so pages get longer; the bottom bar's labels grow up to 130% so they still fit. (On Windows it scales the whole window, like page zoom.)
+- **High contrast:** black text and borders on plain white, or white on plain black in the dark theme.
+- **Easier-to-read font:** the phone's own font instead of Manrope (Verdana on Windows). It follows the font chosen in the phone's settings.
+- **Stronger focus outlines:** a thick black ring with a white line inside around whatever a keyboard, switch or D-pad reaches. Touching the screen hides it.
+- **A gentler pace:** no page entrances, floating leaf, breathing glow, pulsing status, button presses or to-do glides. Android's *Remove animations* does the same for every app.
+- **Reset accessibility** puts them all back.
 
 ## Set up
 
@@ -122,6 +134,7 @@ Android shows alarm screens through a full-screen notification. With the screen 
 ## Resource use
 
 - **No session and no limits:** the accessibility service asks Android for no events at all, so it does no work. The process measured about 22 MB PSS and 0% CPU on a Pixel emulator.
+- **A gentler pace** also saves a little battery: an idle Focus page draws no frames at all (measured 0 in 3 seconds, against 188 with animations on).
 - **During a session:** it receives only window changes (opening or switching apps), never content changes. It checks each change once, after an 80 ms settle. It re-checks every 0.7 s only while a supported browser is on screen during a website session (one address-bar lookup, measured at about 0.3% of one core), or while a Settings screen is open in a strict session (at most 400 items read). With no browser or Settings screen open, a session measured 0 CPU ticks over 10 s. With limits set and no session, a supported browser is checked once a second. Nothing is checked or counted while the screen is off.
 - Limit usage is kept in memory and saved at most every 30 seconds, and when you leave the site or the screen turns off, so counting adds no disk work to each check.
 - The countdown in the notification is drawn by the system. The countdown on the Focus page ticks once a second only while it is on screen during a session; the animations are GPU property animations that stop when you leave the page. The session end uses one inexact alarm. Blocking checks the clock itself, so a late alarm never delays release.
@@ -152,7 +165,8 @@ Gradle needs a JDK and the Android SDK (`ANDROID_HOME`). Android Studio's bundle
 | `BlockService.java` | The accessibility service that blocks apps and websites and protects Still in strict sessions |
 | `Device.java` | Protected apps, supported browsers, the managed-phone check, whether blocking is switched on |
 | `MainActivity.java` | The Focus page: set up a session, or watch and end the running one, with the timer ring |
-| `Nav.java` | The bottom bar, page headings, edge-to-edge insets and the page entrance |
+| `Nav.java` | The bottom bar, page headings (with the Settings button), edge-to-edge insets and the page entrance |
+| `StillActivity.java`, `SettingsActivity.java` | The accessibility options every screen follows (mirrors `app/accessibility.js`), and the Settings page |
 | `Alerts.java`, `AlertStore.java`, `AlertsActivity.java`, `AlertEditActivity.java` | Alert rules and times (mirrors `alert-domain.cjs`), storage and what happens when one is due (mirrors `alerts-main.cjs`), the list and the editor |
 | `AlarmActivity.java`, `AlarmSound.java` | The alarm screens, notifications, Snooze/Dismiss, and the sounds (mirrors `alarm.html`/`alert-sound.js`) |
 | `AppPicker.java` | The app list and picker shared by the Focus page and the alert editor |
@@ -166,7 +180,9 @@ adb shell settings put secure enabled_accessibility_services io.github.limpy183d
 
 ## Changelog
 
-The Android app isn't released yet, so its changes are listed here rather than on the website changelog.
+The Android app is a preview. Its changes are listed here, and the larger ones on the website changelog too.
+
+- **Settings and accessibility (2026-09-29, v1.1.4).** A Settings page (the sliders button at the top right) with the Windows *Made to fit you* options: text size up to 175%, high contrast (light and dark), an easier-to-read font, stronger focus outlines, a gentler pace and reset. Also from Windows: missed alarms ring late as a *Late reminder* instead of being skipped, *Reminders count as focus*, and saving or switching on an alert no longer rings a window that already ended.
 
 - **Moving to-dos (2026-09-25, v1.0.7).** Drag a line's ⌃⌄ handle to move it, with the same lift, glide and settle animation as the Windows list.
 - **The desktop look, and a bottom bar (2026-09-25).** Every page now uses the Windows app's design and wording: Manrope, the olive palette, paper panels, the timer ring with orbits and a floating leaf, 25/50/90-minute presets, the status pill, *Space you made today* and the reminder card, in light and dark themes. The pages moved from buttons on the main screen to a bar at the bottom (Focus, To-dos, Alerts, Limits, Progress). Progress gained total, completed and this-week figures. Page entrances, the breathing glow, the pulsing status and button presses are animated, and respect *Remove animations*.

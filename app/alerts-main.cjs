@@ -4,7 +4,7 @@ const path = require('node:path');
 const { randomUUID, createHash } = require('node:crypto');
 const { createReadStream } = require('node:fs');
 const { pathToFileURL } = require('node:url');
-const { validateAlert, dueOccurrence, nextOccurrence, MEDIA_FILE } = require('./alert-domain.cjs');
+const { validateAlert, dueOccurrence, nextOccurrence, skipEnded, MEDIA_FILE } = require('./alert-domain.cjs');
 const { validateSession, sameFileUrl } = require('./domain.cjs');
 protocol.registerSchemesAsPrivileged([{ scheme: 'still-media', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } }]);
 
@@ -152,7 +152,8 @@ async function setupAlerts({ handle, getWindow, showWindow, getPreferences, stat
     for (const asset of [alert.soundFile, alert.banner].filter(Boolean)) await fs.access(path.join(directory, asset.file));
     if (alert.enabled && alert.blockMode !== 'none') await prepare();
     const scheduleChanged = existing && ['date', 'time', 'repeat', 'lengthMode', 'durationMinutes', 'endTime'].some(key => existing[key] !== alert[key]);
-    const record = { ...existing, ...alert, id: existing?.id || randomUUID(), lastOccurrence: scheduleChanged ? 0 : existing?.lastOccurrence || 0, snoozeAt: 0, pending: null, lastResult: existing?.lastResult || '' };
+    const record = { ...existing, ...alert, id: existing?.id || randomUUID(), snoozeAt: 0, pending: null, lastResult: existing?.lastResult || '' };
+    record.lastOccurrence = skipEnded({ ...record, lastOccurrence: scheduleChanged || !existing ? 0 : existing.lastOccurrence || 0 }, Date.now());
     await persist(existing ? records.map(item => item.id === record.id ? record : item) : [...records, record]);
     return list();
   }));
@@ -160,7 +161,7 @@ async function setupAlerts({ handle, getWindow, showWindow, getPreferences, stat
     const record = records.find(record => record.id === id);
     if (!record) throw Error('Alert not found.');
     if (!record.enabled && record.blockMode !== 'none') await prepare();
-    await persist(records.map(record => record.id === id ? { ...record, enabled: !record.enabled, snoozeAt: 0, pending: null } : record));
+    await persist(records.map(record => record.id === id ? { ...record, enabled: !record.enabled, snoozeAt: 0, pending: null, lastOccurrence: record.enabled ? record.lastOccurrence : skipEnded({ ...record, enabled: true }, Date.now()) } : record));
     return list();
   }));
   handle('alerts:delete', id => serial(async () => { await persist(records.filter(record => record.id !== id)); presentations = presentations.filter(item => item.alert.id !== id); if (active?.item.alert.id === id) closePresentation(); return list(); }));

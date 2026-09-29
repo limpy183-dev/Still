@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Settings > High contrast (body.high-contrast in app/styles.css): black text and borders on plain white.
+     Selected through the MCC override in StillActivity; colors not listed here keep the usual palette. -->
+<resources>
+    <color name="bg">#FFFFFF</color>
+    <color name="paper">#FFFFFF</color>
+    <color name="ink">#000000</color>
+    <color name="muted">#000000</color>
+    <color name="eyebrow">#000000</color>
+    <color name="soft_ink">#000000</color>
+    <color name="green">#1F3008</color>
+    <color name="soft">#F1F3EA</color>
+    <color name="line">#000000</color>
+    <color name="field_line">#000000</color>
+    <color name="warn">#7A2E12</color>
+    <color name="selected">#000000</color>
+    <color name="selected_ink">#FFFFFF</color>
+    <color name="nav_bg">#FFFFFF</color>
+    <color name="nav_ink">#000000</color>
+    <color name="button">#000000</color>
+    <color name="button_pressed">#333333</color>
+    <color name="button_text">#FFFFFF</color>
+    <color name="button_icon">#FFFFFF</color>
+    <color name="switch_on">#000000</color>
+    <color name="glow">#FFFFFF</color>
+    <color name="glow_edge">#FFFFFF</color>
+    <color name="glow_running">#FFFFFF</color>
+    <color name="ring">#1F3008</color>
+    <color name="ring_running">#1F3008</color>
+    <color name="leaf">#1F3008</color>
+    <color name="warm">#FFFFFF</color>
+    <color name="warm_line">#000000</color>
+    <color name="warm_ink">#000000</color>
+    <color name="thought">#FFFFFF</color>
+    <color name="thought_ink">#000000</color>
+    <color name="thought_line">#000000</color>
+    <color name="bar">#B8BDAE</color>
+    <color name="bar_today">#000000</color>
+</resources>

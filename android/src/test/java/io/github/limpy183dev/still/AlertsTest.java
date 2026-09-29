@@ -129,13 +129,23 @@ public class AlertsTest {
         Alerts.Alert a = alert("2026-09-20", "09:00", "daily");
         Alerts.Occurrence missed = Alerts.due(a, ms("2026-09-25T12:00"), NY);
         assertEquals(ms("2026-09-25T09:00"), missed.start);
-        assertTrue(missed.end <= ms("2026-09-25T12:00")); // Ended: shown as missed, not rung.
+        assertTrue(missed.end <= ms("2026-09-25T12:00")); // Ended: rung late, and never blocks.
         a.lastOccurrence = missed.start;
         assertNull(Alerts.due(a, ms("2026-09-25T12:00"), NY));
         assertEquals(ms("2026-09-26T09:00"), Alerts.next(a, ms("2026-09-25T12:00"), NY));
         a.enabled = false;
         assertEquals(0, Alerts.next(a, ms("2026-09-25T12:00"), NY));
         assertEquals(Long.MAX_VALUE, Alerts.wake(a, ms("2026-09-25T12:00"), NY));
+    }
+
+    @Test public void savingSkipsAWindowThatHasAlreadyEnded() {
+        Alerts.Alert a = alert("2026-09-20", "09:00", "daily");
+        Alerts.skipEnded(a, ms("2026-09-25T12:00"), NY); // Saved at noon: this morning's window is over.
+        assertNull(Alerts.due(a, ms("2026-09-25T12:00"), NY));
+        assertEquals(ms("2026-09-26T09:00"), Alerts.next(a, ms("2026-09-25T12:00"), NY));
+        Alerts.Alert open = alert("2026-09-20", "09:00", "daily");
+        Alerts.skipEnded(open, ms("2026-09-25T09:10"), NY); // Still inside its window: it rings now.
+        assertEquals(ms("2026-09-25T09:00"), Alerts.due(open, ms("2026-09-25T09:10"), NY).start);
     }
 
     @Test public void wakesForTheEarliestThingDue() {

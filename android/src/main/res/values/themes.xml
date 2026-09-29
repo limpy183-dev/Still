@@ -152,6 +152,8 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:background">@drawable/segment_track</item>
+        <!-- Options that wrap to more lines at larger text sizes stay top-aligned instead of being pushed down. -->
+        <item name="android:baselineAligned">false</item>
         <item name="android:orientation">horizontal</item>
         <item name="android:padding">4dp</item>
     </style>
@@ -179,5 +181,29 @@
         <item name="android:textColor">@color/nav_item</item>
         <item name="android:textSize">11sp</item>
         <item name="android:textFontWeight">600</item>
+    </style>
+
+    <!-- Settings > Easier-to-read font: the phone's own font instead of Manrope (Verdana on Windows). -->
+    <style name="ReadableFont">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:alertDialogTheme">@style/Theme.Still.Dialog.Readable</item>
+    </style>
+    <style name="Theme.Still.Dialog.Readable">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <!-- A Settings row: the title as the switch's label, with a line of explanation below it. -->
+    <!-- Not restored from saved view state: the saved preference is the truth, and restoring an old value after
+         Reset would save it again. -->
+    <style name="SettingSwitch">
+        <item name="android:saveEnabled">false</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">6dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:switchPadding">8dp</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:textFontWeight">700</item>
+        <item name="android:textSize">15sp</item>
     </style>
 </resources>

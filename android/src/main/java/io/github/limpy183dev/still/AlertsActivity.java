@@ -1,7 +1,6 @@
 package io.github.limpy183dev.still;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -28,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The alerts list (as the Windows Alerts page): what's next, each alert's state, and what happened last. */
-public final class AlertsActivity extends Activity {
+public final class AlertsActivity extends StillActivity {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable render = this::render;
     private float dp;
@@ -161,7 +160,9 @@ public final class AlertsActivity extends Activity {
                 : session ? getString(R.string.alert_status_session)
                 : !a.enabled ? getString(R.string.alert_status_paused)
                 : a.pending > 0 ? getString(R.string.alert_status_pending)
-                : "once".equals(a.repeat) && a.lastOccurrence > 0 && Alerts.next(a, now, zone) == 0 ? getString(R.string.alert_status_done)
+                : "once".equals(a.repeat) && a.lastOccurrence > 0 && Alerts.next(a, now, zone) == 0 ? getString(
+                        a.lastResult.equals(getString(R.string.alert_missed)) ? R.string.alert_status_missed
+                        : a.lastResult.equals(getString(R.string.alert_late)) ? R.string.alert_status_late : R.string.alert_status_done)
                 : getString(R.string.alert_status_scheduled);
         String length = "range".equals(a.lengthMode)
                 ? getString(a.endTime.compareTo(a.time) < 0 ? R.string.alert_until_next_day : R.string.alert_until, Store.clockText(this, a.endTime))

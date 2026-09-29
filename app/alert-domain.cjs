@@ -69,6 +69,12 @@ function dueOccurrence(alert, now) {
   }
   return null;
 }
+// Saving or switching an alert on skips a window that has already ended, so it doesn't ring as a late reminder
+// (those are for alarms missed while Still was closed). A window that is still open rings as usual.
+function skipEnded(alert, now) {
+  const due = dueOccurrence(alert, now);
+  return due && due.end <= now ? due.start : alert.lastOccurrence || 0;
+}
 function nextOccurrence(alert, now) {
   if (!alert.enabled) return null;
   const due = dueOccurrence(alert, now);
@@ -97,4 +103,4 @@ function wakeTaskXml(at, command, args) {
   <Actions Context="Author"><Exec><Command>${escape(command)}</Command><Arguments>${escape(args)}</Arguments></Exec></Actions>
 </Task>`;
 }
-module.exports = { validateAlert, dueOccurrence, nextOccurrence, occurrenceOn, wakeTaskXml, MEDIA_FILE };
+module.exports = { validateAlert, dueOccurrence, nextOccurrence, occurrenceOn, skipEnded, wakeTaskXml, MEDIA_FILE };

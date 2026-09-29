@@ -1,7 +1,6 @@
 package io.github.limpy183dev.still;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -44,7 +43,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /** Creates or edits one alert, with the Windows editor's fields and rules. */
-public final class AlertEditActivity extends Activity {
+public final class AlertEditActivity extends StillActivity {
     static final String ID = "id";
     private static final int PICK_SOUND = 1, PICK_BANNER = 2;
     private static final long MAX_MEDIA_BYTES = 200L * 1024 * 1024;

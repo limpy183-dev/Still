@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- High contrast in the dark theme: white text and borders on plain black. -->
+<resources>
+    <color name="bg">#000000</color>
+    <color name="paper">#000000</color>
+    <color name="ink">#FFFFFF</color>
+    <color name="muted">#FFFFFF</color>
+    <color name="eyebrow">#FFFFFF</color>
+    <color name="soft_ink">#FFFFFF</color>
+    <color name="green">#DCF78B</color>
+    <color name="soft">#1A1D17</color>
+    <color name="line">#FFFFFF</color>
+    <color name="field_line">#FFFFFF</color>
+    <color name="warn">#FFB59A</color>
+    <color name="selected">#FFFFFF</color>
+    <color name="selected_ink">#000000</color>
+    <color name="nav_bg">#000000</color>
+    <color name="nav_ink">#FFFFFF</color>
+    <color name="button">#FFFFFF</color>
+    <color name="button_pressed">#DDDDDD</color>
+    <color name="button_text">#000000</color>
+    <color name="button_icon">#000000</color>
+    <color name="switch_on">#FFFFFF</color>
+    <color name="glow">#000000</color>
+    <color name="glow_edge">#000000</color>
+    <color name="glow_running">#000000</color>
+    <color name="ring">#DCF78B</color>
+    <color name="ring_running">#DCF78B</color>
+    <color name="leaf">#DCF78B</color>
+    <color name="warm">#000000</color>
+    <color name="warm_line">#FFFFFF</color>
+    <color name="warm_ink">#FFFFFF</color>
+    <color name="thought">#000000</color>
+    <color name="thought_line">#FFFFFF</color>
+    <color name="thought_ink">#FFFFFF</color>
+    <color name="bar">#5A5F55</color>
+    <color name="bar_today">#FFFFFF</color>
+</resources>

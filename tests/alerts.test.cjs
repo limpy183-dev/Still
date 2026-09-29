@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { validateAlert, dueOccurrence, nextOccurrence, occurrenceOn, wakeTaskXml } = require('../app/alert-domain.cjs');
+const { validateAlert, dueOccurrence, nextOccurrence, occurrenceOn, skipEnded, wakeTaskXml } = require('../app/alert-domain.cjs');
 const { validatePreferences } = require('../app/domain.cjs');
 const base = { title: 'Write a chapter', note: '', date: '2026-09-23', time: '09:00', repeat: 'once', lengthMode: 'duration', durationMinutes: 50, endTime: '10:00', style: 'card', blockMode: 'none', apps: [], unlockDelayMinutes: 5, sound: 'chime', volume: 65, enabled: true };
 const at = value => +new Date(value);
@@ -23,6 +23,14 @@ test('one-time, missed and consumed occurrences survive clock changes without du
   assert.equal(nextOccurrence({ ...alert, enabled: false }, now), null);
   assert.equal(nextOccurrence(alert, at('2026-09-23T10:00:00')), null);
   assert.ok(dueOccurrence(alert, at('2026-09-24T10:00:00')).end < at('2026-09-24T10:00:00'));
+});
+test('saving or switching on an alert skips a window that already ended instead of ringing it late', () => {
+  const daily = validateAlert({ ...base, repeat: 'daily' }), noon = at('2026-09-25T12:00:00');
+  const saved = { ...daily, lastOccurrence: skipEnded(daily, noon) };
+  assert.equal(saved.lastOccurrence, at('2026-09-25T09:00:00'));
+  assert.equal(dueOccurrence(saved, noon), null);
+  assert.equal(nextOccurrence(saved, noon), at('2026-09-26T09:00:00'));
+  assert.equal(skipEnded(daily, at('2026-09-25T09:10:00')), 0); // Still inside its window: it rings now.
 });
 test('overnight ranges and future recurring start dates use local calendar days', () => {
   const alert = { ...base, time: '23:30', lengthMode: 'range', endTime: '01:00', repeat: 'daily' };

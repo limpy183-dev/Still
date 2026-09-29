@@ -1,6 +1,5 @@
 package io.github.limpy183dev.still;
 
-import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -43,7 +42,7 @@ import java.io.IOException;
  * which opens the screen when tapped. The notification carries Snooze and Dismiss too. The screen closes
  * itself after five minutes, like on Windows, and the sound stops after one.
  */
-public class AlarmActivity extends Activity {
+public class AlarmActivity extends StillActivity {
     /** A floating card at the bottom of the screen instead of a full screen. */
     public static final class Card extends AlarmActivity { }
 
@@ -172,6 +171,7 @@ public class AlarmActivity extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::back);
         findViewById(R.id.alarm_open).setOnClickListener(v -> {
+            if (!preview && StillActivity.settings(this).getBoolean(SettingsActivity.COUNT_ALARM_FOCUS, false)) Store.alarmFocus(this, alert, end);
             getSystemService(KeyguardManager.class).requestDismissKeyguard(this, null);
             startActivity(new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             close();

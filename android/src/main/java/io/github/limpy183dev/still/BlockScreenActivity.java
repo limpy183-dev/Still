@@ -1,6 +1,5 @@
 package io.github.limpy183dev.still;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -29,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Chooses the block screen for future sessions, like Settings → Website block screens on Windows. */
-public final class BlockScreenActivity extends Activity {
+public final class BlockScreenActivity extends StillActivity {
     /** The chosen image, re-encoded; kept under the same 180 KB budget as on Windows. */
     static final String IMAGE = "block-screen.webp";
     private static final int PICK = 1, MAX_BYTES = 180_000, MAX_SIDE = 1200;

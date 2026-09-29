@@ -1,6 +1,5 @@
 package io.github.limpy183dev.still;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -34,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Session history and progress, like "Your progress" on Windows. Figures are computed once per change, never on a timer. */
-public final class HistoryActivity extends Activity {
+public final class HistoryActivity extends StillActivity {
     private static final int EXPORT = 1, PAGE = 20;
 
     private SharedPreferences prefs;
@@ -179,7 +178,7 @@ public final class HistoryActivity extends Activity {
         long minutes = History.focusMs(r, 0, Long.MAX_VALUE, System.currentTimeMillis()) / 60000;
         row.addView(text(R.style.Hint, getString(R.string.history_meta, shortDate(r.startedAt), Store.time(this, r.startedAt),
                 History.readable(minutes), getString(outcome(r.outcome)),
-                getResources().getQuantityString(R.plurals.history_targets, r.targets, r.targets))));
+                r.alarm ? getString(R.string.history_from_alarm) : getResources().getQuantityString(R.plurals.history_targets, r.targets, r.targets))));
         LinearLayout actions = new LinearLayout(this);
         actions.addView(button(r.archived ? R.string.history_restore : R.string.history_archive, r,
                 v -> update(r, r.archived ? "restore" : "archive")));

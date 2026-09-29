@@ -19,7 +19,7 @@ final class History {
     static final class Record {
         String id, intention, outcome;
         long startedAt, endsAt, finishedAt;
-        boolean archived;
+        boolean archived, alarm;
         int targets;
     }
 
