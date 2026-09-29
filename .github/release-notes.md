@@ -1,7 +1,7 @@
-## What's new in v1.1.1
+## What's new in v1.1.2
 
-- **Still and the browser extension, together.** The [Still · Website focus](https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb) extension works on its own, and with Still for Windows it gains app blocking and sessions you can't end early. When you use both, a website stays on hold while either one holds it, the stricter daily limit wins, and neither can end the other's session.
-- **High contrast.** The "Can't use the store? Load it from this PC instead" dropdown in Settings is now full black like the rest of the text.
+- **A redesigned extension.** The [Still · Website focus](https://chromewebstore.google.com/detail/gkkjcgapilgkjafncmbkgcijnoijgejb) settings page (click its toolbar icon) now looks and feels like Still for Windows: the same font, cards and buttons, toggle switches, quick session lengths, the dark bedtime bar, block screen tiles with a live preview, and a simple Choose file row for your own image.
+- **Clearer about what it does.** The extension blocks websites on its own. For more control (blocking apps, scheduled sessions and sessions you can't end early), we recommend using it together with Still for Windows.
 
 ## Install or update
 
