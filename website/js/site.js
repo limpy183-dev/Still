@@ -503,15 +503,20 @@
     map.forEach((_, id) => { const s = document.getElementById(id); if (s) spy.observe(s); });
   });
 
-  /* ——— Screenshot lightbox ——— */
-  const lb = $('#lightbox');
-  if (lb) {
-    const img = $('img', lb), cap = $('p', lb);
-    $$('[data-lightbox]').forEach(b => b.addEventListener('click', () => {
-      const src = $('img', b);
-      img.src = b.dataset.lightbox; img.alt = src.alt; cap.textContent = src.alt;
-      lb.showModal();
-    }));
+  /* ——— Screenshot lightbox: every screenshot opens larger (links stay as the no-JS fallback) ——— */
+  const shots = $$('img[src*="assets/screens/"]');
+  if (shots.length) {
+    document.body.insertAdjacentHTML('beforeend', '<dialog class="lightbox" aria-label="Screenshot"><img alt=""><p></p><button class="close" type="button" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></dialog>');
+    const lb = document.body.lastElementChild, img = $('img', lb), cap = $('p', lb);
+    shots.forEach(s => {
+      const t = s.closest('[data-lightbox], a') || s;
+      t.classList.add('zoomable');
+      t.addEventListener('click', e => {
+        e.preventDefault();
+        img.src = t.dataset.lightbox || s.currentSrc || s.src; img.alt = cap.textContent = s.alt;
+        lb.showModal();
+      });
+    });
     lb.addEventListener('click', e => { if (e.target === lb || e.target.closest('.close')) lb.close(); });
   }
 
