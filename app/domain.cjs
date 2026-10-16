@@ -24,9 +24,14 @@ function validateSession(request) {
   if (blockScreen && blockScreen.mode !== 'custom') blockScreen.image = '';
   return { ...(blockScreen ? { blockScreen } : {}), durationMinutes: request.durationMinutes, unlockDelayMinutes: request.unlockDelayMinutes, intention: String(request.intention || 'Time to focus').slice(0, 120), apps: request.apps.map(a => ({ name: a.name.slice(0, 100), path: a.path })) };
 }
+// A real calendar day written as YYYY-MM-DD (the user's local day, so it never shifts with time zones).
+function validDay(day) {
+  try { return typeof day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(day) && new Date(day + 'T00:00:00Z').toISOString().startsWith(day); } catch { return false; }
+}
 function validatePreferences(value) {
   if (!value || typeof value !== 'object') throw new Error('Invalid preferences.');
   return {
+    newThings: (Array.isArray(value.newThings) ? value.newThings : []).filter(item => item && typeof item.text === 'string' && item.text.trim() && validDay(item.day)).slice(0, 3000).map(item => ({ text: item.text.trim().slice(0, 120), day: item.day, done: item.done === true })),
     blockScreen: Websites.screen(value.blockScreen),
     websiteLimits: Websites.limits(value.websiteLimits),
     todos: (Array.isArray(value.todos) ? value.todos : []).filter(item => item && typeof item.text === 'string').slice(0, 500).map(item => ({ text: item.text.slice(0, 2000), type: ['checkbox', 'circle', 'bullet', 'number', 'heading', 'note'].includes(item.type) ? item.type : 'checkbox', done: item.done === true })),

@@ -27,6 +27,7 @@
 | **A pause before quitting** | Add an optional 1–120 minute wait before ending a session early. |
 | **A quieter browser** | Block domains in Chrome and Edge, choose a block screen, and set daily website limits or bedtime. |
 | **A small plan** | Keep a local to-do list with checkboxes, headings, notes, a keyboard-friendly `/` menu, and hold-to-select for bulk delete and reordering. |
+| **Something new** | Note one new thing you will do today, or one you already did, on its own page. A calendar tracks them and matches the one in Your progress. Nothing is blocked. |
 | **A helpful reminder** | Schedule one-time, daily, or weekday alerts, with optional blocking, sounds, and media. |
 | **Visible progress** | Review session history, daily charts, a calendar, and time spent on your intentions. Export history as JSON. |
 

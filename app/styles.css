@@ -104,3 +104,9 @@ body.high-contrast .switch>span:after{background:#000;box-shadow:none}
 body.high-contrast .switch input:checked+span{background:#000}
 body.high-contrast .switch input:checked+span:after{background:#fff}
 body.high-contrast .card-heading svg{color:#000}
+
+/* Something new: one quiet line to write in, and the same calendar that Your progress shows. */
+.new-panel{max-width:900px;padding:28px 32px;margin-bottom:32px}.new-form{display:flex;flex-wrap:wrap;align-items:center;gap:12px}.new-form input{flex:1 1 260px;min-width:0;border:1px solid #d5dec8;border-radius:10px;background:#f8faf4;padding:13px 16px;font-size:14px;color:var(--ink)}.new-form input::placeholder{color:#849078;font-size:13px}
+.new-day{min-width:0;padding:22px 24px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,#fafbf7,#fff)}.new-day h3{font-size:13px;font-weight:600;margin:0 0 6px}.new-list{list-style:none;margin:0;padding:0}.new-row{display:flex;align-items:center;gap:14px;min-height:48px;border-bottom:1px solid #f0f2eb}.new-row span{flex:1;min-width:0;overflow-wrap:anywhere;font-size:14px}.new-row.done span{text-decoration:line-through;color:#839078}.new-row:hover .todo-delete,.new-row:focus-within .todo-delete{opacity:1}
+body.high-contrast .new-day{border-color:#000}
+@media(max-height:520px){.nav-item,.sidebar-bottom .nav-item{padding-top:8px;padding-bottom:8px}}

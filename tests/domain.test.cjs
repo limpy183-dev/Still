@@ -40,6 +40,12 @@ test('persist bounded to-do text and known formats', () => {
   assert.equal(validatePreferences({ todos: Array(501).fill({ text: '' }) }).todos.length, 500);
   assert.deepEqual(validatePreferences({}).todos, []);
 });
+test('persist valid new things and drop anything else', () => {
+  const kept = validatePreferences({ newThings: [null, { text: '  Try pottery  ', day: '2026-10-16', done: true }, { text: 'x'.repeat(200), day: '2024-02-29', done: 'yes' }, { text: '   ', day: '2026-10-16' }, { text: 'Bad day', day: '2026-02-30' }, { text: 'Bad month', day: '2026-13-01' }, { text: 'No day' }, { text: 7, day: '2026-10-16' }] }).newThings;
+  assert.deepEqual(kept, [{ text: 'Try pottery', day: '2026-10-16', done: true }, { text: 'x'.repeat(120), day: '2024-02-29', done: false }]);
+  assert.equal(validatePreferences({ newThings: Array(3001).fill({ text: 'a', day: '2026-10-16' }) }).newThings.length, 3000);
+  assert.deepEqual(validatePreferences({}).newThings, []);
+});
 test('compare release versions and only open Still release downloads', () => {
   assert.equal(newerVersion('v1.10.0', '1.9.3'), true);
   assert.equal(newerVersion('1.0.1', '1.0.0'), true);

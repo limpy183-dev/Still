@@ -43,6 +43,14 @@ Hold a line for half a second (or right-click it, or press Shift+F10) to enter s
 
 The Windows app saves edits automatically with your local preferences, including during focus sessions. The list supports up to 500 lines of 2,000 characters each. Browser-only previews do not save edits. Run `npm run test:todos` to check formatting, editing, completion, and persistence.
 
+## Something new
+
+Open **Something new** in the sidebar. It asks one question: what new thing will you do today? Type it and choose **I’ll do it** (or press Enter) to plan it, or **I already did it** to log something you have finished. Nothing starts a focus session or blocks anything; it is only for keeping track.
+
+The calendar below marks every day that has something new on it (a green dot for done, a tan dot for planned). Choose a day to see its list, tick an item when you have done it, or delete it. New things go on the chosen day, so pick an earlier day to log something you did then, or a later day to plan ahead. Something already done can't go on a future day.
+
+**Your progress** has a **Something new** section with the same calendar and list. They share the same entries, month and chosen day, so a change in one shows in the other. Entries are saved with your preferences (up to 3,000, 120 characters each), and `npm run test:new` checks the page.
+
 ## Alerts
 
 Open **Alerts → New alert** to schedule a task once, daily, or on weekdays, starting on a chosen local date. Set a duration of 1–1,440 minutes or an end time; ranges can cross midnight. Each alert can use the current Focus space app selection, an independent selection (with **Copy current selection**), or no blocking.

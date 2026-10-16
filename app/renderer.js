@@ -157,10 +157,11 @@ function showPage(next) {
 
   $$('.nav-item[data-page]').forEach(el => { el.classList.toggle('active', el.dataset.page === next); el.setAttribute('aria-current', el.dataset.page === next ? 'page' : 'false'); });
 
-  $('#page-crumb').textContent = { focus: 'Focus space', todos: 'To-do list', alerts: 'Alerts', library: 'Apps & websites', limits: 'Time limits', history: 'Your progress', settings: 'Settings' }[next];
+  $('#page-crumb').textContent = { focus: 'Focus space', todos: 'To-do list', new: 'Something new', alerts: 'Alerts', library: 'Apps & websites', limits: 'Time limits', history: 'Your progress', settings: 'Settings' }[next];
   closeTodoMenu();
   if (next === 'library') renderLibrary(); if (next === 'history') renderHistory();
   if (next === 'alerts') renderAlerts();
+  if (next === 'new' || next === 'history') renderNewThings();
   if (next === 'settings') checkExtension();
   renderStats(); updateTimer();
   window.scrollTo({ top: 0 });
@@ -901,7 +902,7 @@ async function init() {
 
     $('#show-intentions').checked = prefs.showIntentions !== false;
 
-    initWebsites(); initTodos(); applyStatus(initial); renderApps(); renderStats(); await initAlerts();
+    initWebsites(); initTodos(); initNewThings(); applyStatus(initial); renderApps(); renderStats(); await initAlerts();
     api.onStatus(value => { if (!busy) applyStatus(value); });
     api.onPresentation?.(setPresentationVisible);
     setInterval(updateTimer, 1000); setInterval(renderStats, 30000);
