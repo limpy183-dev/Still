@@ -187,6 +187,7 @@ adb shell settings put secure enabled_accessibility_services io.github.limpy183d
 
 The Android app is a preview. Its changes are listed here, and the larger ones on the website changelog too.
 
+- **Pages change without sliding (2026-10-17, v1.2.0).** Switching pages with the bottom bar no longer plays the system slide.
 - **One task, any capitals (2026-09-29, v1.1.6).** *Where your attention went* counts "Clean school equipment" and "Clean School Equipment" as the same task.
 - **Atkinson Hyperlegible (2026-09-29, v1.1.5).** The easier-to-read font is now Atkinson Hyperlegible Next, bundled with the app, instead of the phone's own font.
 - **Settings and accessibility (2026-09-29, v1.1.4).** A Settings page (the sliders button at the top right) with the Windows *Made to fit you* options: text size up to 175%, high contrast (light and dark), an easier-to-read font, stronger focus outlines, a gentler pace and reset. Also from Windows: missed alarms ring late as a *Late reminder* instead of being skipped, *Reminders count as focus*, and saving or switching on an alert no longer rings a window that already ended.

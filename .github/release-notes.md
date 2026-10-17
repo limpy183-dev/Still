@@ -1,6 +1,8 @@
-## What's new in v1.1.6
+## What's new in v1.2.0
 
-- **One task, however you type it.** On the progress page, *Where your attention went* now counts "Clean school equipment" and "Clean School Equipment" (or one with a stray space) as the same task: one row, one colour, one total, shown with your latest spelling. Colours you've already picked stay the same and your saved history isn't changed. Works the same on Windows and Android.
+- **Something new.** A new page on Windows asks one question: what new thing will you do today? Plan it, or log something you already did, on today or any other day. A calendar marks the days, and *Your progress* shows the same calendar and list. Nothing starts a focus session or blocks anything. Your entries are saved with your preferences, so older preference files load unchanged.
+- **Your own alarm sounds.** Drop audio or video files into the AlertSounds folder and they appear in the alarm sound list. A button in the alarm editor opens the folder.
+- **Android preview:** switching pages no longer plays the system slide, so pages change straight away.
 
 ## Install or update
 
