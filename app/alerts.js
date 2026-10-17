@@ -33,8 +33,9 @@ function renderAlerts() {
   }).join('') : `<div class="alerts-empty panel"><div class="little-orbit"><span></span></div><h2>${alerts.length ? 'Nothing in this view.' : 'Good intentions deserve a time.'}</h2><p>${alerts.length ? 'Try another filter to find your alerts.' : 'A quiet reminder to stretch. A full-screen call to focus.<br>Choose the kind of nudge you need.'}</p>${alerts.length ? '' : '<button class="secondary-button" id="alert-first">Create your first alert <span>↗</span></button>'}</div>`;
   $('#alert-first')?.addEventListener('click', () => openAlert());
 }
-function openAlert(record = null) {
+async function openAlert(record = null) {
   editingAlert = record;
+  await loadFolderSounds();
   const soon = new Date(Date.now() + 5 * 60000), end = new Date(+soon + 50 * 60000);
   const value = record || { title: '', note: '', date: alertDateString(soon), time: alertTimeString(soon), repeat: 'once', lengthMode: 'duration', durationMinutes: 50, endTime: alertTimeString(end), style: 'card', blockMode: 'none', sound: 'chime', volume: 65, unlockDelayMinutes: prefs.delayEnabled ? prefs.delay : 0 };
   $('#alert-dialog-title').textContent = record ? 'A moment, made yours.' : 'Make room for a moment.';
@@ -43,24 +44,32 @@ function openAlert(record = null) {
   $('#alert-on-top').value = value.onTop === false ? 'below' : 'above';
   for (const [id, key] of [['title', 'title'], ['note', 'note'], ['date', 'date'], ['time', 'time'], ['repeat', 'repeat'], ['length', 'lengthMode'], ['duration', 'durationMinutes'], ['end', 'endTime'], ['block', 'blockMode'], ['sound', 'sound'], ['volume', 'volume'], ['delay', 'unlockDelayMinutes']]) $('#alert-' + id).value = value[key];
   $(`[name="alert-style"][value="${value.style}"]`).checked = true;
-  alertSoundFile = record?.soundFile || null; alertBanner = record?.banner || null;
+  alertSoundFile = record?.soundFile || null;
+  if (record?.sound === 'custom' && [...$('#alert-sound').options].some(o => o.value === 'folder:' + alertSoundFile?.name)) $('#alert-sound').value = 'folder:' + alertSoundFile.name;
+  alertBanner = record?.banner || null;
   alertApps = new Map((record?.apps || []).map(a => [a.path, a]));
   alertChoices = [...new Map([...apps, ...alertApps.values()].map(a => [a.path, a])).values()];
   $('#alert-form-error').textContent = ''; $('#alert-app-search').value = '';
   updateAlertEditor(); renderAlertApps(); renderAlertMedia(); $('#alert-dialog').showModal();
+}
+// Sounds the user drops into the AlertSounds folder become dropdown options.
+async function loadFolderSounds() {
+  const select = $('#alert-sound'); [...select.options].forEach(o => o.value.startsWith('folder:') && o.remove());
+  const names = await api.folderSounds?.().catch(() => []) || [], custom = select.querySelector('[value="custom"]');
+  for (const name of names) { const option = document.createElement('option'); option.value = 'folder:' + name; option.textContent = name.replace(/\.[^.]+$/, ''); select.insertBefore(option, custom); }
 }
 function readAlertForm() {
   return { id: editingAlert?.id, title: $('#alert-title').value.trim(), note: $('#alert-note').value, date: $('#alert-date').value, time: $('#alert-time').value,
     snoozeLimit: $('#alert-snooze-limit').value === '' ? null : Number($('#alert-snooze-limit').value), showDismiss: $('#alert-show-dismiss').value === 'show', onTop: $('#alert-on-top').value === 'above',
     repeat: $('#alert-repeat').value, lengthMode: $('#alert-length').value, durationMinutes: Number($('#alert-duration').value), endTime: $('#alert-end').value,
     style: $('[name="alert-style"]:checked').value, blockMode: $('#alert-block').value, apps: [...alertApps.values()].map(({ name, path }) => ({ name, path })),
-    sound: $('#alert-sound').value, volume: Number($('#alert-volume').value), unlockDelayMinutes: Number($('#alert-delay').value), soundFile: alertSoundFile, banner: alertBanner, enabled: editingAlert?.enabled !== false };
+    sound: $('#alert-sound').value.startsWith('folder:') ? 'custom' : $('#alert-sound').value, volume: Number($('#alert-volume').value), unlockDelayMinutes: Number($('#alert-delay').value), soundFile: alertSoundFile, banner: alertBanner, enabled: editingAlert?.enabled !== false };
 }
 function updateAlertEditor() {
   const value = readAlertForm(), range = value.lengthMode === 'range';
   $('#alert-duration-field').hidden = range; $('#alert-end-field').hidden = !range; $('#alert-range-hint').hidden = !range;
   $('#alert-duration').disabled = range; $('#alert-end').disabled = !range;
-  $('#alert-custom-sound').hidden = value.sound !== 'custom'; $('#alert-banner-controls').hidden = value.style === 'notification';
+  $('#alert-custom-sound').hidden = $('#alert-sound').value !== 'custom'; $('#alert-banner-controls').hidden = value.style === 'notification';
   $('#alert-custom-apps').hidden = value.blockMode !== 'custom'; $('#alert-current-note').hidden = value.blockMode !== 'current'; $('#alert-block-details').hidden = value.blockMode === 'none';
   $('#alert-volume-value').textContent = `${value.volume}%`;
   $('#alert-preview-title').textContent = value.title || 'Your next little beginning.';
@@ -116,7 +125,15 @@ async function initAlerts() {
   $('#alert-add').onclick = () => openAlert(); $('#alerts-filter').onchange = renderAlerts;
   $('#alert-settings').onclick = () => showPage('settings');
   $('#alert-form').addEventListener('input', updateAlertEditor);
-  $('#alert-form').addEventListener('change', event => { if (event.target.id === 'alert-sound') { stopAlertPreview(); $('#alert-listen').textContent = 'Listen'; } updateAlertEditor(); });
+  $('#alert-form').addEventListener('change', async event => {
+    if (event.target.id === 'alert-sound') {
+      stopAlertPreview(); $('#alert-listen').textContent = 'Listen';
+      const value = event.target.value;
+      if (value.startsWith('folder:')) try { alertSoundFile = await api.folderSound(value.slice(7)); renderAlertMedia(); } catch (error) { toast(error.message, true); }
+    }
+    updateAlertEditor();
+  });
+  $('#alert-sounds-folder').onclick = () => api.openSoundsFolder?.();
   $('#alert-dialog').addEventListener('close', () => { stopAlertPreview(); $('#alert-listen').textContent = 'Listen'; $('#alert-preview-media').replaceChildren(); });
   $('#alert-app-search').oninput = renderAlertApps;
   $('#alert-app-list').onchange = event => {

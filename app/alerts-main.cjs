@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Notification, dialog, screen, ipcMain, protocol, net } = require('electron');
+const { app, BrowserWindow, Notification, dialog, screen, ipcMain, protocol, net, shell } = require('electron');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { randomUUID, createHash } = require('node:crypto');
@@ -166,12 +166,8 @@ async function setupAlerts({ handle, getWindow, showWindow, getPreferences, stat
   }));
   handle('alerts:delete', id => serial(async () => { await persist(records.filter(record => record.id !== id)); presentations = presentations.filter(item => item.alert.id !== id); if (active?.item.alert.id === id) closePresentation(); return list(); }));
   handle('alerts:preview', value => { const alert = validateAlert(value); present(alert, { start: Date.now(), end: Date.now() + alert.durationMinutes * 60000 }, 'Preview only · no apps or websites will be blocked.', true); return true; });
-  handle('alerts:media', async kind => {
-    if (!['sound', 'banner'].includes(kind)) throw Error('Unknown media type.');
-    const extensions = kind === 'sound' ? ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'mp4', 'mov', 'webm'] : ['png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4', 'mov', 'webm'];
-    const result = await dialog.showOpenDialog(getWindow(), { title: kind === 'sound' ? 'Choose an alarm sound' : 'Choose an image, GIF or video', properties: ['openFile'], filters: [{ name: kind === 'sound' ? 'Audio & video' : 'Images & videos', extensions }] });
-    if (result.canceled) return null;
-    const source = result.filePaths[0], ext = path.extname(source).slice(1).toLowerCase();
+  async function importMedia(source, extensions) {
+    const ext = path.extname(source).slice(1).toLowerCase();
     if (!extensions.includes(ext)) throw Error('This file type is not supported.');
     if ((await fs.stat(source)).size > 200 * 1024 * 1024) throw Error('Choose a file smaller than 200 MB.');
     // Reuse any identical file already in alert-media (same size, then same hash).
@@ -185,6 +181,25 @@ async function setupAlerts({ handle, getWindow, showWindow, getPreferences, stat
     const file = digest.slice(0, 36) + '.' + ext;
     await fs.copyFile(source, path.join(directory, file));
     return { file, name: path.basename(source) };
+  }
+  // Files the user drops into AlertSounds join the alarm sound list.
+  const soundsDir = path.join(app.getPath('userData'), 'AlertSounds');
+  const SOUND_EXT = ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'mp4', 'mov', 'webm'];
+  handle('alerts:folderSounds', async () => {
+    await fs.mkdir(soundsDir, { recursive: true });
+    return (await fs.readdir(soundsDir)).filter(name => SOUND_EXT.includes(path.extname(name).slice(1).toLowerCase())).sort();
+  });
+  handle('alerts:folderSound', name => {
+    if (typeof name !== 'string' || path.basename(name) !== name) throw Error('Unknown sound.');
+    return importMedia(path.join(soundsDir, name), SOUND_EXT);
+  });
+  handle('alerts:openSoundsFolder', async () => { await fs.mkdir(soundsDir, { recursive: true }); await shell.openPath(soundsDir); return true; });
+  handle('alerts:media', async kind => {
+    if (!['sound', 'banner'].includes(kind)) throw Error('Unknown media type.');
+    const extensions = kind === 'sound' ? ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'mp4', 'mov', 'webm'] : ['png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4', 'mov', 'webm'];
+    const result = await dialog.showOpenDialog(getWindow(), { title: kind === 'sound' ? 'Choose an alarm sound' : 'Choose an image, GIF or video', properties: ['openFile'], filters: [{ name: kind === 'sound' ? 'Audio & video' : 'Images & videos', extensions }] });
+    if (result.canceled) return null;
+    return importMedia(result.filePaths[0], extensions);
   });
   async function tick() {
     let changed = false;
