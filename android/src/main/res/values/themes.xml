@@ -17,10 +17,17 @@
         <item name="android:windowLightNavigationBar">@bool/light_bars</item>
     </style>
 
-    <!-- The five pages behind the bottom bar: drawn edge to edge, and switched without a window animation
-         (each page fades in by itself, like the pages on Windows). -->
+    <!-- The five pages behind the bottom bar: drawn edge to edge, and switched without the system's slide.
+         (@null would fall back to the default slide, so every transition is named as a no-op.) -->
+    <style name="Animation.Still.Page" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/none</item>
+        <item name="android:activityOpenExitAnimation">@anim/none</item>
+        <item name="android:activityCloseEnterAnimation">@anim/none</item>
+        <item name="android:activityCloseExitAnimation">@anim/none</item>
+    </style>
+
     <style name="Theme.Still.Page">
-        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowAnimationStyle">@style/Animation.Still.Page</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
