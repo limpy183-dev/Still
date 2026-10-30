@@ -1,0 +1,38 @@
+[package]
+name = "still-app"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "Still"
+path = "src/main.rs"
+
+[dependencies]
+still-core = { path = "../still-core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+wry = { version = "0.57", features = ["devtools"] }
+tao = "0.37"
+tray-icon = "0.26"
+rfd = "0.17"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp", "ico"] }
+ureq = { version = "3", default-features = false, features = ["rustls", "platform-verifier", "win-system-proxy", "gzip"] }
+tokio = { version = "1", features = ["rt", "net", "time", "io-util", "sync", "macros", "fs", "process"] }
+chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
+windows = { version = "0.62", features = [
+  "Win32_Foundation", "Win32_Security", "Win32_Security_Authorization", "Win32_System_Threading", "Win32_System_Com", "Win32_System_Com_StructuredStorage",
+  "Win32_System_Variant", "Win32_UI_Shell", "Win32_UI_Shell_PropertiesSystem", "Win32_UI_WindowsAndMessaging", "Win32_UI_HiDpi",
+  "Win32_Graphics_Gdi", "Win32_Storage_FileSystem", "Win32_System_Registry", "Win32_System_LibraryLoader",
+  "UI_Notifications", "Data_Xml_Dom", "Foundation", "Foundation_Collections", "Management_Deployment", "ApplicationModel",
+] }
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+winreg = "0.56"
+regex = "1"
+roxmltree = "0.20"
+sha2 = "0.11"
+base64 = "0.23"
+uuid = { version = "1", features = ["v4"] }
+
+[build-dependencies]
+embed-resource = "3"

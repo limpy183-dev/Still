@@ -88,7 +88,7 @@ function renderAlertMedia() {
     const video = /\.(mp4|mov|webm)$/i.test(alertBanner.file), media = document.createElement(video ? 'video' : 'img');
     if (video) { media.muted = true; media.loop = true; media.autoplay = !prefs.reducedMotion; media.controls = true; }
     else media.alt = 'Your banner preview';
-    media.src = 'still-media://local/' + alertBanner.file;
+    media.src = '/media/' + alertBanner.file;
     media.onerror = () => { $('#alert-form-error').textContent = 'This banner could not play. Try a JPG, GIF, or H.264 MP4.'; };
     container.append(media);
   }

@@ -4,7 +4,7 @@ function playAlertSound(alert, { repeat = false, onError = () => {} } = {}) {
   const stop = () => { stopped = true; clearInterval(interval); if (audio) { audio.pause(); audio.removeAttribute('src'); audio.load(); } if (context && context.state !== 'closed') context.close(); };
   if (alert.sound === 'silent' || alert.volume === 0) return stop;
   if (alert.sound === 'custom' && alert.soundFile) {
-    audio = new Audio(`still-media://local/${alert.soundFile.file}`); audio.volume = alert.volume / 100; audio.loop = repeat;
+    audio = new Audio(`/media/${alert.soundFile.file}`); audio.volume = alert.volume / 100; audio.loop = repeat;
     let failed = false;
     const fail = () => { if (failed || stopped) return; failed = true; stop(); onError('This sound could not play. Try MP3 or WAV.'); };
     audio.addEventListener('error', fail, { once: true }); audio.play().catch(fail);

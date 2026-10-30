@@ -1,0 +1,20 @@
+const assert = require('node:assert/strict');
+const { launch } = require('./rust-launch.cjs');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+(async () => {
+  const app = await launch(); const page = await app.firstWindow();
+  await page.waitForSelector('#selected-apps .app-row'); await sleep(500);
+  const visible = async () => (await app.windowStates()).find(w => w.url.endsWith('index.html')).visible;
+  assert.equal(await visible(), true, 'the window is shown once the page is ready');
+  await page.evaluate(() => { window.__presentation = []; window.still.onPresentation(v => window.__presentation.push(v)); });
+  await page.evaluate(() => window.still.window('close')); await sleep(400);
+  assert.equal(await visible(), false, 'closing hides to the tray');
+  assert.equal(process.kill(app.pid, 0), true, 'the app keeps running in the tray');
+  await page.evaluate(() => window.still.showWindow()); await sleep(400);
+  assert.equal(await visible(), true, 'asking for the window shows it again');
+  await page.evaluate(() => window.still.window('minimize')); await sleep(400);
+  const seen = await page.evaluate(() => window.__presentation);
+  assert.deepEqual(seen.slice(0, 3), [false, true, false], 'the page is told when it is hidden, shown and minimized');
+  await app.close();
+  console.log('Passed: window shown when ready, close hides to the tray and keeps running, show restores, the page hears about hide/show/minimize.');
+})().catch(e => { console.error(e); process.exitCode = 1; });

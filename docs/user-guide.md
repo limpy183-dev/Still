@@ -73,7 +73,7 @@ This blocks ordinary process launches regardless of whether they originate from 
 
 **No app can guarantee an unbreakable lock against the administrator of the same PC.** An administrator can stop/remove the service, change policy or time, or use another account. Modified or differently identified desktop binaries, another operating system, remote games, and equivalent web services are not an absolute security boundary. Blocking a launcher alone does not identify every game it can launch; select those games too. The UI makes these limits visible.
 
-Requires an updated Windows 10 version 2004+ or Windows 11, x64, Windows PowerShell 5.1, and .NET Framework 4.8 (normally included in current Windows installations). Older Windows 10 installations need the AppLocker edition-enforcement updates. Domain-joined and detected MDM-managed PCs, and PCs with existing application-control rules, are intentionally refused to avoid changing organizational security policy.
+Requires an updated Windows 10 version 2004+ or Windows 11, x64, Windows PowerShell 5.1, .NET Framework 4.8, and the Microsoft Edge WebView2 Runtime (all normally included in current Windows installations). Older Windows 10 installations need the AppLocker edition-enforcement updates. Domain-joined and detected MDM-managed PCs, and PCs with existing application-control rules, are intentionally refused to avoid changing organizational security policy.
 
 Still adds explicit allow rules for unrelated executables and packages before adding its temporary deny rules; AppLocker otherwise defaults to denying unmatched applications. It verifies the effective policy before reporting a successful start. Cleanup removes only rules carrying Still's reserved name prefix and restores the prior collection mode when the collection has no other rules. Unrelated collections and concurrently added third-party rules are retained. A policy snapshot is stored before applying changes. Application Identity (`AppIDSvc`) is enabled for enforcement.
 
@@ -92,10 +92,10 @@ This deliberately overrides a session, stops and unregisters Still Guard, and re
 ## Data and security
 
 - No accounts or telemetry. The font is bundled locally. Website logos request only the selected domain from Google’s favicon service and are cached locally; offline sites use a letter icon.
-- The Electron renderer is sandboxed, with context isolation, no Node integration, a restrictive Content Security Policy, blocked navigation, and allowlisted IPC methods with sender validation.
+- The screens run in WebView2 with a restrictive Content Security Policy, blocked navigation and new windows, and only Still's own page can call the app, through allowlisted requests that are validated before use.
 - The service runs as LocalSystem; its named pipe is restricted to its owner, SYSTEM, and administrators, with network access denied. Requests are bounded and validated again in the native service.
 - Guard state is stored atomically in `%ProgramData%\Still\state.json`. Its directory and `%ProgramFiles%\Still Guard` are writable only by administrators and SYSTEM. The installing user receives read access.
-- UI preferences are in Electron's `app.getPath('userData')` (`%APPDATA%\still-focus`). UI preferences do not control an active session. The guard retains up to 500 recent sessions, pruning older entries when the state reaches its 700,000-character budget.
+- UI preferences are in `%APPDATA%\still-focus`. UI preferences do not control an active session. The guard retains up to 500 recent sessions, pruning older entries when the state reaches its 700,000-character budget.
 
 ## Android preview
 

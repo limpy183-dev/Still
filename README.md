@@ -40,7 +40,7 @@
 3. **Prepare protection.** Enable **Windows protection** once; installing Still Guard requires administrator approval. For websites, also follow the [Chrome / Edge companion setup](docs/website-blocking.md#browser-setup).
 4. **Set your intention and start.** Choose a duration and an optional release delay. Save your work first: starting a session closes selected running apps.
 
-> **Windows requirements:** Updated Windows 10 version 2004+ or Windows 11, x64, Windows PowerShell 5.1, and .NET Framework 4.8. Still refuses domain-joined or detected MDM-managed PCs and PCs with existing application-control rules. See [protection and limits](docs/user-guide.md#protection-and-limits).
+> **Windows requirements:** Updated Windows 10 version 2004+ or Windows 11, x64, Windows PowerShell 5.1, .NET Framework 4.8, and the Microsoft Edge WebView2 Runtime (all included with current Windows). Still refuses domain-joined or detected MDM-managed PCs and PCs with existing application-control rules. See [protection and limits](docs/user-guide.md#protection-and-limits).
 
 The build is **not code-signed**, so SmartScreen may show a warning. If you downloaded the release from this repository and want to proceed, choose **More info → Run anyway**. [Installation, updates, and removal →](docs/user-guide.md#install)
 
@@ -142,16 +142,15 @@ Still Guard uses Windows AppLocker to deny app launches. The browser companion a
 <details>
 <summary><strong>Can I try the interface without blocking anything?</strong></summary>
 
-Yes. On Windows, clone the repository and run:
+Yes. On Windows, install [Rust](https://rustup.rs) (with the Visual Studio C++ build tools it asks for), clone the repository and run:
 
 ```powershell
 git clone https://github.com/limpy183-dev/Still.git
 cd Still
-npm install
-npm run demo
+cargo run -p still-app -- --demo
 ```
 
-Use Node.js 22 and npm. The interactive demo uses simulated protection and separate preview data. It never blocks real apps or websites.
+The interactive demo uses simulated protection and separate preview data. It never blocks real apps or websites.
 
 </details>
 
@@ -186,7 +185,7 @@ No app can guarantee an unbreakable lock against the administrator of the same P
 
 The [Still website](https://stillfocus.fyi/home) is served from `website/` by GitHub Pages. Changes to that folder on `main` deploy automatically through the **Deploy website** workflow; it can also be run manually from Actions. The site uses plain HTML, CSS, and JavaScript, with no install or build step. In repository **Settings → Pages**, the publishing source must be **GitHub Actions**. It is served at the custom domain `stillfocus.fyi` with clean URLs (`/home`, `/guide`, `/privacy`, ...): pages are linked without `.html`, and `index.html` only redirects to `/home`.
 
-Still combines an **Electron interface**, a **C# Windows service**, **PowerShell AppLocker integration**, and a **Chrome / Edge companion**.
+Still for Windows is written in **Rust**: the app shows its HTML/CSS/JS screens in the system's **WebView2**, a **Rust Windows service** guards sessions through **PowerShell AppLocker integration**, and a **Chrome / Edge companion** blocks websites. Version 2.0.0 replaced the earlier Electron/C# app; [what changed](docs/rust-port.md).
 
 | I want to… | Start here |
 | --- | --- |
@@ -198,7 +197,7 @@ Still combines an **Electron interface**, a **C# Windows service**, **PowerShell
 | Check enforcement validation limits | [Validation status](docs/development.md#develop-and-verify) |
 | Report a bug or suggest an improvement | [GitHub issues](https://github.com/limpy183-dev/Still/issues) |
 
-Live elevated service installation, kernel-enforced launch denial, and reboot recovery still need an administrator smoke test on a suitable Windows PC before relying on strict sessions. The [development guide](docs/development.md#develop-and-verify) includes the fixture-based smoke-test command.
+Live service installation, AppLocker launch denial, browser blocking and recovery after a restart were checked by hand on a real PC for 2.0.0 ([how](docs/rust-port.md#verification)). Run the fixture-based smoke test from the [development guide](docs/development.md#develop-and-verify) on your own PC before relying on strict sessions.
 
 ## Code signing policy
 

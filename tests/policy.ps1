@@ -4,7 +4,9 @@ $root = Split-Path $PSScriptRoot -Parent
 $out = Join-Path $root 'test-results'
 New-Item -ItemType Directory -Force $out | Out-Null
 $owner = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-$target = Join-Path $root 'native\bin\SessionTests.exe'
+# Any harmless executable will do: the rules are only previewed and evaluated, never applied. Needs scripts\build.ps1 first.
+$target = Join-Path $root 'dist\Still\Still.exe'
+$unrelated = Join-Path $root 'dist\Still\guard\Still.Guard.exe'
 $renamed = Join-Path $out 'RenamedFocusTest.exe'
 Copy-Item -LiteralPath $target -Destination $renamed -Force
 $before = Get-AppLockerPolicy -Local -Xml
@@ -13,10 +15,10 @@ $payload = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes(($request | 
 [xml]$policy = & "$root\native\policy.ps1" -Action preview -Payload $payload
 $policyFile = Join-Path $out 'test-policy.xml'
 $policy.Save($policyFile)
-$results = @(Test-AppLockerPolicy -XmlPolicy $policyFile -Path @($target, $renamed, "$root\native\bin\Still.Guard.exe") -User $owner)
+$results = @(Test-AppLockerPolicy -XmlPolicy $policyFile -Path @($target, $renamed, $unrelated) -User $owner)
 if ($results.Count -ne 3) { throw 'Expected three policy evaluations.' }
 foreach ($result in $results) {
-    if ($result.FilePath -eq "$root\native\bin\Still.Guard.exe") {
+    if ($result.FilePath -eq $unrelated) {
         if ($result.PolicyDecision -ne 'Allowed') { throw 'Unrelated executable was not allowed.' }
     } elseif ($result.PolicyDecision -ne 'Denied') { throw "Selected or renamed binary was not denied: $($result.FilePath)" }
 }

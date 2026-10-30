@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Still Setup</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self'; img-src data:">
+<style>
+@font-face { font-family: Manrope; font-weight: 500; src: url(/Manrope-Medium.ttf); }
+@font-face { font-family: Manrope; font-weight: 600; src: url(/Manrope-SemiBold.ttf); }
+@font-face { font-family: Manrope; font-weight: 800; src: url(/Manrope-ExtraBold.ttf); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 640px; height: 500px; overflow: hidden; background: transparent; user-select: none; cursor: default; }
+body { font: 13px/normal Manrope, "Segoe UI Variable Text", "Segoe UI", sans-serif; color: #252A27; }
+button { font: inherit; border: 0; background: none; color: inherit; cursor: pointer; }
+.window { position: absolute; left: 18px; top: 18px; right: 18px; bottom: 18px; border-radius: 16px; background: #F5F6F1; border: 1px solid #E1E5DA; box-shadow: 0 5px 22px rgba(27, 36, 21, .16); display: grid; grid-template-rows: 34px 1fr; }
+.titlebar { background: #EEF0E9; border-radius: 15px 15px 0 0; display: flex; align-items: stretch; app-region: drag; -webkit-app-region: drag; }
+.titlebar .title { white-space: pre; flex: 1; align-self: center; margin-left: 22px; font-size: 9px; font-weight: 800; color: #91978E; }
+.titlebar button { width: 46px; display: grid; place-items: center; color: #767D72; app-region: no-drag; -webkit-app-region: no-drag; }
+.titlebar button svg { width: 10px; height: 10px; stroke: currentColor; stroke-width: 1; fill: none; }
+.titlebar button:hover:not(:disabled) { background: #E0E4D9; }
+.titlebar #close { border-radius: 0 15px 0 0; }
+.titlebar #close:hover:not(:disabled) { background: #C64B4B; color: #fff; }
+.titlebar button:disabled { opacity: .4; }
+.body { position: relative; margin: 24px 36px; display: grid; grid-template-rows: auto auto auto auto 1fr auto; min-height: 0; }
+.brand { display: flex; align-items: center; }
+.bars { display: flex; align-items: center; margin: 2px 9px 0 0; transform: rotate(-8deg); transform-origin: 10px 12px; }
+.bars i { display: block; width: 5px; border-radius: 2.5px; background: #252A27; margin-right: 3.5px; }
+.brand b { font-size: 27px; font-weight: 800; }
+.brand b span { color: #7F974F; }
+.orbit { position: absolute; right: 0; top: 4px; width: 72px; height: 56px; }
+.orbit svg { width: 72px; height: 56px; overflow: visible; }
+.orbit.spin svg { animation: orbit 6s linear infinite; }
+@keyframes orbit { to { transform: rotate(360deg); } }
+.eyebrow { white-space: pre; margin-top: 24px; display: flex; align-items: center; font-size: 9.5px; font-weight: 800; color: #919A84; }
+.eyebrow i { width: 5px; height: 5px; border-radius: 50%; background: #9EAF7F; margin-right: 8px; }
+h1 { font-size: 31px; font-weight: 600; margin: 4.5px 0 6px; }
+h1 span { color: #7D886E; font-weight: 500; }
+.text { font-size: 13px; color: #7D8577; max-width: 500px; line-height: 20px; }
+.card { margin-top: 18px; align-self: start; background: #fff; border-radius: 18px; border: 1px solid #E9ECE4; padding: 3px 22px; }
+.row { border-top: 1px solid #EDF0E6; padding: 13px 0; display: flex; align-items: center; justify-content: space-between; }
+.row.first { border-top: 0; }
+.row.stack { display: block; }
+.row .title { font-weight: 600; font-size: 13px; }
+.row .hint { font-size: 11.5px; color: #8A957C; margin-top: 2px; }
+.row .value { font-weight: 600; color: #5C752E; margin-left: 20px; white-space: nowrap; }
+.row.location .hint { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 480px; }
+.row.progress { padding: 18px 0; display: block; }
+.row.progress .line { display: flex; justify-content: space-between; }
+.bar { height: 8px; margin-top: 12px; border-radius: 4px; background: #EDF0E6; }
+.bar i { display: block; height: 100%; width: 0; border-radius: 4px; background: linear-gradient(90deg, #B5CC7E, #99B365); }
+.switch { margin-left: 20px; flex: none; }
+.switch input { position: absolute; opacity: 0; pointer-events: none; }
+.switch label { display: block; width: 36px; height: 21px; border-radius: 11px; background: #D7DDD0; border: 2px solid transparent; cursor: pointer; position: relative; }
+.switch label::after { content: ""; position: absolute; left: 2px; top: 50%; width: 13px; height: 13px; margin-top: -6.5px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(76, 95, 40, .18); transition: transform .22s cubic-bezier(.215, .61, .355, 1); }
+.switch input:checked + label { background: #99B365; }
+.switch input:checked + label::after { transform: translateX(15px); }
+.switch input:focus-visible + label { border-color: #80944F; }
+.footer { display: flex; align-items: center; justify-content: space-between; align-self: end; }
+.note { font-size: 11px; color: #95A183; margin-right: 20px; }
+.buttons { display: flex; align-items: center; flex: none; }
+.secondary { color: #7B8969; font-weight: 600; padding: 10px 16px; margin-right: 10px; background: #fff; border: 1px solid #E0E6D6; border-radius: 8px; }
+.secondary:hover { background: #F0F5E7; }
+.secondary:focus-visible { outline: 0; border-color: #7C963F; }
+.primary { display: flex; align-items: center; background: #293126; color: #F6F9EE; font-weight: 600; padding: 9.4px 20px; border: 2px solid transparent; border-radius: 9px; }
+.primary svg { width: 11px; height: 10px; margin: 1px 0 0 10px; stroke: #D7ED9D; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+.primary:hover { background: #3C4932; }
+.primary:active { transform: translateY(1px); }
+.primary:focus-visible { outline: 0; border-color: #7C963F; }
+[hidden] { display: none !important; }
+</style></head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <div class="title" id="title"></div>
+    <button id="minimize" aria-label="Minimize"><svg viewBox="0 0 10 10"><path d="M0 .5h10"/></svg></button>
+    <button id="close" aria-label="Close"><svg viewBox="0 0 10 10"><path d="M0 0l10 10M10 0L0 10"/></svg></button>
+  </div>
+  <div class="body">
+    <div class="brand"><div class="bars"><i style="height:13px"></i><i style="height:21px"></i><i style="height:17px"></i></div><b>still<span>.</span></b></div>
+    <div class="orbit" id="orbit"><svg viewBox="0 0 72 56"><circle cx="28" cy="28" r="27.5" fill="none" stroke="#C9D2BC"/><circle cx="44" cy="28" r="27.5" fill="none" stroke="#C9D2BC"/><circle cx="48.5" cy="8.5" r="3.5" fill="#A9BA86"/></svg></div>
+    <div class="eyebrow"><i></i><span id="eyebrow"></span></div>
+    <h1 id="heading"></h1>
+    <p class="text" id="text"></p>
+    <div class="card" id="card">
+      <div class="row stack" id="rowVersion" hidden><div style="display:flex;justify-content:space-between;align-items:center"><div><div class="title">Version</div><div class="hint">Sessions, preferences, alerts and to-dos are kept.</div></div><div class="value" id="versionText"></div></div></div>
+      <div class="row location stack" id="rowLocation" hidden><div><div class="title" id="locationLabel">Installs to</div><div class="hint" id="locationText"></div></div></div>
+      <div class="row" id="rowDesktop" hidden><div><div class="title">Desktop shortcut</div><div class="hint">Keep Still one double-click away.</div></div><div class="switch"><input id="desktop" type="checkbox" checked aria-label="Desktop shortcut"><label for="desktop"></label></div></div>
+      <div class="row" id="rowGuard" hidden><div><div class="title">Remove Windows protection</div><div class="hint">Needs administrator approval. Not possible during an active focus session.</div></div><div class="switch"><input id="guard" type="checkbox" checked aria-label="Remove Windows protection"><label for="guard"></label></div></div>
+      <div class="row" id="rowData" hidden><div><div class="title">Also remove my data</div><div class="hint">Preferences, alerts, to-dos and session history on this PC.</div></div><div class="switch"><input id="data" type="checkbox" aria-label="Also remove my data"><label for="data"></label></div></div>
+      <div class="row" id="rowLaunch" hidden><div><div class="title">Open Still now</div><div class="hint">You'll also find it in the Start menu as Still Focus.</div></div><div class="switch"><input id="launch" type="checkbox" checked aria-label="Open Still now"><label for="launch"></label></div></div>
+      <div class="row progress" id="rowProgress" hidden><div class="line"><div class="title" id="status"></div><div class="value" id="percent" style="margin:0"></div></div><div class="bar"><i id="fill"></i></div></div>
+    </div>
+    <div class="footer">
+      <div class="note" id="note"></div>
+      <div class="buttons"><button class="secondary" id="secondary"></button><button class="primary" id="primary"><span id="primaryText"></span><svg viewBox="0 0 11 10"><path d="M0 5h11M7 1l4 4-4 4"/></svg></button></div>
+    </div>
+  </div>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+const post = message => window.ipc.postMessage(JSON.stringify(message));
+// The small caps labels get the app's airy tracking from spaces between letters, as the WPF original did.
+const spaced = text => [...text].join(' ');
+const ROWS = ['rowVersion', 'rowLocation', 'rowDesktop', 'rowGuard', 'rowData', 'rowLaunch', 'rowProgress'];
+let S = {}, busy = false, primaryAction = null;
+
+function page(p) {
+  $('eyebrow').textContent = spaced(p.eyebrow);
+  $('heading').innerHTML = ''; $('heading').append(p.heading); const accent = document.createElement('span'); accent.textContent = p.accent; $('heading').append(accent);
+  $('text').textContent = p.body;
+  $('primary').hidden = !p.primary; $('primaryText').textContent = p.primary || ''; primaryAction = p.action || null;
+  $('secondary').hidden = !p.secondary; $('secondary').textContent = p.secondary || '';
+  $('close').disabled = busy;
+  let first = true;
+  for (const id of ROWS) {
+    const on = (p.rows || []).includes(id); $(id).hidden = !on;
+    $(id).classList.toggle('first', on && first); if (on) first = false;
+  }
+  $('card').hidden = !(p.rows || []).length;
+  $('note').textContent = 'No account. No analytics. Everything stays on this PC.';
+}
+const runningNote = () => { if (S.running) $('note').textContent = 'Still is open. It will close for a moment; Windows protection keeps running.'; };
+function report(status, percent) { $('status').textContent = status; $('percent').textContent = Math.round(percent) + '%'; $('fill').style.width = percent + '%'; }
+function working(heading, accent, body) {
+  busy = true; report(S.uninstaller ? 'Tidying up…' : 'Getting ready…', 0);
+  page({ eyebrow: 'SETTLING IN', heading, accent, body, rows: ['rowProgress'] });
+  $('orbit').classList.add('spin');
+}
+function idle() { busy = false; $('orbit').classList.remove('spin'); }
+function failed(message, retry) { idle(); page({ eyebrow: 'SETUP PAUSED', heading: 'Something got in ', accent: 'the way.', body: message, primary: 'Try again', action: retry, secondary: 'Close' }); }
+
+function installWelcome() {
+  $('locationText').textContent = S.dir; $('locationLabel').textContent = S.installedVersion ? 'Installed in' : 'Installs to';
+  $('versionText').textContent = S.installedVersion + '  →  ' + S.version;
+  const run = () => startInstall(), v = S.version, old = S.installedVersion;
+  if (!old) page({ eyebrow: 'A QUIETER SPACE FOR YOUR ATTENTION', heading: 'Make room for ', accent: 'focus.', body: "Still helps you set distracting apps and websites aside, so there's space for what matters. Setup takes a moment and needs no administrator approval.", primary: 'Install Still', action: run, secondary: 'Cancel', rows: ['rowLocation', 'rowDesktop'] });
+  else if (S.order > 0) page({ eyebrow: 'A NEW VERSION IS READY', heading: 'A fresh ', accent: 'update.', body: `Still ${old} is on this PC. Updating to ${v} keeps your sessions, preferences, alerts and to-dos exactly as they are.`, primary: 'Update Still', action: run, secondary: 'Not now', rows: ['rowVersion', 'rowLocation'] });
+  else if (S.order === 0) page({ eyebrow: 'ALREADY INSTALLED', heading: 'Already ', accent: 'here.', body: `Still ${v} is already installed. Reinstall to repair it; your data stays just as it is.`, primary: 'Reinstall', action: run, secondary: 'Close', rows: ['rowLocation'] });
+  else page({ eyebrow: 'A NEWER VERSION IS INSTALLED', heading: 'Already ', accent: 'ahead.', body: `Still ${old} is installed, which is newer than this setup (${v}). Installing replaces it with the older version; your data stays as it is.`, primary: 'Install ' + v, action: run, secondary: 'Close', rows: ['rowVersion', 'rowLocation'] });
+  runningNote();
+}
+function uninstallWelcome() {
+  if (!S.removable) { page({ eyebrow: 'NOTHING TO REMOVE', heading: "Still isn't ", accent: 'here.', body: 'This uninstaller only removes the Still installation it belongs to. Use Settings → Apps → Installed apps to remove Still.', secondary: 'Close' }); return; }
+  page({ eyebrow: 'UNINSTALL', heading: 'Leaving ', accent: 'so soon?', body: "This removes Still from this PC. Your focus is yours to keep; you're welcome back anytime.", primary: 'Uninstall', action: startUninstall, secondary: 'Cancel', rows: S.hasGuard ? ['rowGuard', 'rowData'] : ['rowData'] });
+  runningNote();
+}
+function startInstall() {
+  const update = !!S.installedVersion;
+  working(update ? 'Freshening ' : 'Making ', update ? 'things up…' : 'space…', 'This only takes a moment. Your data stays exactly where it is.');
+  post({ op: 'install', desktop: $('desktop').checked });
+}
+function startUninstall() {
+  const guard = S.hasGuard && $('guard').checked, data = $('data').checked;
+  S.removedData = data;
+  working('Clearing ', 'the way…', 'Removing Still from this PC.');
+  post({ op: 'uninstall', guard, data });
+}
+window.setup = {
+  init(state) {
+    S = state; $('title').textContent = spaced(S.uninstaller ? 'STILL · UNINSTALL' : 'STILL · SETUP ' + S.version);
+    S.uninstaller ? uninstallWelcome() : installWelcome();
+  },
+  report,
+  installed() {
+    idle(); const update = !!S.installedVersion; S.installedVersion = S.version;
+    page(update ? { eyebrow: 'ALL DONE', heading: 'Up to ', accent: 'date.', body: `Still ${S.version} is ready, with everything just as you left it.`, primary: 'Finish', action: finish, rows: ['rowLaunch'] }
+                : { eyebrow: 'ALL DONE', heading: 'All ', accent: 'set.', body: `Still ${S.version} is installed. A quieter space for your attention is one click away.`, primary: 'Finish', action: finish, rows: ['rowLaunch'] });
+  },
+  uninstalled() {
+    idle(); page({ eyebrow: 'ALL DONE', heading: 'Goodbye ', accent: 'for now.', body: 'Still has been removed from this PC.' + (S.removedData ? '' : ' Your preferences and history are kept, in case you come back.'), primary: 'Close', action: () => post({ op: 'close' }) });
+  },
+  failed(message) { failed(message, S.uninstaller ? startUninstall : startInstall); }
+};
+function finish() { post({ op: 'finish', launch: $('launch').checked }); }
+$('primary').onclick = () => primaryAction && primaryAction();
+$('secondary').onclick = () => post({ op: 'close' });
+$('close').onclick = () => post({ op: 'close' });
+$('minimize').onclick = () => post({ op: 'minimize' });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !busy) post({ op: 'close' }); });
+post({ op: 'init' });
+</script></body></html>

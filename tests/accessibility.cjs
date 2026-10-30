@@ -1,8 +1,8 @@
 // Settings > Made to fit you: every option applies, persists, and leaves the layout intact.
-const { _electron: electron } = require('playwright');
+const { launch } = require('./rust-launch.cjs');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
-const screenshot = require('./screenshot.cjs');
+const screenshot = async (application, window, file) => window.screenshot({ path: file });
 const pages = ['focus', 'library', 'todos', 'alerts', 'limits', 'history', 'settings'];
 const options = [['high-contrast', 'high-contrast', 'highContrast'], ['readable-font', 'readable-font', 'readableFont'], ['strong-focus', 'strong-focus', 'strongFocus'], ['reduced-motion', 'reduced-motion', 'reducedMotion']];
 // Runs in the page: sideways scrolling, controls cut off past the right edge outside a scroller, or buttons clipping their label.
@@ -50,8 +50,7 @@ const lowContrast = min => {
 };
 async function run() {
   await fs.mkdir('test-results', { recursive: true });
-  const environment = { ...process.env }; delete environment.ELECTRON_RUN_AS_NODE;
-  const application = await electron.launch({ args: ['.', '--demo', '--test'], env: environment, timeout: 60000 });
+  const application = await launch();
   const window = await application.firstWindow();
   const errors = [];
   window.on('pageerror', error => errors.push(error.message));
@@ -118,9 +117,7 @@ async function run() {
     await resize(1000, 700); await page('settings');
     await window.locator('.accessibility-settings').scrollIntoViewIfNeeded();
     await window.waitForTimeout(400);
-    // Playwright's own capture comes back blank under page zoom, so ask Electron for the window contents.
-    const png = await application.evaluate(async ({ BrowserWindow }) => (await BrowserWindow.getAllWindows()[0].webContents.capturePage()).toPNG().toString('base64'));
-    await fs.writeFile('test-results/accessibility-175.png', Buffer.from(png, 'base64'));
+    await window.screenshot({ path: 'test-results/accessibility-175.png' });
 
     // Everything on together at the largest size, then a reload keeps it all.
     for (const [id] of options) await window.locator('#' + id).check({ force: true });

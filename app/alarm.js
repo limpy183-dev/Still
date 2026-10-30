@@ -15,7 +15,7 @@ window.alarm.onData(item => {
     const video = /\.(mp4|mov|webm)$/i.test(alert.banner.file), media = document.createElement(video ? 'video' : 'img');
     if (video) { media.muted = true; media.loop = true; media.autoplay = !item.reducedMotion; media.controls = true; media.playsInline = true; }
     else media.alt = 'Your alert banner';
-    media.src = 'still-media://local/' + alert.banner.file;
+    media.src = '/media/' + alert.banner.file;
     media.onerror = () => { get('alarm-media').hidden = true; get('alarm-error').textContent = 'Banner could not play. Try a JPG, GIF, or H.264 MP4.'; };
     get('alarm-media').replaceChildren(media); get('alarm-media').hidden = false;
   }

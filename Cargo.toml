@@ -1,0 +1,19 @@
+﻿[workspace]
+resolver = "3"
+members = ["crates/still-core", "crates/still-app", "crates/still-guard", "crates/still-setup"]
+
+[workspace.package]
+version = "2.0.0"
+edition = "2024"
+license = "MIT"
+authors = ["Still"]
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev]
+debug = 1

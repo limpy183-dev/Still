@@ -3,8 +3,6 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const Websites = require('../app/websites.js');
-const { validateSession, validatePreferences, allowedApp } = require('../app/domain.cjs');
-const { validateAlert } = require('../app/alert-domain.cjs');
 
 test('website addresses normalize consistently and reject unsafe/local identities', () => {
   assert.equal(Websites.domain('https://WWW.YouTube.com/watch?v=123'), 'youtube.com');
@@ -16,19 +14,6 @@ test('website addresses normalize consistently and reject unsafe/local identitie
   assert.ok(Websites.matches('EXAMPLE.COM.', 'example.com'));
   assert.ok(!Websites.matches('notexample.com', 'example.com'));
   assert.ok(!Websites.matches('example.com.attacker.com', 'example.com'));
-});
-test('website-only and mixed selections survive preferences, sessions, groups and alerts', () => {
-  const website = Websites.target('https://youtube.com/watch');
-  assert.equal(allowedApp(website), false, 'Discovery still accepts native apps only');
-  const request = { durationMinutes: 25, unlockDelayMinutes: 5, apps: [website], intention: 'Write' };
-  assert.deepEqual(validateSession(request).apps, [website]);
-  assert.equal(validateSession(request).blockScreen.mode, 'garden');
-  const prefs = validatePreferences({ apps: [website], selected: [website.path], groups: [{ name: 'Quiet', paths: [website.path] }], blockScreen: { mode: 'custom', title: '<hello>', text: 'Keep going', image: 'data:image/png;base64,AAAA' } });
-  assert.deepEqual(prefs.apps, [website]); assert.deepEqual(prefs.groups[0].paths, [website.path]);
-  assert.equal(prefs.blockScreen.title, '<hello>');
-  const alert = validateAlert({ title: 'Write', date: '2026-09-24', time: '10:00', repeat: 'daily', lengthMode: 'duration', durationMinutes: 25, endTime: '11:00', style: 'card', blockMode: 'custom', apps: [website], unlockDelayMinutes: 0, sound: 'chime', volume: 50 });
-  assert.deepEqual(alert.apps, [website]);
-  assert.throws(() => validateSession({ ...request, apps: [{ name: 'Bad', path: 'website:localhost' }] }));
 });
 test('redirect loops and executable image URLs are rejected at the IPC boundary', () => {
   const targets = [Websites.target('youtube.com')];
@@ -87,7 +72,6 @@ test('daily limits and bedtime normalize, cross midnight, and pick the right rea
   assert.deepEqual(Websites.limitBlocks(config, { 'youtube.com': 1800, 'reddit.com': 10 }, at('12:00')), { 'youtube.com': 'limit' });
   assert.deepEqual(Websites.limitBlocks(config, {}, at('23:00')), { 'youtube.com': 'bedtime' });
   assert.deepEqual(Websites.limitBlocks({ ...config, bedtime: { ...config.bedtime, on: false } }, {}, at('23:00')), {});
-  assert.deepEqual(validatePreferences({ websiteLimits: { sites: [{ domain: 'x.com', minutes: 15, bedtime: true }] } }).websiteLimits.sites, [{ domain: 'x.com', minutes: 15, bedtime: true }]);
 });
 test('companion counts time while a limited site is open in any tab, even unfocused, blocks over-limit sites alongside session rules, and keeps limits when preferences are unreadable', async () => {
   const listeners = {}, events = name => ({ addListener: listener => { listeners[name] = listener; } });

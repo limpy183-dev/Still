@@ -1,12 +1,14 @@
-## What's new in v1.2.0
+## What's new in v2.0.0
 
-- **Something new.** A new page on Windows asks one question: what new thing will you do today? Plan it, or log something you already did, on today or any other day. A calendar marks the days, and *Your progress* shows the same calendar and list. Nothing starts a focus session or blocks anything. Your entries are saved with your preferences, so older preference files load unchanged.
-- **Your own alarm sounds.** Drop audio or video files into the AlertSounds folder and they appear in the alarm sound list. A button in the alarm editor opens the folder.
-- **Android preview:** switching pages no longer plays the system slide, so pages change straight away.
+- **Still for Windows is rewritten in Rust.** Everything looks and works the same: the same screens, sessions, to-dos, alerts and history. Your preferences, alerts, to-dos, Something new entries, imported media, alarm sounds and history carry over untouched, and Still Guard keeps any session that is running while you update.
+- **Much smaller.** The installer is about 5 MB instead of 140 MB, and Still takes about 10 MB on disk instead of 320 MB.
+- **Lighter in the tray.** About 90 seconds after you close the window to the tray, Still lets go of its screens and runs in about 3 MB of memory, instead of about 170 MB. Alarms, sessions and protection keep working; opening Still again takes about half a second.
+- **Faster app search.** Finding your installed apps takes about 2 seconds instead of 10 to 30.
+- **Needs the WebView2 runtime** that comes with Windows 10 and 11, instead of bundling its own browser engine. On a PC where it was removed, Still asks you to install it from Microsoft.
 
 ## Install or update
 
-Download **Still-Setup** below and run it. It installs Still for your Windows account (no administrator approval needed), or updates an existing installation while keeping your preferences, alerts, to-dos and history.
+Download **Still-Setup** below and run it. It installs Still for your Windows account (no administrator approval needed), or updates an existing installation (including Still 1.x) while keeping your preferences, alerts, to-dos and history.
 
 Still isn't code-signed yet, so Windows SmartScreen may show "Windows protected your PC". Choose **More info → Run anyway**.
 

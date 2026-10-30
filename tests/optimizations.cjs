@@ -1,10 +1,10 @@
-const { _electron: electron } = require('playwright');
+const { launch } = require('./rust-launch.cjs');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 
 (async () => {
   const env = { ...process.env }; delete env.ELECTRON_RUN_AS_NODE;
-  const application = await electron.launch({ ...(process.env.STILL_EXECUTABLE ? { executablePath: process.env.STILL_EXECUTABLE, args: ['--demo', '--test'] } : { args: ['.', '--demo', '--test'] }), env });
+  const application = await launch();
   try {
     const window = await application.firstWindow();
     const errors = []; window.on('pageerror', error => errors.push(error.message));

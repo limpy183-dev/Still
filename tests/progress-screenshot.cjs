@@ -1,7 +1,7 @@
 // Captures test-results/progress.png: the progress page's calendar and "Where your attention went"
 // in demo mode, with a month of sample sessions.
 // Demo history lives in the main process, so the sample is shown in the window only and never saved.
-const { _electron: electron } = require('playwright');
+const { _electron: electron } = require('./rust-launch.cjs');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 

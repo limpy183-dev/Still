@@ -1,4 +1,4 @@
-const { _electron: electron } = require('playwright');
+const { _electron: electron } = require('./rust-launch.cjs');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
@@ -72,7 +72,7 @@ async function run() {
     await application.evaluate(({ dialog }, fixture) => { dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [fixture] }); }, soundPath);
     await window.locator('#alert-sound').selectOption('custom'); await window.locator('#alert-sound-pick').click();
     await window.waitForFunction(() => alertSoundFile !== null);
-    assert.ok(await window.evaluate(() => new Promise((resolve, reject) => { const audio = new Audio('still-media://local/' + alertSoundFile.file); audio.onloadedmetadata = () => resolve(audio.duration); audio.onerror = () => reject(Error('WAV did not decode')); })));
+    assert.ok(await window.evaluate(() => new Promise((resolve, reject) => { const audio = new Audio('/media/' + alertSoundFile.file); audio.onloadedmetadata = () => resolve(audio.duration); audio.onerror = () => reject(Error('WAV did not decode')); })));
     await window.locator('#alert-listen').click(); await window.locator('#alert-listen').click();
     await window.locator('#alert-sound').selectOption('bell');
     await window.locator('#alert-listen').click();

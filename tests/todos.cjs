@@ -1,4 +1,4 @@
-const { _electron: electron } = require('playwright');
+const { _electron: electron } = require('./rust-launch.cjs');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');

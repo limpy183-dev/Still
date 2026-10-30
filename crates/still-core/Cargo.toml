@@ -1,0 +1,20 @@
+﻿[package]
+name = "still-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+url = "2"
+regex = "1"
+chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
+sha2 = "0.11"
+base64 = "0.23"
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.56"
+
+[dev-dependencies]
+chrono-tz = "0.10"

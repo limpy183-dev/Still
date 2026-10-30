@@ -1,0 +1,26 @@
+[package]
+name = "still-setup"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "Still-Setup"
+path = "src/main.rs"
+
+[dependencies]
+still-core = { path = "../still-core" }
+serde_json = "1"
+wry = "0.57"
+tao = "0.37"
+zip = { version = "9", default-features = false, features = ["deflate"] }
+chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
+windows = { version = "0.62", features = [
+  "Win32_Foundation", "Win32_Security", "Win32_System_Com", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging", "Win32_System_Threading",
+  "Win32_System_LibraryLoader", "Win32_System_Diagnostics_ToolHelp", "Win32_System_RemoteDesktop",
+] }
+winreg = "0.56"
+base64 = "0.23"
+
+[build-dependencies]
+embed-resource = "3"

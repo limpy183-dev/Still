@@ -160,7 +160,7 @@ Gradle needs a JDK and the Android SDK (`ANDROID_HOME`). Android Studio's bundle
 
 | File | What it does |
 | --- | --- |
-| `Session.java` | Session rules and deadlines (mirrors `native/Session.cs`) |
+| `Session.java` | Session rules and deadlines (mirrors `crates/still-core/src/session.rs`) |
 | `Websites.java` | Domain validation and matching (mirrors `app/websites.js`) and reading a host from an address bar |
 | `BlockScreen.java`, `BlockScreenView.java`, `BlockScreenActivity.java` | Block screen rules (mirrors `presets`/`screen()`), drawing them, and the editor with a live preview |
 | `Todos.java`, `TodosActivity.java` | To-do rules (mirrors `app/todos.js`) and the to-do screen |
@@ -172,7 +172,7 @@ Gradle needs a JDK and the Android SDK (`ANDROID_HOME`). Android Studio's bundle
 | `MainActivity.java` | The Focus page: set up a session, or watch and end the running one, with the timer ring |
 | `Nav.java` | The bottom bar, page headings (with the Settings button), edge-to-edge insets and the page entrance |
 | `StillActivity.java`, `SettingsActivity.java` | The accessibility options every screen follows (mirrors `app/accessibility.js`), and the Settings page |
-| `Alerts.java`, `AlertStore.java`, `AlertsActivity.java`, `AlertEditActivity.java` | Alert rules and times (mirrors `alert-domain.cjs`), storage and what happens when one is due (mirrors `alerts-main.cjs`), the list and the editor |
+| `Alerts.java`, `AlertStore.java`, `AlertsActivity.java`, `AlertEditActivity.java` | Alert rules and times (mirrors `crates/still-core/src/alerts.rs`), storage and what happens when one is due (mirrors `crates/still-app/src/alerts.rs`), the list and the editor |
 | `AlarmActivity.java`, `AlarmSound.java` | The alarm screens, notifications, Snooze/Dismiss, and the sounds (mirrors `alarm.html`/`alert-sound.js`) |
 | `AppPicker.java` | The app list and picker shared by the Focus page and the alert editor |
 | `Events.java`, `Recover.java` | End and alert alarms, boot, date/time/time-zone changes; emergency release |

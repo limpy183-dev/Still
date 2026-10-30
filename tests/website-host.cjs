@@ -6,10 +6,12 @@ const os = require('node:os');
 const assert = require('node:assert/strict');
 async function run() {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'Still-host-test-'));
-  const file = path.join(root, 'state.json');
-  await fs.writeFile(file, JSON.stringify({ session: null }));
-  const prefs = path.join(root, 'prefs', 'preferences.json');
-  const child = spawn(path.resolve('native/bin/WebsitesTests.exe'), ['--host', file, prefs], { windowsHide: true });
+  // The Rust guard runs as the browser starts it; its state and preferences folders are redirected into the test folder.
+  const file = path.join(root, 'Still', 'state.json');
+  await fs.mkdir(path.dirname(file)); await fs.writeFile(file, JSON.stringify({ session: null }));
+  const prefs = path.join(root, 'still-focus', 'preferences.json');
+  const guard = path.join(__dirname, '..', 'target', process.env.STILL_PROFILE || 'debug', 'still-guard.exe');
+  const child = spawn(guard, ['chrome-extension://abcdefghijklmnopabcdefghijklmnop/'], { windowsHide: true, env: { ...process.env, ProgramData: root, APPDATA: root } });
   let buffer = Buffer.alloc(0), messages = [];
   child.stdout.on('data', chunk => {
     buffer = Buffer.concat([buffer, chunk]);

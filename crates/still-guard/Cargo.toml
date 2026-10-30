@@ -1,0 +1,27 @@
+﻿[package]
+name = "still-guard"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "still-guard"
+path = "src/main.rs"
+
+[dependencies]
+still-core = { path = "../still-core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "io-util", "sync", "macros"] }
+windows-service = "0.8"
+windows = { version = "0.62", features = [
+  "Win32_Foundation", "Win32_Security", "Win32_Security_Authorization", "Win32_Storage_FileSystem",
+  "Win32_System_Threading", "Win32_UI_WindowsAndMessaging", "Win32_UI_Shell", "Win32_System_IO",
+] }
+winreg = "0.56"
+uuid = { version = "1", features = ["v4"] }
+base64 = "0.23"
+url = "2"
+
+[build-dependencies]
+embed-resource = "3"

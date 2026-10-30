@@ -1,15 +1,12 @@
-const { _electron: electron } = require('playwright');
+const { launch } = require('./rust-launch.cjs');
 const assert = require('node:assert/strict');
 const path = require('node:path');
-const screenshot = require('./screenshot.cjs');
+const screenshot = async (application, window, file) => window.screenshot({ path: file });
 
 async function run() {
   const env = { ...process.env }; delete env.ELECTRON_RUN_AS_NODE;
   const packaged = process.argv.includes('--packaged');
-  const application = await electron.launch({
-    ...(packaged ? { executablePath: path.resolve('release/win-unpacked/Still.exe') } : {}),
-    args: [...(packaged ? [] : ['.']), '--test'], env, timeout: 60000
-  });
+  const application = await launch();
   try {
     const window = await application.firstWindow();
     await window.waitForFunction(() => !!window.still);

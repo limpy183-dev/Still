@@ -1,12 +1,11 @@
-const { _electron: electron } = require('playwright');
+const { launch } = require('./rust-launch.cjs');
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
-const screenshot = require('./screenshot.cjs');
+const screenshot = async (application, window, file) => window.screenshot({ path: file });
 async function run() {
   await fs.mkdir('test-results', { recursive: true });
-  const environment = { ...process.env }; delete environment.ELECTRON_RUN_AS_NODE;
-  const application = await electron.launch({ args: ['.', '--demo', '--test'], env: environment, timeout: 60000 });
+    const application = await launch();
   const window = await application.firstWindow();
   const errors = [];
   window.on('pageerror', error => errors.push(error.message));
@@ -62,17 +61,22 @@ async function run() {
     assert.equal(await window.locator('body').evaluate(el => el.classList.contains('reduced-motion')), true);
     await screenshot(application, window, 'test-results/settings.png');
     await window.locator('[data-page="focus"]').click();
-    await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1000, 760));
+    // Real window resizes, as in the original (a viewport override only draws the page smaller inside the same window).
+    const compact = async () => {
+      await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1000, 760));
+      await window.waitForFunction(() => Math.abs(innerWidth - 1000) <= 2 && Math.abs(innerHeight - 760) <= 2);
+    };
+    await compact();
     await screenshot(application, window, 'test-results/compact.png');
     const overflowing = await window.evaluate(() => document.documentElement.scrollWidth > innerWidth);
     assert.equal(overflowing, false, 'No horizontal overflow at minimum window width');
     for (const [width, height] of [[1350, 900], [1000, 600], [640, 480]]) {
       await application.evaluate(({ BrowserWindow }, size) => BrowserWindow.getAllWindows()[0].setContentSize(...size), [width, height]);
-      await window.waitForFunction(size => innerHeight >= size - 2 && innerHeight <= size + 2, height);
+      await window.waitForFunction(([w, h]) => Math.abs(innerWidth - w) <= 2 && Math.abs(innerHeight - h) <= 2, [width, height]);
       const help = await window.locator('#help-button').boundingBox();
       assert.ok(help.y + help.height <= await window.evaluate(() => innerHeight), `Settings and guidance stay visible at ${width}x${height}`);
     }
-    await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1000, 760));
+    await compact();
     // Natural expiry is tested against the running timer, not by mutating app internals.
     await window.waitForSelector('.focus-card:not(.running)', { timeout: 70000 });
     await window.locator('[data-page="history"]').click();

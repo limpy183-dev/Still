@@ -16,10 +16,11 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Check tag matches package.json
+      - name: Check tag matches Cargo.toml and package.json
         run: |
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
-          if ("v$version" -ne $env:GITHUB_REF_NAME) { throw "Tag $env:GITHUB_REF_NAME does not match package.json version $version." }
+          $cargo = (Select-String -Path Cargo.toml -Pattern '^version = "(.+)"').Matches[0].Groups[1].Value
+          if ("v$version" -ne $env:GITHUB_REF_NAME -or $cargo -ne $version) { throw "Tag $env:GITHUB_REF_NAME must match package.json ($version) and Cargo.toml ($cargo)." }
       - name: Check release notes cover only this version
         run: |
           $notes = Get-Content .github/release-notes.md -Raw
@@ -27,14 +28,24 @@ jobs:
           if ($headings.Count -ne 1 -or $headings[0].Groups[1].Value -ne $env:GITHUB_REF_NAME) {
             throw "Release notes must have exactly one 'What's new in $env:GITHUB_REF_NAME' section."
           }
+      - name: Update Rust
+        run: rustup update stable --no-self-update; rustup default stable
+      - name: Make sure the WebView2 runtime is installed
+        run: |
+          $key = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+          if (!(Get-ItemProperty $key -ErrorAction SilentlyContinue).pv) {
+            Invoke-WebRequest 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' -OutFile "$env:RUNNER_TEMP\webview2.exe"
+            Start-Process "$env:RUNNER_TEMP\webview2.exe" -ArgumentList '/silent', '/install' -Wait
+          }
       - run: npm ci
       - run: npm test
-      - run: npm run dist
-      - name: Verify relocated package and installer helpers
+      - run: cargo test --workspace --release
+      - run: npm run build
+      - name: Verify relocated app and installer
         run: |
           node tests/portability.cjs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          powershell -NoProfile -ExecutionPolicy Bypass -File tests/installer.ps1
+          node tests/installer.cjs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/setup-java@v4
         with:
@@ -53,8 +64,8 @@ jobs:
           $code = $LASTEXITCODE
           Remove-Item $env:STILL_KEYSTORE
           if ($code -ne 0) { exit $code }
-          Copy-Item build/outputs/apk/release/Still-release.apk "../release/Still-Android-preview-$($env:GITHUB_REF_NAME.TrimStart('v')).apk"
+          Copy-Item build/outputs/apk/release/Still-release.apk "../dist/Still-Android-preview-$($env:GITHUB_REF_NAME.TrimStart('v')).apk"
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:GITHUB_REF_NAME "release/Still-Setup-$($env:GITHUB_REF_NAME.TrimStart('v')).exe" "release/Still-Android-preview-$($env:GITHUB_REF_NAME.TrimStart('v')).apk" --title "Still $env:GITHUB_REF_NAME" --notes-file .github/release-notes.md --generate-notes --latest
+        run: gh release create $env:GITHUB_REF_NAME "dist/Still-Setup-$($env:GITHUB_REF_NAME.TrimStart('v')).exe" "dist/Still-Android-preview-$($env:GITHUB_REF_NAME.TrimStart('v')).apk" --title "Still $env:GITHUB_REF_NAME" --notes-file .github/release-notes.md --generate-notes --latest
