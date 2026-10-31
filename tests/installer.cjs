@@ -82,4 +82,4 @@ const heading = page => page.locator('#heading').innerText();
     try { execFileSync('reg', ['delete', 'HKCU\\Software\\StillSetupSandbox', '/f'], { stdio: 'ignore' }); } catch { /* already gone */ }
     fs.rmSync(sandbox, { recursive: true, force: true });
   }
-})().catch(error => { console.error(error); process.exitCode = 1; });
+})().catch(error => { console.error(error); process.exit(1); }); // exit: a Setup left running would keep this process alive

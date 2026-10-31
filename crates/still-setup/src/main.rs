@@ -70,7 +70,8 @@ fn main() {
         return;
     }
     let payload = Payload::from_self();
-    if payload.is_some() {
+    // Sandboxed test runs write only inside a temporary folder, so they skip the OS check (the hosted CI runner is Windows Server).
+    if payload.is_some() && std::env::var_os("STILL_SETUP_SANDBOX").is_none() {
         if let Err(message) = still_core::compat::ensure() {
             unsafe { MessageBoxW(None, &HSTRING::from(message), &HSTRING::from("Still Setup"), MB_OK | MB_ICONINFORMATION) };
             std::process::exit(1);
