@@ -108,7 +108,7 @@ fn main() {
     let web_data = std::env::temp_dir().join(format!("Still-Setup-{VERSION}")).join("WebView2");
     let mut web_context = wry::WebContext::new(Some(web_data));
     let (ipc_proxy, ipc_ctx, ipc_busy) = (proxy.clone(), ctx.clone(), busy.clone());
-    let webview = WebViewBuilder::new_with_web_context(&mut web_context)
+    let builder = WebViewBuilder::new_with_web_context(&mut web_context)
         .with_transparent(true)
         .with_background_color((0, 0, 0, 0))
         .with_url(URL)
@@ -162,8 +162,16 @@ fn main() {
                 }
                 _ => {}
             }
-        })
-        .build(&window);
+        });
+    // The installer test attaches Playwright through WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS; some runtimes (the hosted CI
+    // runner's) drop it when the app passes its own arguments, so pass it explicitly next to wry's default.
+    let builder = match std::env::var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS") {
+        Ok(extra) if std::env::var_os("STILL_SETUP_SANDBOX").is_some() => {
+            builder.with_additional_browser_args(format!("--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection {extra}"))
+        }
+        _ => builder,
+    };
+    let webview = builder.build(&window);
     let Ok(webview) = webview else {
         let message = "Still needs the Microsoft Edge WebView2 Runtime, which is included with current versions of Windows. Install it from microsoft.com/edge/webview2, then run Setup again.";
         unsafe { MessageBoxW(None, &HSTRING::from(message), &HSTRING::from("Still Setup"), MB_OK | MB_ICONINFORMATION) };

@@ -285,7 +285,8 @@ impl Ui_<'_> {
             WindowKey::Alarm(_) => (ALARM_URL, ALARM_API, (245, 246, 241, 255)),
         };
         let (proxy, media) = (self.proxy.clone(), self.cfg.media_dir.clone());
-        WebViewBuilder::new_with_web_context(&mut self.web_context)
+        let testing = self.cfg.testing;
+        let builder = WebViewBuilder::new_with_web_context(&mut self.web_context)
             .with_background_color(background)
             .with_url(page)
             .with_initialization_script(BRIDGE.replace("__EXPOSE__", api))
@@ -311,9 +312,17 @@ impl Ui_<'_> {
             // Electron has no form autofill; WebView2 would suggest earlier entries (alert titles, website addresses).
             .with_general_autofill_enabled(false)
             .with_autoplay(true)
-            .with_https_scheme(true)
-            .build(window)
-            .map_err(|e| e.to_string())
+            .with_https_scheme(true);
+        // Tests attach Playwright through WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS (--remote-debugging-port). Some WebView2
+        // runtimes (the hosted CI runner's) drop that variable when the app passes its own arguments, so pass it explicitly
+        // next to wry's defaults.
+        let builder = match std::env::var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS") {
+            Ok(extra) if testing => builder.with_additional_browser_args(format!(
+                "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --autoplay-policy=no-user-gesture-required {extra}"
+            )),
+            _ => builder,
+        };
+        builder.build(window).map_err(|e| e.to_string())
     }
 }
 
