@@ -199,13 +199,6 @@ Still for Windows is written in **Rust**: the app shows its HTML/CSS/JS screens 
 
 Live service installation, AppLocker launch denial, browser blocking and recovery after a restart were checked by hand on a real PC for 2.0.0 ([how](docs/rust-port.md#verification)). Run the fixture-based smoke test from the [development guide](docs/development.md#develop-and-verify) on your own PC before relying on strict sessions.
 
-## Code signing policy
-
-- Committers and reviewers: [limpy183-dev](https://github.com/limpy183-dev), [adambelalxd](https://github.com/adambelalxd)
-- Approvers: [limpy183-dev](https://github.com/limpy183-dev), [adambelalxd](https://github.com/adambelalxd)
-
-Only Still's own binaries are signed, built by the [release workflow](.github/workflows/release.yml) from this repository, and each release is approved by hand. Privacy: this program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. See the [privacy page](https://stillfocus.fyi/privacy).
-
 ---
 
 <div align="center">
