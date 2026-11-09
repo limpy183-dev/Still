@@ -201,8 +201,6 @@ Live service installation, AppLocker launch denial, browser blocking and recover
 
 ## Code signing policy
 
-Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
-
 - Committers and reviewers: [limpy183-dev](https://github.com/limpy183-dev), [adambelalxd](https://github.com/adambelalxd)
 - Approvers: [limpy183-dev](https://github.com/limpy183-dev), [adambelalxd](https://github.com/adambelalxd)
 
