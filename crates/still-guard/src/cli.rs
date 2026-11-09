@@ -23,8 +23,33 @@ pub fn data_dir() -> PathBuf {
     PathBuf::from(std::env::var("ProgramData").unwrap_or_else(|_| "C:\\ProgramData".into())).join("Still")
 }
 
+/// windows-service shows every Windows failure as "IO error in winapi call"; show the Windows error itself.
+fn os(error: windows_service::Error) -> String {
+    match error {
+        windows_service::Error::Winapi(e) => e.to_string(),
+        e => e.to_string(),
+    }
+}
+
 fn manager() -> Result<ServiceManager, String> {
-    ServiceManager::local_computer(None::<&str>, ServiceManagerAccess::CONNECT | ServiceManagerAccess::CREATE_SERVICE).map_err(|e| e.to_string())
+    ServiceManager::local_computer(None::<&str>, ServiceManagerAccess::CONNECT | ServiceManagerAccess::CREATE_SERVICE).map_err(os)
+}
+
+fn service_info() -> ServiceInfo {
+    ServiceInfo {
+        name: OsString::from(SERVICE_NAME),
+        display_name: OsString::from("Still Focus Guard"),
+        service_type: ServiceType::OWN_PROCESS,
+        start_type: ServiceStartType::AutoStart,
+        error_control: ServiceErrorControl::Normal,
+        // Bare path: windows-service quotes a path with spaces itself. 2.0.0 quoted it here as well, which made the
+        // image path `"\"C:\…\Still.Guard.exe\""`; Windows reads that as the folder `\` and fails with "Access is denied".
+        executable_path: install_dir().join("Still.Guard.exe"),
+        launch_arguments: vec![],
+        dependencies: vec![],
+        account_name: None,
+        account_password: None,
+    }
 }
 
 fn open(manager: &ServiceManager) -> Option<Service> {
@@ -32,11 +57,11 @@ fn open(manager: &ServiceManager) -> Option<Service> {
 }
 
 fn stop(service: &Service) -> Result<(), String> {
-    if service.query_status().map_err(|e| e.to_string())?.current_state != ServiceState::Stopped {
+    if service.query_status().map_err(os)?.current_state != ServiceState::Stopped {
         let _ = service.stop();
     }
     let deadline = Instant::now() + Duration::from_secs(30);
-    while service.query_status().map_err(|e| e.to_string())?.current_state != ServiceState::Stopped {
+    while service.query_status().map_err(os)?.current_state != ServiceState::Stopped {
         if Instant::now() > deadline {
             return Err("The Windows guard did not stop in time. Try again.".into());
         }
@@ -101,32 +126,18 @@ pub fn install(sid: &str) -> Result<(), String> {
     }
     std::fs::write(data.join("owner.txt"), sid).map_err(|e| e.to_string())?;
     let service = match existing {
-        Some(service) => service,
+        // Rewriting the config of an existing service also repairs the broken image path 2.0.0 registered.
+        Some(service) => service.change_config(&service_info()).map(|()| service).map_err(os)?,
         None => manager
-            .create_service(
-                &ServiceInfo {
-                    name: OsString::from(SERVICE_NAME),
-                    display_name: OsString::from("Still Focus Guard"),
-                    service_type: ServiceType::OWN_PROCESS,
-                    start_type: ServiceStartType::AutoStart,
-                    error_control: ServiceErrorControl::Normal,
-                    // Quoted, so a path with spaces can never be misread as another program.
-                    executable_path: PathBuf::from(format!("\"{}\"", install.join("Still.Guard.exe").display())),
-                    launch_arguments: vec![],
-                    dependencies: vec![],
-                    account_name: None,
-                    account_password: None,
-                },
-                ServiceAccess::QUERY_STATUS | ServiceAccess::START | ServiceAccess::STOP | ServiceAccess::DELETE | ServiceAccess::CHANGE_CONFIG,
-            )
-            .map_err(|e| e.to_string())?,
+            .create_service(&service_info(), ServiceAccess::QUERY_STATUS | ServiceAccess::START | ServiceAccess::STOP | ServiceAccess::DELETE | ServiceAccess::CHANGE_CONFIG)
+            .map_err(os)?,
     };
-    service.set_description("Enforces Still focus sessions and safely releases expired application blocks.").map_err(|e| e.to_string())?;
+    service.set_description("Enforces Still focus sessions and safely releases expired application blocks.").map_err(os)?;
     let restart = |seconds| ServiceAction { action_type: ServiceActionType::Restart, delay: Duration::from_secs(seconds) };
     service
         .update_failure_actions(ServiceFailureActions { reset_period: ServiceFailureResetPeriod::After(Duration::from_secs(86_400)), reboot_msg: None, command: None, actions: Some(vec![restart(5), restart(10), restart(30)]) })
-        .map_err(|e| e.to_string())?;
-    service.start::<OsString>(&[]).map_err(|e| e.to_string())
+        .map_err(os)?;
+    service.start::<OsString>(&[]).map_err(|e| format!("Windows could not start Still Guard: {}", os(e)))
 }
 
 pub fn uninstall(recovery: bool) -> Result<(), String> {
@@ -140,8 +151,8 @@ pub fn uninstall(recovery: bool) -> Result<(), String> {
         let request = data.join("recover-request");
         std::fs::write(&request, "Release Still policy").map_err(|e| e.to_string())?;
         if let Some(service) = open(&manager) {
-            if service.query_status().map_err(|e| e.to_string())?.current_state == ServiceState::Stopped {
-                service.start::<OsString>(&[]).map_err(|e| e.to_string())?;
+            if service.query_status().map_err(os)?.current_state == ServiceState::Stopped {
+                service.start::<OsString>(&[]).map_err(os)?;
             }
         }
         let deadline = Instant::now() + Duration::from_secs(60);
@@ -169,14 +180,20 @@ pub fn uninstall(recovery: bool) -> Result<(), String> {
         }
     }
     if let Some(service) = service {
-        service.delete().map_err(|e| e.to_string())?;
+        service.delete().map_err(os)?;
     }
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-    use super::valid_sid;
+    use super::{service_info, valid_sid};
+
+    #[test]
+    fn service_path_is_left_unquoted_for_windows_service() {
+        // windows-service quotes it; quoting it here too gives an image path Windows can't run (see service_info).
+        assert!(!service_info().executable_path.to_string_lossy().contains('"'));
+    }
 
     #[test]
     fn only_real_sids_are_accepted() {

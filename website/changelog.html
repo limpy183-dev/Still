@@ -54,8 +54,18 @@
 
 <div class="wrap" style="max-width:880px">
   <div class="timeline" id="releases">
-    <article class="panel release latest" data-tag="v2.0.0" data-reveal>
-      <div class="release-head"><h2>Still v2.0.0</h2><span class="pill"><span class="tiny-dot"></span>Latest</span><span class="muted small">31 October 2026</span></div>
+    <article class="panel release latest" data-tag="v2.0.1" data-reveal>
+      <div class="release-head"><h2>Still v2.0.1</h2><span class="pill"><span class="tiny-dot"></span>Latest</span><span class="muted small">9 November 2026</span></div>
+      <div class="release-body">
+        <ul>
+          <li>Windows protection works on new installs again. On a PC that never had Still 1.x, version 2.0.0 couldn’t start Still Guard, so turning on protection or starting a focus session showed “IO error in winapi call”. Updating repairs it: start a focus session once and approve the administrator prompt.</li>
+          <li>If Windows protection can’t be set up, Still now shows the Windows error itself.</li>
+        </ul>
+      </div>
+      <div class="release-foot"><a class="btn btn-primary btn-sm" href="https://github.com/limpy183-dev/Still/releases/download/v2.0.1/Still-Setup-2.0.1.exe"><svg aria-hidden="true"><use href="#i-download"/></svg>Still-Setup-2.0.1.exe</a><a class="btn btn-secondary btn-sm" href="https://github.com/limpy183-dev/Still/releases/tag/v2.0.1"><svg aria-hidden="true"><use href="#i-github"/></svg>View on GitHub</a></div>
+    </article>
+    <article class="panel release" data-tag="v2.0.0" data-reveal>
+      <div class="release-head"><h2>Still v2.0.0</h2><span class="muted small">31 October 2026</span></div>
       <div class="release-body">
         <ul>
           <li>Still for Windows is rewritten in Rust. Everything looks and works the same, and your preferences, alerts, to-dos, Something new entries, alarm sounds and history carry over untouched. A session that is running while you update keeps going.</li>
@@ -65,7 +75,7 @@
           <li>Still now uses the WebView2 runtime that comes with Windows 10 and 11, instead of bringing its own browser engine.</li>
         </ul>
       </div>
-      <div class="release-foot"><a class="btn btn-primary btn-sm" href="https://github.com/limpy183-dev/Still/releases/download/v2.0.0/Still-Setup-2.0.0.exe"><svg aria-hidden="true"><use href="#i-download"/></svg>Still-Setup-2.0.0.exe</a><a class="btn btn-secondary btn-sm" href="https://github.com/limpy183-dev/Still/releases/tag/v2.0.0"><svg aria-hidden="true"><use href="#i-github"/></svg>View on GitHub</a></div>
+      <div class="release-foot"><a class="btn btn-secondary btn-sm" href="https://github.com/limpy183-dev/Still/releases/tag/v2.0.0"><svg aria-hidden="true"><use href="#i-github"/></svg>View on GitHub</a></div>
     </article>
     <article class="panel release" data-tag="v1.2.0" data-reveal>
       <div class="release-head"><h2>Still v1.2.0</h2><span class="muted small">17 October 2026</span></div>

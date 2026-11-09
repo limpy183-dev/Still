@@ -1,10 +1,7 @@
-## What's new in v2.0.0
+## What's new in v2.0.1
 
-- **Still for Windows is rewritten in Rust.** Everything looks and works the same: the same screens, sessions, to-dos, alerts and history. Your preferences, alerts, to-dos, Something new entries, imported media, alarm sounds and history carry over untouched, and Still Guard keeps any session that is running while you update.
-- **Much smaller.** The installer is about 5 MB instead of 140 MB, and Still takes about 10 MB on disk instead of 320 MB.
-- **Lighter in the tray.** About 90 seconds after you close the window to the tray, Still lets go of its screens and runs in about 3 MB of memory, instead of about 170 MB. Alarms, sessions and protection keep working; opening Still again takes about half a second.
-- **Faster app search.** Finding your installed apps takes about 2 seconds instead of 10 to 30.
-- **Needs the WebView2 runtime** that comes with Windows 10 and 11, instead of bundling its own browser engine. On a PC where it was removed, Still asks you to install it from Microsoft.
+- **Windows protection works on new installs again.** On a PC that never had Still 1.x, Still 2.0.0 registered Still Guard with a broken program path, so Windows refused to start it: turning on protection or starting a focus session showed "IO error in winapi call", and the Still Focus Guard service stayed stopped ("Access is denied"). Updating repairs an existing setup: start a focus session (or **Enable Windows protection**) once and approve the administrator prompt.
+- When Windows protection can't be set up, Still now shows the Windows error itself instead of "IO error in winapi call".
 
 ## Install or update
 
