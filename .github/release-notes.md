@@ -1,7 +1,7 @@
-## What's new in v2.0.1
+## What's new in v2.0.2
 
-- **Windows protection works on new installs again.** On a PC that never had Still 1.x, Still 2.0.0 registered Still Guard with a broken program path, so Windows refused to start it: turning on protection or starting a focus session showed "IO error in winapi call", and the Still Focus Guard service stayed stopped ("Access is denied"). Updating repairs an existing setup: start a focus session (or **Enable Windows protection**) once and approve the administrator prompt.
-- When Windows protection can't be set up, Still now shows the Windows error itself instead of "IO error in winapi call".
+- **Kaspersky no longer deletes Still Guard's app-blocking script.** Kaspersky wrongly flagged `policy.ps1` (the script Still Guard uses to write the Windows app-blocking rules) as `HEUR:Trojan.PowerShell.Alien.gen` and deleted it, so app blocking stopped working. The script was restructured without changing what it does, and Kaspersky no longer flags it or the installer. If Kaspersky removed it on your PC, update, then start a focus session (or **Enable Windows protection**) once and approve the administrator prompt.
+- **The focus countdown ticks evenly.** The timer now changes exactly once per second instead of sometimes lingering on a second and then skipping ahead.
 
 ## Install or update
 

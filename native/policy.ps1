@@ -70,6 +70,13 @@ function Add-Rule([xml]$policy, $collection, [string]$type, [string]$name, [stri
     $rule.InnerXml = $condition
     [void]$collection.AppendChild($rule)
 }
+function Add-DenyRule([xml]$policy, $collection, $source, [string]$name) {
+    $rule = $policy.ImportNode($source, $true)
+    $rule.SetAttribute('Id', [guid]::NewGuid().ToString())
+    $rule.SetAttribute('Name', "$prefix$name")
+    $rule.SetAttribute('Action', 'Deny')
+    [void]$collection.AppendChild($rule)
+}
 function Assert-Unmanaged {
     [xml]$effective = Get-AppLockerPolicy -Effective -Xml
     $foreign = @($effective.SelectNodes('/AppLockerPolicy/RuleCollection/*') | Where-Object {
@@ -164,13 +171,7 @@ foreach ($target in $request.apps) {
     [xml]$hashPolicy = $info | New-AppLockerPolicy -RuleType Hash -User $request.owner -Xml -ErrorAction Stop
     $hashes = @($hashPolicy.SelectNodes('/AppLockerPolicy/RuleCollection/FileHashRule'))
     if (!$hashes.Count) { throw "Windows could not identify $($target.name). Choose its actual executable." }
-    foreach ($hash in $hashes) {
-        $rule = $policy.ImportNode($hash, $true)
-        $rule.SetAttribute('Id', [guid]::NewGuid().ToString())
-        $rule.SetAttribute('Name', "$prefix$($target.name) (file identity)")
-        $rule.SetAttribute('Action', 'Deny')
-        [void]$exe.AppendChild($rule)
-    }
+    foreach ($hash in $hashes) { Add-DenyRule $policy $exe $hash "$($target.name) (file identity)" }
     # Preserve protection through signed app updates without blocking an entire publisher.
     if ($info.Publisher) {
         try {
@@ -178,14 +179,10 @@ foreach ($target in $request.apps) {
             foreach ($signed in @($signedPolicy.SelectNodes('/AppLockerPolicy/RuleCollection/FilePublisherRule'))) {
                 $condition = $signed.SelectSingleNode('Conditions/FilePublisherCondition')
                 if ($condition.PublisherName -and $condition.PublisherName -ne '*' -and $condition.ProductName -and $condition.ProductName -ne '*' -and $condition.BinaryName -and $condition.BinaryName -ne '*') {
-                    $rule = $policy.ImportNode($signed, $true)
-                    $rule.SetAttribute('Id', [guid]::NewGuid().ToString())
-                    $rule.SetAttribute('Name', "$prefix$($target.name) (signed identity)")
-                    $rule.SetAttribute('Action', 'Deny')
-                    $version = $rule.SelectSingleNode('Conditions/FilePublisherCondition/BinaryVersionRange')
+                    $version = $signed.SelectSingleNode('Conditions/FilePublisherCondition/BinaryVersionRange')
                     $version.SetAttribute('LowSection', '0.0.0.0')
                     $version.SetAttribute('HighSection', '*')
-                    [void]$exe.AppendChild($rule)
+                    Add-DenyRule $policy $exe $signed "$($target.name) (signed identity)"
                 }
             }
         } catch {

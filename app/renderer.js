@@ -108,7 +108,7 @@ let prefs = { duration: 50, delay: 5, delayEnabled: true, intention: '', notific
 let historyFilter = 'active';
 
 let pickerKind = 'all';
-let offset = 0, lastSignature = '', pickerSelection = new Set(), confirmAction;
+let offset = 0, offsetSamples = [], lastSignature = '', pickerSelection = new Set(), confirmAction;
 
 const now = () => Date.now() + offset;
 
@@ -299,7 +299,9 @@ function applyStatus(value) {
     api.status().then(applyStatus).catch(error => toast(error.message, true));
     return;
   }
-  if (typeof value.now === 'number') offset = value.now - Date.now();
+  // The guard's clock minus this page's. A reply that arrives late gives a sample that is too small by the delay and
+  // would hold the countdown back for a moment, so trust the largest of the last few samples (about 10 s).
+  if (typeof value.now === 'number') { offsetSamples = [...offsetSamples.slice(-4), value.now - Date.now()]; offset = Math.max(...offsetSamples); }
 
   if (value.unavailable) {
 
@@ -408,6 +410,16 @@ function updateTimer() {
 
   }
 
+}
+
+// Wake just after the next whole second of any running countdown: a plain 1 s interval drifts out of phase
+// and can show each second up to a second late, so the digits change in uneven 0.5 s / 1.5 s steps.
+function timerLoop() {
+  try { updateTimer(); } finally {
+    // Rescheduled even if an update throws, like the setInterval it replaces.
+    const left = [state.session?.endsAt, state.session?.unlockAt].map(at => at - now()).filter(ms => ms > 0);
+    setTimeout(timerLoop, left.length ? Math.min(...left.map(ms => ms % 1000 || 1000)) + 15 : 1000);
+  }
 }
 
 function focusMilliseconds(session, from = 0, to = now()) {
@@ -905,7 +917,7 @@ async function init() {
     initWebsites(); initTodos(); initNewThings(); applyStatus(initial); renderApps(); renderStats(); await initAlerts();
     api.onStatus(value => { if (!busy) applyStatus(value); });
     api.onPresentation?.(setPresentationVisible);
-    setInterval(updateTimer, 1000); setInterval(renderStats, 30000);
+    timerLoop(); setInterval(renderStats, 30000);
 
   } catch (error) { toast('Still could not load: ' + error.message, true); }
   finally { await api.showWindow?.(); }
