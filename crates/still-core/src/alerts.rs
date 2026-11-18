@@ -142,7 +142,11 @@ fn day_of<Tz: TimeZone>(tz: &Tz, ms: i64) -> NaiveDate {
 
 pub fn occurrence_on<Tz: TimeZone>(tz: &Tz, alert: &Alert, day: NaiveDate) -> Option<Occurrence> {
     let start_day = local_date(Some(&Value::String(alert.date.clone()))).ok()?;
-    if day < start_day || (alert.repeat == "once" && day != start_day) || (alert.repeat == "weekdays" && matches!(day.weekday().num_days_from_sunday(), 0 | 6)) {
+    if day < start_day
+        || (alert.repeat == "once" && day != start_day)
+        || (alert.repeat == "weekdays" && matches!(day.weekday().num_days_from_sunday(), 0 | 6))
+        || (alert.repeat == "weekly" && day.weekday() != start_day.weekday())
+    {
         return None;
     }
     let (h, m) = hm(&alert.time);
@@ -223,7 +227,7 @@ pub fn validate_alert(value: &Value) -> R<Value> {
     if !is_clock(v("time")) {
         return err("Choose a valid start time.");
     }
-    if !one_of(v("repeat"), &["once", "daily", "weekdays"]) {
+    if !one_of(v("repeat"), &["once", "daily", "weekdays", "weekly"]) {
         return err("Choose a repeat schedule.");
     }
     if !one_of(v("lengthMode"), &["duration", "range"]) {
@@ -416,6 +420,19 @@ mod tests {
         assert_eq!((due.start, due.end), (at(&tz, "2026-09-23T23:30:00"), at(&tz, "2026-09-24T01:00:00")));
         assert_eq!(next_occurrence(&tz, &alert(json!({ "repeat": "weekdays" })), at(&tz, "2026-09-25T11:00:00")), Some(at(&tz, "2026-09-28T09:00:00")));
         assert_eq!(next_occurrence(&tz, &alert(json!({ "date": "2027-01-04", "repeat": "daily" })), at(&tz, "2026-09-23T11:00:00")), Some(at(&tz, "2027-01-04T09:00:00")));
+    }
+
+    #[test]
+    fn weekly_alert_follows_the_start_weekday_across_a_clock_change() {
+        let weekly = alert(json!({ "repeat": "weekly", "date": "2026-10-24" }));
+        let first = at(&London, "2026-10-24T09:00:00");
+        let following = at(&London, "2026-10-31T09:00:00");
+        assert_eq!(next_occurrence(&London, &weekly, at(&London, "2026-10-17T08:00:00")), Some(first));
+        assert_eq!(due_occurrence(&London, &weekly, first).unwrap().start, first);
+        let delivered = Alert { last_occurrence: Some(first), ..weekly };
+        assert_eq!(next_occurrence(&London, &delivered, first), Some(following));
+        assert_eq!(due_occurrence(&London, &delivered, at(&London, "2026-10-26T09:00:00")), None);
+        assert_eq!(due_occurrence(&London, &delivered, following).unwrap().start, following);
     }
 
     #[test]

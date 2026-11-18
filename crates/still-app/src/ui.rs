@@ -152,7 +152,7 @@ const MAIN_API: &str = r#"window.still = Object.freeze({
     bootstrap: invoke('bootstrap'), appIcons: invoke('appIcons'), showWindow: invoke('showWindow'), status: invoke('status'), savePreferences: invoke('savePreferences'),
     install: invoke('install'), uninstall: invoke('uninstall'), discover: invoke('discover'), browse: invoke('browse'),
     start: invoke('start'), requestUnlock: invoke('requestUnlock'), cancelUnlock: invoke('cancelUnlock'), end: invoke('end'),
-    window: invoke('window'), exportHistory: invoke('exportHistory'), checkForUpdates: invoke('checkForUpdates'), downloadUpdate: invoke('downloadUpdate'), updateHistory: invoke('updateHistory'),
+    window: invoke('window'), exportHistory: invoke('exportHistory'), exportBackup: invoke('exportBackup'), importBackup: invoke('importBackup'), checkForUpdates: invoke('checkForUpdates'), downloadUpdate: invoke('downloadUpdate'), updateHistory: invoke('updateHistory'),
     listAlerts: invoke('alerts:list'), saveAlert: invoke('alerts:save'), deleteAlert: invoke('alerts:delete'), toggleAlert: invoke('alerts:toggle'), previewAlert: invoke('alerts:preview'), pickAlertMedia: invoke('alerts:media'), folderSounds: invoke('alerts:folderSounds'), folderSound: invoke('alerts:folderSound'), openSoundsFolder: invoke('alerts:openSoundsFolder'),
     onAlerts: on('alerts-changed'), onAlertError: on('alert-error'), onPresentation: on('presentation-visible'), onStatus: on('guard-status')
   });"#;

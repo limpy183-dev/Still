@@ -2,6 +2,11 @@ let alerts = [], editingAlert = null, alertSoundFile = null, alertBanner = null,
 const alertStyleNames = { full: 'Full attention', card: 'Focus card', notification: 'Quiet reminder' };
 function alertDateString(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
 function alertTimeString(date) { return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`; }
+const alertWeekday = new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone: 'UTC' });
+function weeklyAlertLabel(date) {
+  const timestamp = Date.parse(date);
+  return Number.isFinite(timestamp) ? `Every ${alertWeekday.format(timestamp)}` : 'Weekly';
+}
 function alertWhen(time) { return new Date(time).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
 function alertSession(a) { return a.sessionId && state.session?.id === a.sessionId ? state.session : null; }
 let renderedAlerts, renderedAlertState;
@@ -21,7 +26,7 @@ function renderAlerts() {
   const filter = $('#alerts-filter').value;
   const visible = alerts.filter(a => filter === 'all' || a.enabled === (filter === 'enabled')).sort((a, b) => (a.nextAt || Infinity) - (b.nextAt || Infinity));
   $('#alerts-list').innerHTML = visible.length ? visible.map(a => {
-    const repeat = { once: new Date(a.date + 'T12:00:00').toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }), daily: 'Every day', weekdays: 'Weekdays' }[a.repeat];
+    const repeat = { once: new Date(a.date + 'T12:00:00').toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }), daily: 'Every day', weekdays: 'Weekdays', weekly: weeklyAlertLabel(a.date) }[a.repeat];
     const length = a.lengthMode === 'range' ? `until ${a.endTime}${a.endTime < a.time ? ' (+1 day)' : ''}` : `${a.durationMinutes} min`;
     const session = alertSession(a);
     const blocking = session ? state.unavailable ? 'Blocking status unavailable' : session.phase === 'active' ? `${session.apps.length} apps / websites blocked until ${alertWhen(session.endsAt)}` : 'Releasing apps…' : a.blockMode === 'none' ? 'Reminder only' : a.blockMode === 'current' ? 'Uses Focus space selection' : `${a.apps.length} apps / websites selected for blocking`;
@@ -67,6 +72,7 @@ function readAlertForm() {
 }
 function updateAlertEditor() {
   const value = readAlertForm(), range = value.lengthMode === 'range';
+  $('#alert-repeat option[value="weekly"]').textContent = weeklyAlertLabel(value.date);
   $('#alert-duration-field').hidden = range; $('#alert-end-field').hidden = !range; $('#alert-range-hint').hidden = !range;
   $('#alert-duration').disabled = range; $('#alert-end').disabled = !range;
   $('#alert-custom-sound').hidden = $('#alert-sound').value !== 'custom'; $('#alert-banner-controls').hidden = value.style === 'notification';
@@ -136,6 +142,9 @@ async function initAlerts() {
   $('#alert-sounds-folder').onclick = () => api.openSoundsFolder?.();
   $('#alert-dialog').addEventListener('close', () => { stopAlertPreview(); $('#alert-listen').textContent = 'Listen'; $('#alert-preview-media').replaceChildren(); });
   $('#alert-app-search').oninput = renderAlertApps;
+  $('#alert-app-search').onkeydown = event => {
+    if (event.key === 'Enter' && !event.isComposing) event.preventDefault();
+  };
   $('#alert-app-list').onchange = event => {
     const input = event.target.closest('[data-alert-app]'); if (!input) return;
     if (input.checked) { if (alertApps.size >= 100) { input.checked = false; return toast('Choose up to 100 apps or websites.', true); } const target = alertChoices.find(a => a.path === input.dataset.alertApp); alertApps.set(target.path, target); }

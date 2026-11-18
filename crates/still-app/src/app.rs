@@ -1,7 +1,7 @@
 //! The app logic, ported from Electron's main process (`main.cjs`): preferences, protection status, sessions,
 //! updates, the wake task and every request the page can make. It runs on one thread, like the original Node process.
 use crate::{
-    Mode, RELAUNCH, apps,
+    Mode, RELAUNCH, apps, backup,
     alerts::Alerts,
     guard::GuardClient,
     ui::{CoreMsg, Ui, UiEvent, WindowKey, emit_script, reply_script},
@@ -19,7 +19,7 @@ use still_core::{alerts::wake_task_xml, domain, js::str_of, session::now_ms};
 use tokio::{sync::mpsc::{UnboundedReceiver, UnboundedSender}, task::spawn_local, time::sleep};
 
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-pub const APP_ID: &str = "app.still.focus";
+const LOGIN_ITEM: &str = "app.still.focus";
 
 /// The validated preferences file.
 pub struct Preferences {
@@ -61,12 +61,12 @@ pub fn quit_label(alerts_after_quit: bool) -> String {
     if alerts_after_quit { "Quit Still (alerts still ring; active protection continues)" } else { "Quit Still (alerts stop; active protection continues)" }.into()
 }
 
-pub fn write_atomic(file: &Path, text: &str) -> std::io::Result<()> {
+pub fn write_atomic(file: &Path, contents: impl AsRef<[u8]>) -> std::io::Result<()> {
     if let Some(dir) = file.parent() {
         std::fs::create_dir_all(dir)?;
     }
-    let tmp = file.with_file_name(format!("{}.tmp", file.file_name().unwrap_or_default().to_string_lossy()));
-    std::fs::write(&tmp, text)?;
+    let tmp = file.with_file_name(format!("{}.{}.tmp", file.file_name().unwrap_or_default().to_string_lossy(), std::process::id()));
+    std::fs::write(&tmp, contents)?;
     std::fs::rename(&tmp, file)
 }
 
@@ -196,14 +196,13 @@ impl App {
         if let Err(error) = self.reconcile_login() {
             eprintln!("Sign-in settings: {error}");
         }
-        win::set_app_id(APP_ID);
         if self.mode.packaged && !self.mode.demo && !self.mode.testing {
-            // Portable builds have no installer to register their Windows notification identity.
+            // Keep portable builds discoverable under the same taskbar identity as installed builds.
             if let Some(programs) = win::programs_folder() {
                 let _ = std::fs::create_dir_all(&programs);
                 let target = std::env::current_exe().unwrap_or_default();
                 let activator = windows::core::GUID::from_u128(0x2BB3B6B9_632E_4618_9488_990BD152DD54);
-                if let Err(error) = win::write_shortcut(&programs.join("Still Focus.lnk"), &target, "Still — a space for focus", APP_ID, activator) {
+                if let Err(error) = win::write_shortcut(&programs.join("Still Focus.lnk"), &target, "Still — a space for focus", win::DESKTOP_ID, activator) {
                     eprintln!("Notification registration: {error}");
                 }
             }
@@ -222,7 +221,7 @@ impl App {
         spawn_local(async move { this.tray_label() });
     }
 
-    fn tray_label(&self) {
+    pub(crate) fn tray_label(&self) {
         let after_quit = self.prefs()["alertsAfterQuit"] == true;
         let _ = self.ui.send_event(UiEvent::QuitLabel(quit_label(after_quit)));
     }
@@ -336,6 +335,8 @@ impl App {
                 Ok(Value::Null)
             }
             "exportHistory" => self.export_history().await,
+            "exportBackup" => backup::export(self).await,
+            "importBackup" => backup::import(self).await,
             _ => match websites::handle(self, name, arg(0)).await {
                 Some(result) => result,
                 None => Err(format!("Unknown request: {name}")),
@@ -400,7 +401,9 @@ impl App {
         if current.get("unavailable") != Some(&Value::Bool(true)) {
             let ended = !self.last_session.borrow().is_null() && current["session"].is_null();
             if ended && self.prefs()["notifications"] != false {
-                let _ = win::show_toast(APP_ID, "A little more space. Well done.", "Your focus session has ended. Your apps and websites are available again.", None, false, |_| {});
+                if let Err(error) = win::show_toast("A little more space. Well done.", "Your focus session has ended. Your apps and websites are available again.", false, |_| {}) {
+                    eprintln!("Session notification: {error}");
+                }
             }
             *self.last_session.borrow_mut() = current["session"].clone();
         }
@@ -420,7 +423,7 @@ impl App {
 
     // ---- preferences, sign-in item, wake task ----
 
-    async fn save_preferences(self: &Rc<Self>, value: &Value) -> Result<Value, String> {
+    pub(crate) async fn save_preferences(self: &Rc<Self>, value: &Value) -> Result<Value, String> {
         let validated = domain::validate_preferences(value)?;
         *self.prefs.borrow_mut() = Rc::new(validated.clone());
         let (dir, copy) = (self.mode.user_data.clone(), validated.clone());
@@ -446,13 +449,13 @@ impl App {
         let run = hkcu.create_subkey(r"Software\Microsoft\Windows\CurrentVersion\Run").map_err(|e| e.to_string())?.0;
         let approved = hkcu.create_subkey(r"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run").map_err(|e| e.to_string())?.0;
         // Electron registered this item under its app id, or under "electron.app.Still" before the id was set.
-        for name in [APP_ID, "electron.app.Still"] {
+        for name in [LOGIN_ITEM, "electron.app.Still"] {
             let _ = run.delete_value(name);
             let _ = approved.delete_value(name);
         }
         if next.0 {
-            run.set_value(APP_ID, &format!("\"{}\"", next.1.display())).map_err(|e| e.to_string())?;
-            approved.set_raw_value(APP_ID, &RegValue { bytes: vec![2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0].into(), vtype: REG_BINARY }).map_err(|e| e.to_string())?;
+            run.set_value(LOGIN_ITEM, &format!("\"{}\"", next.1.display())).map_err(|e| e.to_string())?;
+            approved.set_raw_value(LOGIN_ITEM, &RegValue { bytes: vec![2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0].into(), vtype: REG_BINARY }).map_err(|e| e.to_string())?;
         }
         *self.login.borrow_mut() = Some(next);
         Ok(())
@@ -662,8 +665,9 @@ impl App {
         let (Some(id), Some(action)) = (id.as_str().filter(|i| !i.is_empty() && i.chars().count() <= 100), action.as_str().filter(|a| ["archive", "restore", "delete"].contains(a))) else {
             return Err("Invalid history action.".into());
         };
-        if id.starts_with("alarm-") {
-            let alerts = self.alerts.borrow().clone().ok_or("Saved session not found.")?;
+        // Alarm focus windows and sessions restored from a backup are kept by Still, not by Windows protection.
+        let kept = self.alerts.borrow().clone().filter(|alerts| alerts.has_focus(id));
+        if let Some(alerts) = kept {
             alerts.update_focus(id, action).await?;
             return Ok(self.status(false).await);
         }

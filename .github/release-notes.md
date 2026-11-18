@@ -1,7 +1,10 @@
-## What's new in v2.0.2
+## What's new in v2.1.0
 
-- **Kaspersky no longer deletes Still Guard's app-blocking script.** Kaspersky wrongly flagged `policy.ps1` (the script Still Guard uses to write the Windows app-blocking rules) as `HEUR:Trojan.PowerShell.Alien.gen` and deleted it, so app blocking stopped working. The script was restructured without changing what it does, and Kaspersky no longer flags it or the installer. If Kaspersky removed it on your PC, update, then start a focus session (or **Enable Windows protection**) once and approve the administrator prompt.
-- **The focus countdown ticks evenly.** The timer now changes exactly once per second instead of sometimes lingering on a second and then skipping ahead.
+- **Back up or move your Windows data.** Use **Settings → Export backup** to save your settings, to-dos, alerts with their attached media, and session history in one ZIP. Importing replaces the current settings, to-dos and alerts, adds sessions by ID, and saves a copy of the current data first.
+- **Repeat an alert every week.** In the Windows alert editor, choose **Weekly** to repeat on the weekday of the start date at the same local time.
+- **Start or act on a focus session with Enter.** Press Enter in the intention, duration or release-delay field to use the main focus button. Enter in the alert app search keeps you in the search.
+- **Scroll each pane independently.** The sidebar and main content stop at their own edges, and switching pages returns the main pane to the top.
+- **Recognize Still notifications at a glance.** Windows reminders and session-completion notifications use the Still name and logo.
 
 ## Install or update
 

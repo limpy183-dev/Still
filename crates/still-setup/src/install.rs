@@ -452,6 +452,7 @@ impl Ctx {
         }
         // "Alarms after you quit" keeps a scheduled task that reopens Still.exe.
         if real_machine {
+            let _ = hkcu.delete_subkey_all(r"Software\Classes\AppUserModelId\Still.Focus.Desktop");
             let schtasks = env("SystemRoot").join(r"System32\schtasks.exe");
             let _ = Command::new(schtasks).args(["/Delete", "/TN", "Still Alerts", "/F"]).creation_flags(CREATE_NO_WINDOW).status();
         }

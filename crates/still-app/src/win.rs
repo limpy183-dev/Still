@@ -276,7 +276,10 @@ pub fn write_shortcut(link: &Path, target: &Path, description: &str, app_id: &st
         store.SetValue(&PROPERTYKEY { fmtid: APP_USER_MODEL, pid: 26 }, &clsid)?;
         store.Commit()?;
         let file: IPersistFile = shell_link.cast()?;
-        file.Save(&HSTRING::from(link.as_os_str()), true)
+        let path = HSTRING::from(link.as_os_str());
+        file.Save(&path, true)?;
+        // Keep the installer-owned filename while presenting Still's product name in the shell.
+        windows::Win32::UI::Shell::SHSetLocalizedName(&path, &HSTRING::from(target.as_os_str()), 101)
     }
 }
 
@@ -311,13 +314,37 @@ fn escape_xml(text: &str) -> String {
     text.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;").replace('\'', "&apos;")
 }
 
-/// Shows a silent toast under Still's app identity and reports clicks, dismissals and failures through `send`.
-pub fn show_toast(app_id: &str, title: &str, body: &str, icon: Option<&Path>, silent: bool, send: impl Fn(ToastEvent) + Send + Sync + 'static) -> Result<Toast, String> {
+// Older Electron shortcuts also claim the taskbar ID (app.still.focus). Give native
+// notifications their own sender so Windows never picks one of those shortcuts for branding.
+pub const DESKTOP_ID: &str = "Still.Focus.Desktop";
+const STILL_LOGO: &[u8] = include_bytes!("../../../assets/still.png");
+
+fn register_toast_sender(app_id: &str, icon: &Path) -> std::io::Result<()> {
+    use winreg::{RegKey, enums::HKEY_CURRENT_USER};
+    if std::fs::read(icon).as_deref().ok() != Some(STILL_LOGO) {
+        crate::app::write_atomic(icon, STILL_LOGO)?;
+    }
+    let (key, _) = RegKey::predef(HKEY_CURRENT_USER).create_subkey(format!(r"Software\Classes\AppUserModelId\{app_id}"))?;
+    key.set_value("DisplayName", &"Still")?;
+    key.set_value("IconUri", &icon.as_os_str())?;
+    key.set_value("CustomActivator", &"{2BB3B6B9-632E-4618-9488-990BD152DD54}")
+}
+
+/// Both reminders and focus completions use the same Windows sender and embedded logo.
+pub fn show_toast(title: &str, body: &str, silent: bool, send: impl Fn(ToastEvent) + Send + Sync + 'static) -> Result<Toast, String> {
+    let data = std::env::var_os("APPDATA").ok_or("Windows application data folder is unavailable")?;
+    let icon = Path::new(&data).join("still-focus").join("toast-icon.png");
+    register_toast_sender(DESKTOP_ID, &icon).map_err(|e| e.to_string())?;
+    send_toast(DESKTOP_ID, title, body, &icon, silent, send)
+}
+
+fn send_toast(app_id: &str, title: &str, body: &str, icon: &Path, silent: bool, send: impl Fn(ToastEvent) + Send + Sync + 'static) -> Result<Toast, String> {
     let send = std::sync::Arc::new(send);
-    let logo = icon.map(|p| format!("<image placement=\"appLogoOverride\" src=\"file:///{}\"/>", escape_xml(&p.to_string_lossy().replace('\\', "/")))).unwrap_or_default();
+    let uri = url::Url::from_file_path(icon).map_err(|_| "Invalid Windows notification logo path")?;
+    let logo = format!("<image placement=\"appLogoOverride\" src=\"{}\"/>", escape_xml(uri.as_str()));
     let text = if body.is_empty() { String::new() } else { format!("<text>{}</text>", escape_xml(body)) };
     let audio = if silent { "<audio silent=\"true\"/>" } else { "" };
-    let xml = format!("<toast><visual><binding template=\"ToastGeneric\">{logo}<text>{}</text>{text}</binding></visual>{audio}</toast>", escape_xml(title));
+    let xml = format!("<toast><visual><binding template=\"ToastGeneric\"><text>{}</text>{text}{logo}</binding></visual>{audio}</toast>", escape_xml(title));
     let fail = |e: windows::core::Error| e.to_string();
     let document = XmlDocument::new().map_err(fail)?;
     document.LoadXml(&HSTRING::from(xml)).map_err(fail)?;
@@ -386,7 +413,7 @@ mod tests {
         assert!(sid.starts_with("S-1-5-21-") || sid.starts_with("S-1-12-1-"), "{sid}");
     }
 
-    /// Shows one real toast under a throw-away identity (so it needs a Start menu shortcut and is visible for a moment).
+    /// Shows one real toast under a temporary registered identity.
     /// Run on purpose: `cargo test -p still-app --release toast_pipeline -- --ignored --nocapture`.
     #[test]
     #[ignore]
@@ -395,12 +422,12 @@ mod tests {
         unsafe {
             let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
         }
-        let id = "app.still.focus.toasttest";
-        let link = programs_folder().expect("a Start menu folder").join("Still toast test.lnk");
-        write_shortcut(&link, Path::new(r"C:\Windows\System32\notepad.exe"), "Still toast test", id, GUID::from_u128(0x2BB3B6B9_632E_4618_9488_990BD152DD54)).unwrap();
-        std::thread::sleep(std::time::Duration::from_secs(2)); // the shell notices new shortcuts a moment later
+        let id = format!("Still.Focus.ToastTest.{}", std::process::id());
+        let dir = std::env::temp_dir().join(format!("Still #100% & 李 {}", std::process::id()));
+        let icon = dir.join("toast-icon.png");
+        register_toast_sender(&id, &icon).unwrap();
         let (sender, receiver) = std::sync::mpsc::channel();
-        let shown = show_toast(id, "Still toast test", "This notification checks Still's toast code and goes away on its own.", None, true, move |event| {
+        let shown = send_toast(&id, "Still toast test", "This notification checks Still's toast code and goes away on its own.", &icon, true, move |event| {
             let _ = sender.send(format!("{event:?}"));
         });
         let result = shown.as_ref().map(|toast| {
@@ -409,8 +436,15 @@ mod tests {
             toast.hide();
             (setting, receiver.recv_timeout(std::time::Duration::from_secs(3)).ok())
         });
-        let _ = std::fs::remove_file(&link);
-        println!("toast result: {:?}", result.as_ref().map_err(|e| e.clone()));
+        let hkcu = winreg::RegKey::predef(winreg::enums::HKEY_CURRENT_USER);
+        let key_path = format!(r"Software\Classes\AppUserModelId\{id}");
+        let key = hkcu.open_subkey(&key_path).unwrap();
+        assert_eq!(key.get_value::<String, _>("DisplayName").unwrap(), "Still");
+        assert_eq!(key.get_value::<std::ffi::OsString, _>("IconUri").unwrap(), icon.as_os_str());
+        assert_eq!(std::fs::read(&icon).unwrap(), STILL_LOGO);
+        hkcu.delete_subkey_all(key_path).unwrap();
+        std::fs::remove_dir_all(dir).unwrap();
+        println!("toast result: {result:?}");
         assert!(shown.is_ok(), "the toast could be created and shown");
         assert_eq!(result.unwrap().0, Some(0), "Windows reports notifications as enabled for the identity (0 = Enabled)");
     }

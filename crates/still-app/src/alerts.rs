@@ -2,7 +2,7 @@
 //! toasts, snoozing, scheduled blocking and "Let's focus" history. Everything runs on the logic thread; the only
 //! operations that wait their turn (the original's `serial` queue) are those that change saved alerts.
 use crate::{
-    app::{APP_ID, App, write_atomic},
+    app::{App, write_atomic},
     ui::{AlarmWindow, CoreMsg, UiEvent, WindowKey, emit_script},
     win::{self, Toast, ToastEvent},
 };
@@ -67,7 +67,6 @@ pub struct Alerts {
     store: PathBuf,
     focus_store: PathBuf,
     sounds_dir: PathBuf,
-    icon: PathBuf,
     queue: tokio::sync::Mutex<()>,
     st: RefCell<State>,
 }
@@ -90,6 +89,19 @@ fn alert_from(map: Map<String, Value>) -> Result<Alert, String> {
     serde_json::from_value(Value::Object(map)).map_err(|e| e.to_string())
 }
 
+/// Checks saved alerts (at most 100) the way loading alerts.json does; a backup's alerts go through it too.
+pub fn parse_alerts(list: Vec<Value>) -> Result<Vec<Alert>, String> {
+    list.into_iter()
+        .take(100)
+        .map(|record| {
+            let validated = validate_alert(&record)?;
+            let mut map = record.as_object().cloned().unwrap_or_default();
+            map.extend(validated.as_object().cloned().unwrap_or_default());
+            alert_from(map)
+        })
+        .collect()
+}
+
 fn merged(base: &Alert, validated: &Value) -> Result<Alert, String> {
     let mut map = serde_json::to_value(base).ok().and_then(|v| v.as_object().cloned()).unwrap_or_default();
     map.extend(validated.as_object().cloned().unwrap_or_default());
@@ -105,22 +117,16 @@ impl Alerts {
             store: data.join("alerts.json"),
             focus_store: data.join("alarm-focus.json"),
             sounds_dir: data.join("AlertSounds"),
-            icon: data.join("toast-icon.png"),
             queue: tokio::sync::Mutex::new(()),
             st: RefCell::new(State { focus_revision: uuid::Uuid::new_v4().to_string(), ..Default::default() }),
         });
         let _ = std::fs::create_dir_all(&alerts.dir);
-        if !alerts.icon.exists() {
-            if let Some(png) = crate::ui::ui_file("/assets/still.png") {
-                let _ = std::fs::write(&alerts.icon, png);
-            }
-        }
         // Reminder-only alarms have no guard session; "Let's focus" can add their window to Progress.
         match read_json(&alerts.focus_store) {
             Ok(Some(Value::Array(items))) => {
                 alerts.st.borrow_mut().focus = items
                     .into_iter()
-                    .filter(|i| i["id"].as_str().is_some_and(|id| id.starts_with("alarm-")) && i["startedAt"].is_number() && i["endsAt"].is_number())
+                    .filter(|i| i["id"].as_str().is_some_and(|id| !id.is_empty() && id.len() <= 100) && i["startedAt"].is_number() && i["endsAt"].is_number())
                     .collect();
             }
             Ok(_) => {}
@@ -128,16 +134,7 @@ impl Alerts {
         }
         let loaded = read_json(&alerts.store).and_then(|saved| match saved {
             None => Ok(Vec::new()),
-            Some(Value::Array(list)) => list
-                .into_iter()
-                .take(100)
-                .map(|record| {
-                    let validated = validate_alert(&record)?;
-                    let mut map = record.as_object().cloned().unwrap_or_default();
-                    map.extend(validated.as_object().cloned().unwrap_or_default());
-                    alert_from(map)
-                })
-                .collect(),
+            Some(Value::Array(list)) => parse_alerts(list),
             Some(_) => Err("Invalid alerts file.".into()),
         });
         match loaded {
@@ -244,6 +241,35 @@ impl Alerts {
         (done, revision)
     }
 
+    /// Whether a history record is one Still keeps itself (alarm focus windows and sessions restored from a backup).
+    pub fn has_focus(&self, id: &str) -> bool {
+        self.st.borrow().focus.iter().any(|i| i["id"] == id)
+    }
+
+    /// The saved alerts as alerts.json holds them, for a backup.
+    pub fn records_json(&self) -> Vec<Value> {
+        self.st.borrow().records.iter().filter_map(|r| serde_json::to_value(r).ok()).collect()
+    }
+
+    /// Restores a backup: the alerts are replaced, and the session records are added to the ones kept here (known ids are skipped).
+    /// A snooze or a pending focus window belongs to the other PC's session, so those are cleared like a fresh save does.
+    pub async fn restore(self: &Rc<Self>, records: Vec<Alert>, sessions: Vec<Value>) -> Result<(), String> {
+        let records = records.into_iter().map(|r| Alert { snooze_at: Some(0), pending: Some(None), session_id: Some(None), ..r }).collect();
+        self.serial(async {
+            let mut focus = self.st.borrow().focus.clone();
+            for session in sessions {
+                if !focus.iter().any(|i| i["id"] == session["id"]) {
+                    focus.push(session);
+                }
+            }
+            focus.sort_by_key(|i| std::cmp::Reverse(i["startedAt"].as_i64().unwrap_or(0)));
+            focus.truncate(500);
+            self.save_focus(focus).await?;
+            self.persist(Some(records)).await
+        })
+        .await
+    }
+
     pub async fn update_focus(&self, id: &str, action: &str) -> Result<(), String> {
         self.serial(async {
             let current = self.st.borrow().focus.clone();
@@ -320,7 +346,7 @@ impl Alerts {
             let title = if item.preview { format!("Preview · {}", alert.title) } else { alert.title.clone() };
             let body = [alert.note.as_str(), item.message.as_str()].iter().filter(|s| !s.is_empty()).copied().collect::<Vec<_>>().join("\n");
             let tx = app.tx.clone();
-            match win::show_toast(APP_ID, &title, &body, Some(&self.icon), true, move |event| {
+            match win::show_toast(&title, &body, true, move |event| {
                 let _ = tx.send(CoreMsg::Toast(serial, event));
             }) {
                 Ok(shown) => toast = Some(shown),

@@ -83,7 +83,7 @@ function browserPreview() {
 
     },
 
-    window: async () => {}, exportHistory: async () => { throw Error('History export is available in the Windows app.'); }, checkForUpdates: async () => { throw Error('Update checks are available in the Windows app.'); },
+    window: async () => {}, exportHistory: async () => { throw Error('History export is available in the Windows app.'); }, exportBackup: async () => { throw Error('Backups are available in the Windows app.'); }, importBackup: async () => { throw Error('Backups are available in the Windows app.'); }, checkForUpdates: async () => { throw Error('Update checks are available in the Windows app.'); },
 
     onStatus: callback => { setInterval(async () => callback(await status()), 2000); }, openGuide: async () => {}
 
@@ -164,7 +164,7 @@ function showPage(next) {
   if (next === 'new' || next === 'history') renderNewThings();
   if (next === 'settings') checkExtension();
   renderStats(); updateTimer();
-  window.scrollTo({ top: 0 });
+  $('main').scrollTop = 0;
 
 }
 
@@ -824,6 +824,13 @@ $('#delay').oninput = () => { prefs.delay = Number($('#delay').value); }; $('#de
 $('#delay-enabled').onchange = () => { prefs.delayEnabled = $('#delay-enabled').checked; renderSession(); save(); };
 
 $('#start-button').onclick = startOrEnd;
+for (const field of $$('#intention, #duration, #delay')) {
+  field.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' || event.isComposing) return;
+    event.preventDefault();
+    if (!event.repeat) $('#start-button').click();
+  });
+}
 
 $('#cancel-unlock').onclick = () => act(async () => { applyStatus(await api.cancelUnlock()); toast('A little more time for you. Keep going.'); }, $('#cancel-unlock'));
 
@@ -873,6 +880,16 @@ $('#check-updates').onclick = () => act(async () => {
   if (newer) { button.dataset.latest = latest; button.textContent = `Download ${latest} ↗`; }
 }, $('#check-updates'));
 $('#export-history').onclick = () => act(async () => { if (await api.exportHistory()) toast('Your session history has been exported.'); }, $('#export-history'));
+$('#export-backup').onclick = () => act(async () => {
+  const saved = await api.exportBackup();
+  if (saved) toast(saved.history ? 'Your backup has been saved.' : 'Your backup has been saved, without session history: Windows protection could not be reached.');
+}, $('#export-backup'));
+$('#import-backup').onclick = () => confirmation('Import a backup?', '<p>Your settings, to-dos and alerts on this PC will be replaced by the ones in the backup, and its saved sessions will be added to your history.</p><p>A copy of what is here now is saved first as <strong>before-import.zip</strong> in Still’s data folder. Windows protection isn’t part of a backup; set it up on this PC if you haven’t.</p>', 'Choose backup', async () => {
+  const done = await api.importBackup();
+  if (!done) return;
+  toast(`Backup imported: ${done.alerts} alert${done.alerts === 1 ? '' : 's'}, ${done.sessions} new session${done.sessions === 1 ? '' : 's'}.`);
+  setTimeout(() => location.reload(), 1500);
+});
 
 function showGuide() {
 

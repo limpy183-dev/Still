@@ -24,6 +24,13 @@ async function run() {
     await window.locator('[data-alert-app]').first().uncheck();
     const customPaths = await window.locator('[data-alert-app]:checked').evaluateAll(inputs => inputs.map(input => input.dataset.alertApp));
     assert.equal(customPaths.length, 2);
+    const search = window.locator('#alert-app-search');
+    await search.fill('Discord');
+    await search.press('Enter');
+    assert.equal(await search.evaluate(input => document.activeElement === input), true);
+    assert.match(await window.locator('#alert-app-list').innerText(), /Discord/);
+    assert.equal((await window.evaluate(() => window.still.listAlerts())).length, 0);
+    await search.fill('');
     await window.locator('#alert-dialog').evaluate(el => { el.scrollTop = 0; });
     await window.screenshot({ path: 'test-results/alert-editor.png' });
     await window.locator('#alert-save').click();

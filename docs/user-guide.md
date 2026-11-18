@@ -12,6 +12,8 @@ Install, focus, schedule reminders, and manage Windows protection. Using a phone
 
 **Updating:** run the newer setup; it detects the installed version, closes Still for a moment, and replaces it while keeping your preferences, alerts, to-dos, and history. Settings → **Check for updates** tells you when a new version is out (it contacts GitHub only when you click it). Windows protection keeps running during updates. A browser companion you already set up is refreshed automatically: Still updates its files when it starts, and the companion reloads itself within a minute (blocking rules stay in place).
 
+**Moving to another PC:** Settings → **Export backup** saves your settings, to-dos, alerts (with their sounds and banners) and session history to one `.zip` file. On the other PC, install Still and use **Import backup**: your settings, to-dos and alerts become the backup's, and its sessions are added to the history there. What was on that PC is saved first as `before-import.zip` in `%APPDATA%\still-focus`, before Still applies the import. Set up Windows protection and the browser companion on the new PC. Add any blocked apps again if they are installed at different paths.
+
 **Uninstalling:** Windows Settings → Apps → Installed apps → Still. You can choose to also remove Still Guard (administrator approval; not possible during an active focus session) and your data.
 
 Already using the portable build? Just run the installer; your data carries over.
@@ -53,7 +55,7 @@ The calendar below marks every day that has something new on it (a green dot for
 
 ## Alerts
 
-Open **Alerts → New alert** to schedule a task once, daily, or on weekdays, starting on a chosen local date. Set a duration of 1–1,440 minutes or an end time; ranges can cross midnight. Each alert can use the current Focus space app selection, an independent selection (with **Copy current selection**), or no blocking.
+Open **Alerts → New alert** to schedule a task once, daily, on weekdays, or weekly. Weekly alerts repeat on the weekday of the chosen start date. Set a duration of 1–1,440 minutes or an end time; ranges can cross midnight. Each alert can use the current Focus space app selection, an independent selection (with **Copy current selection**), or no blocking.
 
 Choose **Full attention** (all displays, above regular apps, with sound), **Focus card** (a smaller window above apps), or **Quiet reminder** (a dismissible Windows notification). Four built-in sounds, silent reminders, volume control, and imported audio/video sound files are included. To add your own sounds, choose **Open AlertSounds folder** in the alarm editor (it is `%APPDATA%StillAlertSounds`) and drop files in; they appear in the **Alarm sound** list the next time you open the editor. Full attention requires sound. Full-screen and card alarms support images, GIFs, and muted video banners. Files are copied locally, up to 200 MB each; codec support varies, so MP3/WAV and H.264 MP4 are recommended. Preview and Listen never block apps.
 
@@ -99,7 +101,7 @@ This deliberately overrides a session, stops and unregisters Still Guard, and re
 
 ## Android preview
 
-Still for Android is an early test build for Android 11 or newer. It isn't a finished release yet. It has the same pages as the Windows sidebar in a bar at the bottom (**Focus**, **To-dos**, **Alerts**, **Limits**, **Progress**), and sessions, release delays, website limits, bedtime, alerts and to-dos follow the same rules as on Windows.
+Still for Android is an early test build for Android 11 or newer. It isn't a finished release yet. It has the same pages as the Windows sidebar in a bar at the bottom (**Focus**, **To-dos**, **Alerts**, **Limits**, **Progress**), and sessions, release delays, website limits, bedtime, alerts and to-dos follow most of the same rules as on Windows. Android alerts support one-time, daily and weekday schedules.
 
 **Install:**
 

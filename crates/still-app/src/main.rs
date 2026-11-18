@@ -4,6 +4,7 @@
 mod alerts;
 mod app;
 mod apps;
+mod backup;
 mod discover;
 mod guard;
 mod ui;
@@ -70,6 +71,7 @@ fn main() {
         }
         return;
     };
+    win::set_app_id(win::DESKTOP_ID);
     let event_loop = EventLoopBuilder::<ui::UiEvent>::with_user_event().build();
     let proxy = event_loop.create_proxy();
     let (core_tx, core_rx) = tokio::sync::mpsc::unbounded_channel();
