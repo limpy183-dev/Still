@@ -19,6 +19,10 @@
 
 *The real Still interface in demo mode. Screenshots use sample data; preview mode never blocks apps or websites. Click any screenshot to open it at full size.*
 
+## New in Still 2.1.0
+
+Move your data to another PC with backup export and import, repeat alerts weekly, and use Enter to act on a focus session. The focus ring moves smoothly, the two panes scroll independently, and Windows notifications show Still’s name and logo. [See the 2.1.0 release](https://github.com/limpy183-dev/Still/releases/tag/v2.1.0).
+
 ## A little more room for what matters
 
 | Make space for… | What Still does |

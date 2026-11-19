@@ -62,7 +62,15 @@
           <div class="card-heading"><h2 id="session-title">Settle into focus</h2><span class="tag" id="session-tag"><span class="tiny-dot"></span> YOUR NEXT SESSION</span></div>
           <div class="timer-scene" id="timer-scene">
             <span class="orbit orbit-one"></span><span class="orbit orbit-two"></span>
-            <svg class="timer-ring" viewBox="0 0 280 280" aria-hidden="true"><circle class="ring-track" cx="140" cy="140" r="120"/><circle id="ring-progress" class="ring-progress" cx="140" cy="140" r="120"/></svg>
+            <div class="timer-ring" aria-hidden="true">
+              <svg viewBox="0 0 280 280"><circle class="ring-track" cx="140" cy="140" r="120"/><circle id="ring-progress" class="ring-progress" cx="140" cy="140" r="120" transform="rotate(-90 140 140)"/></svg>
+              <div class="ring-sweep" hidden>
+                <div class="ring-left"><svg viewBox="0 0 280 280"><path d="M140 260a120 120 0 0 1 0-240"/></svg></div>
+                <div class="ring-right"><svg viewBox="0 0 280 280"><path d="M140 20a120 120 0 0 1 0 240"/></svg></div>
+                <svg viewBox="0 0 280 280"><circle cx="140" cy="20" r="1.5"/></svg>
+                <svg class="ring-tip" viewBox="0 0 280 280"><circle cx="140" cy="20" r="1.5"/></svg>
+              </div>
+            </div>
             <div class="timer-content"><span id="timer-top" class="timer-eyebrow">TIME FOR YOURSELF</span><div class="timer-number" id="timer-number">50<span>:00</span></div><span id="timer-bottom" class="timer-caption"><span class="tiny-dot"></span> A fresh start awaits</span></div>
             <div class="floating-leaf"><svg><use href="#i-leaf"/></svg></div>
           </div>

@@ -451,7 +451,10 @@ mod tests {
 
     #[test]
     fn shell_icons_come_back_as_pixels() {
+        use windows::Win32::System::Com::{COINIT_APARTMENTTHREADED, CoInitializeEx, CoUninitialize};
+        unsafe { CoInitializeEx(None, COINIT_APARTMENTTHREADED).ok().unwrap() };
         let icon = file_icon(Path::new(r"C:\Windows\System32\notepad.exe"), 32);
+        unsafe { CoUninitialize() };
         if icon.is_none() && std::env::var_os("CI").is_some() {
             return; // the hosted runner has no desktop session, so the shell draws no icons
         }

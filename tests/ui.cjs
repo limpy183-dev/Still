@@ -39,6 +39,19 @@ async function run() {
     await window.locator('#delay').press('Enter');
     await window.locator('#confirm-accept').click();
     await window.waitForSelector('.focus-card.running');
+    await window.emulateMedia({ reducedMotion: 'no-preference' });
+    const ring = window.locator('.ring-tip');
+    await window.locator('.timer-ring').scrollIntoViewIfNeeded();
+    await window.waitForFunction(() => document.querySelector('.ring-tip').getAnimations().length === 1);
+    const advancesBetweenTicks = await ring.evaluate(async el => {
+      const [animation] = el.getAnimations();
+      await animation.ready;
+      const before = getComputedStyle(el).transform;
+      updateTimer();
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      return el.getAnimations()[0] === animation && getComputedStyle(el).transform !== before;
+    });
+    assert.ok(advancesBetweenTicks, 'The same ring animation advances between countdown ticks');
     assert.equal((await window.evaluate(() => window.still.status())).session.unlockDelayMinutes, 3);
     assert.equal(await window.locator('#delay-enabled').isDisabled(), true);
     assert.equal(await window.locator('#choose-apps').isDisabled(), true);
@@ -59,11 +72,13 @@ async function run() {
     assert.equal(afterReload.session.endsAt, beforeReload.session.endsAt, 'Window reload preserves deadline');
     assert.equal(afterReload.session.unlockAt, 0, 'Cancelled release stays cancelled');
     await window.locator('[data-page="settings"]').click();
+    assert.equal(await ring.evaluate(el => el.getAnimations().length), 0, 'Leaving Focus stops the ring animation');
     assert.equal(await window.locator('#remove-guard').isDisabled(), true);
     await window.locator('#reduced-motion').check({ force: true });
     assert.equal(await window.locator('body').evaluate(el => el.classList.contains('reduced-motion')), true);
     await screenshot(application, window, 'test-results/settings.png');
     await window.locator('[data-page="focus"]').click();
+    assert.equal(await ring.evaluate(el => el.getAnimations().length), 0, 'Reduced motion uses static progress');
     // Real window resizes, as in the original (a viewport override only draws the page smaller inside the same window).
     const compact = async () => {
       await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1000, 760));

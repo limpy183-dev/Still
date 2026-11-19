@@ -68,4 +68,4 @@ jobs:
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:GITHUB_REF_NAME "dist/Still-Setup-$($env:GITHUB_REF_NAME.TrimStart('v')).exe" "dist/Still-Android-preview-$($env:GITHUB_REF_NAME.TrimStart('v')).apk" --title "Still $env:GITHUB_REF_NAME" --notes-file .github/release-notes.md --generate-notes --latest
+        run: gh release create $env:GITHUB_REF_NAME "dist/Still-Setup-$($env:GITHUB_REF_NAME.TrimStart('v')).exe" "dist/Still-$($env:GITHUB_REF_NAME.TrimStart('v'))-Windows.zip" "dist/Still-Android-preview-$($env:GITHUB_REF_NAME.TrimStart('v')).apk" --title "Still $env:GITHUB_REF_NAME" --notes-file .github/release-notes.md --generate-notes --verify-tag --latest

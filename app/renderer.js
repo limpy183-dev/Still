@@ -98,6 +98,7 @@ function setMarkup(element, value) { if (element.innerHTML !== value) element.in
 function setPresentationVisible(visible) {
   presentationVisible = visible;
   if (visible) { refreshStatus(); renderStats(); }
+  else updateFocusRing();
 }
 let apps = [], selected = new Set(), groups = [], page = 'focus', busy = false, scanning = false, toastTimer, saveQueue = Promise.resolve();
 
@@ -381,7 +382,56 @@ function renderSession() {
 
 }
 
+const progressRing = $('#ring-progress');
+const ringSweep = $('.ring-sweep');
+const ringLength = 754; // Matches the SVG circle's stroke-dasharray.
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+let ringInView = false, ringAnimations = [];
+
+function updateFocusRing() {
+  const visible = presentationVisible && !document.hidden && page === 'focus' && ringInView;
+  const session = state.session;
+  const duration = session ? session.durationMinutes * 60000 : 0;
+  const elapsed = session ? Math.max(0, Math.min(duration, duration - (session.endsAt - now()))) : 0;
+
+  if (visible && elapsed < duration && !prefs.reducedMotion && !reducedMotion.matches) {
+    if (!ringAnimations.length || ringAnimations[0].effect.getTiming().duration !== duration) {
+      for (const animation of ringAnimations) animation.cancel();
+      ringSweep.hidden = false;
+      // Each clipped semicircle empties in its half of the session. The round tip travels the full circle.
+      const rotate = (selector, degrees) => ringSweep.querySelector(selector).animate(
+        degrees.map(angle => ({ transform: `rotate(${angle}deg)` })),
+        { duration, easing: 'linear', fill: 'forwards' }
+      );
+      ringAnimations = [rotate('.ring-left svg', [0, -180, -180]), rotate('.ring-right svg', [0, 0, -180]), rotate('.ring-tip', [0, -360])];
+      for (const animation of ringAnimations) animation.currentTime = elapsed;
+    } else if (Math.abs(ringAnimations[0].currentTime - elapsed) > 100) {
+      // Reconcile sleep or a guard clock correction without restarting on ordinary status updates.
+      for (const animation of ringAnimations) animation.currentTime = elapsed;
+    }
+    return;
+  }
+
+  if (ringAnimations.length) {
+    for (const animation of ringAnimations) animation.cancel();
+    ringAnimations = [];
+    ringSweep.hidden = true;
+  }
+  if (visible) {
+    const stroke = duration ? (ringLength * elapsed / duration) + 'px' : '';
+    if (progressRing.style.strokeDashoffset !== stroke) progressRing.style.strokeDashoffset = stroke;
+  }
+}
+
+new IntersectionObserver(([entry]) => {
+  ringInView = entry.isIntersecting;
+  updateFocusRing();
+}).observe($('.timer-ring'));
+document.addEventListener('visibilitychange', updateFocusRing);
+reducedMotion.addEventListener('change', updateFocusRing);
+
 function updateTimer() {
+  updateFocusRing();
   if (!presentationVisible) return;
   setText($('#date-label'), new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }));
   if (page !== 'focus') return;
@@ -392,10 +442,6 @@ function updateTimer() {
   const [minutes, seconds] = formatClock(remaining).split(':');
 
   setMarkup($('#timer-number'), `${minutes}<span>:${seconds}</span>`);
-  const fraction = session ? Math.max(0, Math.min(1, remaining / (session.durationMinutes * 60000))) : 1;
-
-  const stroke = String(754 * (1 - fraction));
-  if ($('#ring-progress').style.strokeDashoffset !== stroke) $('#ring-progress').style.strokeDashoffset = stroke;
   const label = $('#start-button span');
 
   if (!session) setText(label, 'Start focusing');
