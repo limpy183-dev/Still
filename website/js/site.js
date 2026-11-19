@@ -4,10 +4,10 @@
   const REPO = 'limpy183-dev/Still';
   // Used until GitHub answers (or if it can't be reached). Update on release.
   const FALLBACK = {
-    version: '2.0.2', date: '2026-11-11T18:17:20Z', size: 5424314,
-    url: `https://github.com/${REPO}/releases/download/v2.0.2/Still-Setup-2.0.2.exe`,
-    sha: '06078412adf80e65415bf629e66b55fec7f72fcff19bb8dede6ab106b10c00ee',
-    page: `https://github.com/${REPO}/releases/latest`
+    version: '2.1.0', date: '2026-11-19T00:25:29Z', size: 5609756,
+    url: `https://github.com/${REPO}/releases/download/v2.1.0/Still-Setup-2.1.0.exe`,
+    sha: '20083f3392b582f5575e8fee48912c0e3767ea2ae83cf452743546cb28b5fa99',
+    page: `https://github.com/${REPO}/releases/tag/v2.1.0`
   };
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const $ = (s, r = document) => r.querySelector(s);
@@ -160,7 +160,7 @@
   }, .6));
 
   /* ——— Latest release (download buttons, version, size, hash, changelog) ——— */
-  const fmtDate = iso => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const fmtDate = iso => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
   const fmtSize = b => (b / 1048576).toFixed(0) + ' MB';
   const apply = rel => {
     $$('[data-dl]').forEach(a => { a.href = rel.url; a.setAttribute('download', ''); });
@@ -173,8 +173,9 @@
   apply(FALLBACK);
 
   const fetchReleases = async () => {
+    const cacheKey = `still-releases-${FALLBACK.version}`;
     try {
-      const hit = JSON.parse(sessionStorage.getItem('still-releases') || 'null');
+      const hit = JSON.parse(sessionStorage.getItem(cacheKey) || 'null');
       if (hit && Date.now() - hit.t < 6e5) return hit.data;
     } catch {}
     const res = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=30`, { headers: { Accept: 'application/vnd.github+json' } });
@@ -183,7 +184,7 @@
       tag: r.tag_name, name: r.name, body: r.body || '', date: r.published_at, url: r.html_url, pre: r.prerelease,
       assets: r.assets.map(a => ({ name: a.name, url: a.browser_download_url, size: a.size, digest: a.digest || '', count: a.download_count }))
     }));
-    try { sessionStorage.setItem('still-releases', JSON.stringify({ t: Date.now(), data })); } catch {}
+    try { sessionStorage.setItem(cacheKey, JSON.stringify({ t: Date.now(), data })); } catch {}
     return data;
   };
   const setupAsset = r => r.assets.find(a => /^Still-Setup-.*\.exe$/i.test(a.name));
