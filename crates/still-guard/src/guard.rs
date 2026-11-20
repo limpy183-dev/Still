@@ -19,6 +19,7 @@ use still_core::{
 
 pub const SERVICE_NAME: &str = "StillFocusGuard";
 pub const PIPE_NAME: &str = r"\\.\pipe\Still.Focus.Guard.v1";
+const SCRIPT_MISSING: &str = "Still's protection script (policy.ps1) was deleted, often by antivirus, so Still released every block. Starting a new session reinstalls it.";
 
 /// A request from the app (or the browser host), as the JSON line it sends.
 #[derive(Deserialize, Default, Clone, Debug)]
@@ -42,6 +43,8 @@ pub trait Enforcer: Send + Sync {
     fn apply(&self, apps: &[TargetApp], owner: &str) -> Result<(), String>;
     /// Releases every block Still holds. Safe to repeat.
     fn clear(&self) -> Result<(), String>;
+    /// Whether the files Still needs to manage its blocks are still there (antivirus can delete `policy.ps1`).
+    fn intact(&self) -> bool;
     /// Checks a desktop app target (existence, protected components) and normalises its path and name.
     fn validate_target(&self, app: &mut TargetApp) -> Result<(), String>;
 }
@@ -230,6 +233,12 @@ impl Guard {
             if request.exists() {
                 if inner.state.session.is_some() { self.finish(&mut inner, "recovered")? } else { self.clear_protection()? }
                 let _ = std::fs::remove_file(&request);
+            }
+            // Safety release: without policy.ps1 the guard can't manage the session's blocks, so it lifts them all.
+            if inner.state.session.as_ref().is_some_and(|s| s.phase.as_deref() == Some("active")) && !self.enforcer.intact() {
+                self.finish(&mut inner, "interrupted")?;
+                inner.state.error = Some(SCRIPT_MISSING.into());
+                self.save(&inner).map_err(|e| e.to_string())?;
             }
             let due = inner.state.session.as_ref().filter(|s| s.expired(self.now()) || s.phase.as_deref() == Some("releasing")).map(|s| (s.phase.clone(), s.outcome.clone()));
             if let Some((phase, outcome)) = due {
@@ -472,6 +481,7 @@ mod tests {
         applied: Mutex<Vec<String>>,
         cleared: Mutex<u32>,
         fail_apply: AtomicBool,
+        script_deleted: AtomicBool,
     }
     impl Enforcer for Arc<Fake> {
         fn apply(&self, apps: &[TargetApp], _owner: &str) -> Result<(), String> {
@@ -485,6 +495,9 @@ mod tests {
             *self.cleared.lock().unwrap() += 1;
             Ok(())
         }
+        fn intact(&self) -> bool {
+            !self.script_deleted.load(Ordering::SeqCst)
+        }
         fn validate_target(&self, _app: &mut TargetApp) -> Result<(), String> {
             Ok(())
         }
@@ -493,7 +506,7 @@ mod tests {
     fn guard() -> (Guard, Arc<Fake>, PathBuf) {
         let dir = std::env::temp_dir().join(format!("Still-protocol-{}", guid()));
         std::fs::create_dir_all(&dir).unwrap();
-        let fake = Arc::new(Fake { applied: Mutex::default(), cleared: Mutex::default(), fail_apply: AtomicBool::new(false) });
+        let fake = Arc::new(Fake { applied: Mutex::default(), cleared: Mutex::default(), fail_apply: AtomicBool::new(false), script_deleted: AtomicBool::new(false) });
         (Guard::new(Paths::new(dir.clone()), "S-1-5-21-1".into(), Box::new(fake.clone())), fake, dir)
     }
     fn request(command: &str) -> Request {
@@ -626,6 +639,26 @@ mod tests {
         g.tick();
         assert!(g.lock().state.session.is_none());
         assert_eq!(g.lock().state.history[0].outcome.as_deref(), Some("completed"));
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn a_deleted_policy_script_releases_every_block() {
+        let (g, fake, dir) = guard();
+        assert_eq!(g.handle_request(&start(60, 0, &["C:\\Games\\game.exe"]))["ok"], true);
+        g.tick();
+        assert!(g.lock().state.session.is_some(), "Session keeps running while the script is there");
+        let cleared = *fake.cleared.lock().unwrap();
+        fake.script_deleted.store(true, Ordering::SeqCst);
+        g.tick();
+        let inner = g.lock();
+        assert!(inner.state.session.is_none(), "Session ended");
+        assert_eq!(inner.state.history[0].outcome.as_deref(), Some("interrupted"));
+        assert_eq!(*fake.cleared.lock().unwrap(), cleared + 1, "Blocks released");
+        assert_eq!(inner.state.error.as_deref(), Some(SCRIPT_MISSING), "User is told why");
+        drop(inner);
+        g.tick();
+        assert_eq!(*fake.cleared.lock().unwrap(), cleared + 1, "Nothing more to release once the session is over");
         let _ = std::fs::remove_dir_all(dir);
     }
 

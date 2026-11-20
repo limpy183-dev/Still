@@ -1,5 +1,6 @@
 //! The Windows side of the guard: AppLocker rules through `policy.ps1`, browser policy in the registry
-//! (`native/Websites.cs`), target checks and file protection. The PowerShell script is the original, unchanged.
+//! (`native/Websites.cs`), target checks and file protection. The PowerShell script is the original, unchanged;
+//! releasing uses `release.ps1`, a built-in copy of its release code.
 use crate::guard::Enforcer;
 use base64::{Engine, engine::general_purpose::STANDARD};
 use serde_json::{Value, json};
@@ -62,7 +63,19 @@ pub fn run(program: &Path, args: &[String]) -> Result<String, String> {
 
 /// Runs `policy.ps1` (from `directory`) with an action and an optional payload.
 pub fn run_policy(directory: &Path, data: &Path, action: &str, payload: Option<&Value>) -> Result<(), String> {
-    let script = directory.join("policy.ps1").to_string_lossy().replace('\'', "''");
+    run_script(&directory.join("policy.ps1"), data, action, payload)
+}
+
+/// Releases Still's AppLocker rules with the release script built into this exe, so antivirus deleting or
+/// quarantining `policy.ps1` can never leave apps blocked. `data` is SYSTEM/administrator-only, so the copy can't be swapped.
+pub fn release_rules(data: &Path) -> Result<(), String> {
+    let script = data.join("release.ps1");
+    std::fs::write(&script, include_str!("release.ps1")).map_err(|e| e.to_string())?;
+    run_script(&script, data, "clear", None)
+}
+
+fn run_script(script: &Path, data: &Path, action: &str, payload: Option<&Value>) -> Result<(), String> {
+    let script = script.to_string_lossy().replace('\'', "''");
     // A long selection would overflow the command line, so the payload travels in a file only SYSTEM and administrators can read.
     let file = data.join("policy-payload.tmp");
     let load = match payload {
@@ -226,9 +239,13 @@ impl Enforcer for WindowsEnforcer {
     }
 
     fn clear(&self) -> Result<(), String> {
-        let policy = run_policy(&self.install_dir, &self.data, "clear", None);
+        let policy = release_rules(&self.data);
         let websites = self.websites.clear();
         policy.and(websites)
+    }
+
+    fn intact(&self) -> bool {
+        self.install_dir.join("policy.ps1").is_file()
     }
 
     fn validate_target(&self, app: &mut TargetApp) -> Result<(), String> {

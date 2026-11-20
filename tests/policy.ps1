@@ -41,6 +41,14 @@ Write-Output 'Passed: selected executable denied, renamed identical copy denied,
 $tokens = $null; $errors = $null
 $ast = [Management.Automation.Language.Parser]::ParseFile("$root\native\policy.ps1", [ref]$tokens, [ref]$errors)
 $cleanup = $ast.Find({ param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq 'Remove-FocusRules' }, $true)
+# The guard releases with its built-in copy of this code (crates/still-guard/src/release.ps1); it must not drift.
+$release = [Management.Automation.Language.Parser]::ParseFile("$root\crates\still-guard\src\release.ps1", [ref]$tokens, [ref]$errors)
+if ($errors.Count) { throw 'release.ps1 does not parse.' }
+foreach ($name in 'Read-CspPolicy', 'Write-CspPolicy', 'Read-Policy', 'Write-Policy', 'Remove-FocusRules') {
+    $copies = @($ast, $release | ForEach-Object { $_.Find({ param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq $name }, $true).Extent.Text })
+    if (!$copies[0] -or $copies[0] -ne $copies[1]) { throw "release.ps1's $name differs from policy.ps1's." }
+}
+Write-Output 'Passed: the guard''s release script matches policy.ps1.'
 . ([scriptblock]::Create($cleanup.Extent.Text))
 $prefix = 'Still Focus / '
 [xml]$baseline = '<AppLockerPolicy Version="1"><RuleCollection Type="Exe" EnforcementMode="AuditOnly" /></AppLockerPolicy>'

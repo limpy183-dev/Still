@@ -1,7 +1,7 @@
 //! `Still.Guard.exe --install <sid>`, `--uninstall` and `--recover` (they need an administrator): the port of
 //! `Install` and `Uninstall` in `native/Guard.cs`.
 use crate::{
-    enforce::{WebsitePolicy, protect_directory, run_policy},
+    enforce::{WebsitePolicy, protect_directory, release_rules, run_policy},
     guard::{SERVICE_NAME, atomic_write},
 };
 use std::{
@@ -167,7 +167,7 @@ pub fn uninstall(recovery: bool) -> Result<(), String> {
     if let Some(service) = &service {
         stop(service)?;
     }
-    let policy = run_policy(&install_dir(), &data, "clear", None);
+    let policy = release_rules(&data);
     let websites = WebsitePolicy::local_machine(&data).clear();
     policy.and(websites)?;
     if let Some(mut saved) = read_state() {
