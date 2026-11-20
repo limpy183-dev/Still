@@ -512,7 +512,8 @@ function timerLoop() {
 
 function focusMilliseconds(session, from = 0, to = now()) {
 
-  if (!session || ['failed', 'interrupted', 'recovered'].includes(session.outcome)) return 0;
+  // An interrupted session (e.g. Still released its blocks because policy.ps1 was deleted) keeps the time up to the interruption.
+  if (!session || ['failed', 'recovered'].includes(session.outcome)) return 0;
 
   return Math.max(0, Math.min(session.finishedAt || now(), session.endsAt, to) - Math.max(session.startedAt, from));
 
