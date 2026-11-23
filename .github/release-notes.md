@@ -1,11 +1,9 @@
-## What's new in v2.1.0
+## What's new in v2.1.1
 
-- **Back up or move your Windows data.** Use **Settings → Export backup** to save your settings, to-dos, alerts with their attached media, and session history in one ZIP. Importing replaces the current settings, to-dos and alerts, adds sessions by ID, and saves a copy of the current data first.
-- **Repeat an alert every week.** In the Windows alert editor, choose **Weekly** to repeat on the weekday of the start date at the same local time.
-- **Start or act on a focus session with Enter.** Press Enter in the intention, duration or release-delay field to use the main focus button. Enter in the alert app search keeps you in the search.
-- **See focus progress move smoothly.** The timer ring moves continuously during a focus session and uses static updates when reduced motion is on.
-- **Scroll each pane independently.** The sidebar and main content stop at their own edges, and switching pages returns the main pane to the top.
-- **Recognize Still notifications at a glance.** Windows reminders and session-completion notifications use the Still name and logo.
+- **Lighter in the background.** Still holds its animations still while the window is minimized, in the tray or covered by other windows, so its web engine uses about 1 to 5% of a core instead of 15 to 80%. Nothing looks different when you look at it again.
+- **Animation frame rate.** A new Settings option: use your display's rate (the default), 60 or 30 frames a second for the slow ambient animations.
+- **Your own sound when a focus session ends.** Choose an audio file in Settings; it is included in backups, and scheduled alerts keep their own sounds.
+- **Alarms block only when you ask.** A ringing alarm now starts blocking, and counts toward Your progress, only when you press **Let's focus**. Dismiss and Snooze leave your apps open.
 
 ## Install or update
 

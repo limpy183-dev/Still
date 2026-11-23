@@ -33,7 +33,7 @@
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <div class="progress-bar" aria-hidden="true"></div>
-<div class="titlebar"><div class="wrap"><a href="/changelog"><span class="tiny-dot"></span><span>Still <span data-version>2.1.0</span> is here · See what’s new</span></a><span class="window-dots" aria-hidden="true"><span>−</span><span>□</span><span>×</span></span></div></div>
+<div class="titlebar"><div class="wrap"><a href="/changelog"><span class="tiny-dot"></span><span>Still <span data-version>2.1.1</span> is here · See what’s new</span></a><span class="window-dots" aria-hidden="true"><span>−</span><span>□</span><span>×</span></span></div></div>
 <header class="site-header"><div class="wrap">
   <a class="brand" href="/home" aria-label="Still home"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>still<span class="brand-dot">.</span></a>
   <nav class="nav" id="site-nav" aria-label="Main"><a href="/features">Features</a><a href="/guide" aria-current="page">Guide</a><a href="/download">Download</a><a href="/extension">Extension</a><a href="/privacy">Privacy</a><a href="/faq">FAQ</a><a href="/changelog">Changelog</a></nav>
@@ -77,7 +77,7 @@
     <section class="panel doc-section" id="install" data-reveal>
       <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-download"/></svg></span>Install</h2>
       <ol class="olist">
-        <li><span>Download <b>Still-Setup-<span data-version>2.1.0</span>.exe</b> from the <a href="/download">download page</a>.</span></li>
+        <li><span>Download <b>Still-Setup-<span data-version>2.1.1</span>.exe</b> from the <a href="/download">download page</a>.</span></li>
         <li><span>Run it and choose <b>Install Still</b>. It installs for your Windows account in <code>%LOCALAPPDATA%\Programs\Still</code>, adds a <b>Still Focus</b> Start menu shortcut (and optionally a desktop shortcut), and needs no administrator approval.</span></li>
         <li><span>The build isn’t code-signed, so Windows SmartScreen may say it “protected your PC”. Choose <b>More info → Run anyway</b>.</span></li>
       </ol>
@@ -164,7 +164,7 @@
       <ul class="ulist">
         <li>Four built-in sounds, silent reminders, volume control, and your own audio/video files (up to 200 MB; MP3/WAV and H.264 MP4 recommended). Drop files into the AlertSounds folder (the alarm editor has a button that opens it) and they appear in the sound list.</li>
         <li>Full-screen and card alarms support images, GIFs and muted video banners.</li>
-        <li>Each alarm has a snooze limit (blank for unlimited, 0 to hide Snooze) and a Show/Hide Dismiss setting. Snooze releases that alarm’s apps and blocks them again after five minutes.</li>
+        <li>Each alarm has a snooze limit (blank for unlimited, 0 to hide Snooze) and a Show/Hide Dismiss setting. Nothing is blocked until you press <b>Let’s focus</b>; Snooze and Dismiss leave your apps open.</li>
         <li>Alarm audio stops after one minute; overlays dismiss after five. <kbd>Esc</kbd> dismisses an overlay when Dismiss is shown.</li>
       </ul>
       <div class="note"><svg aria-hidden="true"><use href="#i-alert"/></svg><span>Alerts run while Still is open or in the tray. Turn on <b>Alarms after you quit</b> in Settings and Windows reopens Still in the tray just before each alert, even after you quit it or restart. Sleeping PCs aren’t woken; a missed alarm rings when Still next runs, and only a still-active focus window starts blocking.</span></div>
@@ -204,6 +204,7 @@
       <h2><span class="soft-icon"><svg aria-hidden="true"><use href="#i-sun"/></svg></span>Accessibility</h2>
       <p>At the bottom of Settings, <b>Made to fit you</b> holds options that apply straight away and are saved on this PC:</p>
       <p><b>Text size</b> (100%, 115%, 130%, 150% or 175%) scales everything in Still, not only the words, and the layout rearranges itself to fit. In a small window a large size shows less at once and the sidebar shrinks to icons. <b>High contrast</b> uses black text on white with strong borders. <b>Easier-to-read font</b> switches to Atkinson Hyperlegible, a typeface made by the Braille Institute so letters like I, l and 1 are easy to tell apart. <b>Stronger focus outlines</b> make the keyboard focus easy to follow. <b>A gentler pace</b> reduces motion. <b>Reset accessibility</b> puts everything back. Alarm screens follow these choices too. The Android preview has the same options under the sliders button at the top right of every page.</p>
+      <p><b>Session sound</b> plays an audio file of your choice (MP3, WAV, M4A and others) when a focus session ends, instead of Windows’ default sound; <b>Listen</b> previews it and <b>Use default</b> goes back. It travels with your backup, and your scheduled alerts keep their own sounds. <b>Animation frame rate</b> (your display’s rate, 60 or 30 frames a second) trades smoothness of the slow ambient animations for less graphics work. Whatever you pick, Still holds those animations still while its window is minimized, in the tray or covered by other windows.</p>
     </section>
 
     <section class="panel doc-section" id="updating" data-reveal>

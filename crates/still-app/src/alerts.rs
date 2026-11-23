@@ -28,6 +28,7 @@ use tokio::{task::{JoinHandle, spawn_local}, time::sleep};
 const SOUND_EXT: [&str; 9] = ["mp3", "wav", "ogg", "m4a", "aac", "flac", "mp4", "mov", "webm"];
 const BANNER_EXT: [&str; 8] = ["png", "jpg", "jpeg", "gif", "webp", "mp4", "mov", "webm"];
 const ENDED: &str = "This focus window has ended. This is a reminder only; scheduled blocking has ended.";
+const WAITS_FOR_FOCUS: &str = "Alarm delivered · apps and websites are blocked only if you press Let’s focus.";
 
 /// One alarm waiting to be shown, or being shown.
 #[derive(Clone)]
@@ -344,7 +345,9 @@ impl Alerts {
         let mut toast = None;
         if quiet {
             let title = if item.preview { format!("Preview · {}", alert.title) } else { alert.title.clone() };
-            let body = [alert.note.as_str(), item.message.as_str()].iter().filter(|s| !s.is_empty()).copied().collect::<Vec<_>>().join("\n");
+            // A notification has no Let’s focus button: clicking it does the same.
+            let message = if item.message == WAITS_FOR_FOCUS { "Click this notification to start focusing and block this alarm’s apps." } else { item.message.as_str() };
+            let body = [alert.note.as_str(), message].iter().filter(|s| !s.is_empty()).copied().collect::<Vec<_>>().join("\n");
             let tx = app.tx.clone();
             match win::show_toast(&title, &body, true, move |event| {
                 let _ = tx.send(CoreMsg::Toast(serial, event));
@@ -444,6 +447,15 @@ impl Alerts {
         match event {
             ToastEvent::Click => {
                 let _ = app.ui.send_event(UiEvent::ShowMain);
+                let item = self.st.borrow().active.as_ref().map(|a| a.item.clone());
+                if let Some(item) = item {
+                    let this = self.clone();
+                    spawn_local(async move {
+                        if let Err(error) = this.lets_focus(&item).await {
+                            this.app().alert_error(error);
+                        }
+                    });
+                }
             }
             ToastEvent::Failed(detail) => {
                 eprintln!("Notification failed: {detail}");
@@ -491,7 +503,7 @@ impl Alerts {
                         pending: Some(None),
                         snooze_at: Some(now_ms() + 5 * 60_000),
                         snooze_end: Some(item.occurrence.end),
-                        last_result: Some("Snoozed · this alarm’s apps are unblocked.".into()),
+                        last_result: Some("Snoozed · no apps or websites blocked.".into()),
                         ..r.clone()
                     }
                 }).collect();
@@ -499,31 +511,57 @@ impl Alerts {
             })
             .await?;
         }
-        if action == "open" && !item.preview && app.prefs()["countAlarmFocus"] == true {
-            self.serial(async {
-                let record = self.st.borrow().records.iter().find(|r| r.id == item.alert.id).cloned();
-                let (now, end) = (now_ms(), item.occurrence.end);
-                // Alarms that start blocking already count through their focus session.
-                let Some(record) = record.filter(|r| r.session_id().is_none() && r.pending().is_none() && end > now) else { return Ok(()) };
-                let id = format!("alarm-{}-{}", record.id, record.last_occurrence());
-                if self.st.borrow().focus.iter().any(|i| i["id"] == id) {
-                    return Ok(());
-                }
-                let entry = json!({ "id": id, "alarm": true, "intention": record.title, "apps": [], "startedAt": now, "endsAt": end, "finishedAt": end, "durationMinutes": (end - now + 59_999) / 60_000, "outcome": "completed" });
-                let mut next = vec![entry];
-                next.extend(self.st.borrow().focus.iter().cloned());
-                next.truncate(500);
-                self.save_focus(next).await
-            })
-            .await?;
-        }
         if action == "open" {
+            self.lets_focus(&item).await?;
             let _ = app.ui.send_event(UiEvent::ShowMain);
         }
         if still_active(self) {
             self.close_presentation();
         }
         Ok(json!(true))
+    }
+
+    /// "Let’s focus" is the only way an alarm starts blocking or adds to Your progress; Dismiss, Snooze and
+    /// an unanswered alarm do neither.
+    async fn lets_focus(self: &Rc<Self>, item: &Presentation) -> Result<(), String> {
+        if item.preview {
+            return Ok(());
+        }
+        let count_reminders = self.app().prefs()["countAlarmFocus"] == true;
+        let blocking = self
+            .serial(async {
+                let record = self.st.borrow().records.iter().find(|r| r.id == item.alert.id).cloned();
+                let (now, end) = (now_ms(), item.occurrence.end);
+                let Some(record) = record.filter(|r| r.session_id().is_none() && r.pending().is_none() && end > now) else { return Ok::<_, String>(false) };
+                if let Some(apps) = record.occurrence_apps.clone().filter(|a| !a.is_empty()) {
+                    // The scheduler starts the session, waiting for protection or another session if it has to.
+                    // That session is what counts in Your progress.
+                    let pending = Pending { start: item.occurrence.start, end, apps };
+                    let next = self.st.borrow().records.iter().map(|r| {
+                        if r.id != record.id {
+                            return r.clone();
+                        }
+                        Alert { pending: Some(Some(pending.clone())), last_result: Some("Waiting to start blocking…".into()), ..r.clone() }
+                    }).collect();
+                    self.persist(Some(next)).await?;
+                    return Ok(true);
+                }
+                let id = format!("alarm-{}-{}", record.id, record.last_occurrence());
+                if !count_reminders || self.st.borrow().focus.iter().any(|i| i["id"] == id) {
+                    return Ok(false);
+                }
+                let entry = json!({ "id": id, "alarm": true, "intention": record.title, "apps": [], "startedAt": now, "endsAt": end, "finishedAt": end, "durationMinutes": (end - now + 59_999) / 60_000, "outcome": "completed" });
+                let mut next = vec![entry];
+                next.extend(self.st.borrow().focus.iter().cloned());
+                next.truncate(500);
+                self.save_focus(next).await?;
+                Ok(false)
+            })
+            .await?;
+        if blocking {
+            self.schedule_tick();
+        }
+        Ok(())
     }
 
     // ---- requests from the page ----
@@ -723,16 +761,12 @@ impl Alerts {
             let now = now_ms();
             if record.snooze_at.is_some_and(|s| s != 0 && s <= now) {
                 let end = record.snooze_end.unwrap_or(now + 1);
-                if end <= now {
-                    record.last_result = Some(ENDED.into());
-                } else if let Some(apps) = record.occurrence_apps.clone().filter(|a| !a.is_empty()) {
-                    record.pending = Some(Some(Pending { start: now, end, apps }));
-                    record.last_result = Some("Waiting to restart blocking…".into());
-                }
+                let blocks = record.occurrence_apps.as_ref().is_some_and(|a| !a.is_empty());
+                record.last_result = Some(if end <= now { ENDED } else if blocks { WAITS_FOR_FOCUS } else { "Your reminder, a little later." }.into());
                 record.snooze_at = Some(0);
                 self.commit(index, &record);
                 self.persist(None).await?;
-                let message = if end <= now { "Your focus window has ended. This is your snoozed reminder.".to_string() } else { record.last_result.clone().filter(|m| !m.is_empty()).unwrap_or_else(|| "Your reminder, a little later.".into()) };
+                let message = if end <= now { "Your focus window has ended. This is your snoozed reminder.".to_string() } else { record.last_result.clone().unwrap_or_default() };
                 let _ = self.present(record.clone(), Occurrence { start: now, end }, false, message, false);
             }
             if let Some(occurrence) = due_occurrence(&Local, &record, now) {
@@ -758,10 +792,11 @@ impl Alerts {
                     }
                     _ => record.apps.clone(),
                 };
+                // Blocking waits for Let’s focus (see `lets_focus`).
                 record.occurrence_apps = Some(apps.clone());
-                record.pending = Some((!apps.is_empty()).then(|| Pending { start: occurrence.start, end: occurrence.end, apps: apps.clone() }));
+                record.pending = Some(None);
                 record.last_result = Some(
-                    if !apps.is_empty() { "Waiting to start blocking…" } else if record.block_mode == "current" { "Reminder delivered · no apps or websites were selected for blocking." } else { "Reminder delivered · no apps or websites blocked." }.into(),
+                    if !apps.is_empty() { WAITS_FOR_FOCUS } else if record.block_mode == "current" { "Reminder delivered · no apps or websites were selected for blocking." } else { "Reminder delivered · no apps or websites blocked." }.into(),
                 );
                 self.commit(index, &record);
                 // Claim the occurrence before showing it or sending any blocking request.

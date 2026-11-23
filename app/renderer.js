@@ -92,19 +92,54 @@ function browserPreview() {
 }
 
 const api = window.still || browserPreview();
-let presentationVisible = true, historySignature = '', lastStatsSignature = '';
+let presentationVisible = true, presentationCovered = false, historySignature = '', lastStatsSignature = '';
 function setText(element, value) { const text = String(value); if (element.textContent !== text) element.textContent = text; }
 function setMarkup(element, value) { if (element.innerHTML !== value) element.innerHTML = value; }
+// Endless animations run on their own at the display's rate unless held (styles.css): out of sight, so the page stops
+// drawing, or stepped at the frame rate chosen in Settings, when the slow ambient ones are moved on here instead. Either
+// way they carry on from the same frame.
+let displayHz = 0, stepTimer, stepOrigins = new WeakMap();
+const stepping = () => prefs.animationFps > 0 && !(displayHz && prefs.animationFps >= displayHz);
+function holdAnimations() {
+  const away = !presentationVisible || presentationCovered;
+  document.documentElement.classList.toggle('presentation-paused', away);
+  document.documentElement.classList.toggle('animations-stepped', stepping());
+  clearTimeout(stepTimer); stepOrigins = new WeakMap();
+  if (!away && stepping()) stepAnimations();
+}
+function stepAnimations() {
+  const time = performance.now();
+  // Only the held CSS animations are paused; each moves on as if it had been running since it was first seen.
+  for (const animation of document.getAnimations()) {
+    if (!animation.animationName || animation.playState !== 'paused') continue;
+    if (!stepOrigins.has(animation)) stepOrigins.set(animation, time - animation.currentTime);
+    animation.currentTime = time - stepOrigins.get(animation);
+  }
+  if (ringAnimations.length) { const elapsed = ringElapsed(); for (const animation of ringAnimations) animation.currentTime = elapsed; }
+  // On a fixed grid, so late timers don't add up to a slower rate (and one that fires a little early doesn't step twice).
+  const interval = 1000 / prefs.animationFps, wait = interval - performance.now() % interval;
+  stepTimer = setTimeout(stepAnimations, wait < interval / 2 ? wait + interval : wait);
+}
+function showAnimationFps() {
+  const select = $('#animation-fps');
+  select.querySelector('[value="0"]').textContent = displayHz ? `Your display (${displayHz} fps)` : 'Your display';
+  select.querySelector('[value="60"]').hidden = displayHz > 0 && displayHz <= 60;
+  select.value = String(stepping() ? prefs.animationFps : 0);
+}
+// The refresh rate Windows runs the window's display at (0 in the browser preview).
+const refreshRate = () => Promise.resolve(api.displayRate?.()).then(hz => { displayHz = hz || 0; showAnimationFps(); holdAnimations(); updateFocusRing(); }).catch(() => {});
 function setPresentationVisible(visible) {
-  presentationVisible = visible;
+  presentationVisible = visible; holdAnimations();
   if (visible) { refreshStatus(); renderStats(); }
   else updateFocusRing();
 }
+// Shown but behind other windows: the page keeps itself current, so it is right the moment it is uncovered.
+function setPresentationCovered(covered) { presentationCovered = covered; holdAnimations(); updateFocusRing(); }
 let apps = [], selected = new Set(), groups = [], page = 'focus', busy = false, scanning = false, toastTimer, saveQueue = Promise.resolve();
 
 let state = { installed: false, session: null, history: [], demo: !window.still, error: null, unavailable: false };
 
-let prefs = { duration: 50, delay: 5, delayEnabled: true, intention: '', notifications: true, reducedMotion: false, launchAtLogin: false, alertsAfterQuit: false, countAlarmFocus: false };
+let prefs = { duration: 50, delay: 5, delayEnabled: true, intention: '', notifications: true, reducedMotion: false, launchAtLogin: false, alertsAfterQuit: false, countAlarmFocus: false, animationFps: 0 };
 
 let historyFilter = 'active';
 
@@ -161,6 +196,7 @@ function showPage(next) {
   $('#page-crumb').textContent = { focus: 'Focus space', todos: 'To-do list', new: 'Something new', alerts: 'Alerts', library: 'Apps & websites', limits: 'Time limits', history: 'Your progress', settings: 'Settings' }[next];
   closeTodoMenu();
   if (next === 'library') renderLibrary(); if (next === 'history') renderHistory();
+  if (next === 'settings') refreshRate(); // The window may have moved to another display.
   if (next === 'alerts') renderAlerts();
   if (next === 'new' || next === 'history') renderNewThings();
   if (next === 'settings') checkExtension();
@@ -387,12 +423,14 @@ const ringSweep = $('.ring-sweep');
 const ringLength = 754; // Matches the SVG circle's stroke-dasharray.
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 let ringInView = false, ringAnimations = [];
+// How far into the session the focus ring is, in ms.
+const ringElapsed = (session = state.session, duration = session ? session.durationMinutes * 60000 : 0) => session ? Math.max(0, Math.min(duration, duration - (session.endsAt - now()))) : 0;
 
 function updateFocusRing() {
   const visible = presentationVisible && !document.hidden && page === 'focus' && ringInView;
   const session = state.session;
   const duration = session ? session.durationMinutes * 60000 : 0;
-  const elapsed = session ? Math.max(0, Math.min(duration, duration - (session.endsAt - now()))) : 0;
+  const elapsed = ringElapsed();
 
   if (visible && elapsed < duration && !prefs.reducedMotion && !reducedMotion.matches) {
     if (!ringAnimations.length || ringAnimations[0].effect.getTiming().duration !== duration) {
@@ -405,10 +443,12 @@ function updateFocusRing() {
       );
       ringAnimations = [rotate('.ring-left svg', [0, -180, -180]), rotate('.ring-right svg', [0, 0, -180]), rotate('.ring-tip', [0, -360])];
       for (const animation of ringAnimations) animation.currentTime = elapsed;
-    } else if (Math.abs(ringAnimations[0].currentTime - elapsed) > 100) {
-      // Reconcile sleep or a guard clock correction without restarting on ordinary status updates.
+    } else if (presentationCovered || stepping() || Math.abs(ringAnimations[0].currentTime - elapsed) > 100) {
+      // Reconcile sleep or a guard clock correction without restarting on ordinary status updates (and move a held ring on).
       for (const animation of ringAnimations) animation.currentTime = elapsed;
     }
+    // While covered or stepped the ring is held and moved on by the timer loop or the stepper, so nothing is drawn in between.
+    for (const animation of ringAnimations) if (presentationCovered || stepping()) animation.pause(); else if (animation.playState === 'paused') animation.play();
     return;
   }
 
@@ -464,7 +504,9 @@ function timerLoop() {
   try { updateTimer(); } finally {
     // Rescheduled even if an update throws, like the setInterval it replaces.
     const left = [state.session?.endsAt, state.session?.unlockAt].map(at => at - now()).filter(ms => ms > 0);
-    setTimeout(timerLoop, left.length ? Math.min(...left.map(ms => ms % 1000 || 1000)) + 15 : 1000);
+    const next = left.length ? Math.min(...left.map(ms => ms % 1000 || 1000)) + 15 : 1000;
+    // A held (covered) focus ring is moved on often enough that it is never half a pixel behind: 1/1600 of the session.
+    setTimeout(timerLoop, presentationCovered && state.session ? Math.min(next, Math.max(50, state.session.durationMinutes * 37.5)) : next);
   }
 }
 
@@ -908,7 +950,32 @@ for (const [id, key] of [['notifications', 'notifications'], ['reduced-motion', 
 
 }
 
+// Custom end-of-session sound. Scheduled alerts keep their own sound settings.
+let stopSessionSound = () => {};
+function playSessionSound(sound) {
+  stopSessionSound();
+  const stop = playAlertSound({ sound: 'custom', soundFile: sound, volume: 100 }, { onError: message => toast(message, true) }), timeout = setTimeout(() => stopSessionSound(), 60000);
+  stopSessionSound = () => { clearTimeout(timeout); stop(); $('#session-sound-test').textContent = 'Listen'; };
+}
+function showSessionSound() {
+  const sound = prefs.sessionSound;
+  $('#session-sound-name').textContent = sound ? `Playing “${sound.name}” when your focus session ends. Your scheduled alerts keep their own sounds.` : 'Windows’ default sound plays when your focus session ends. Choose an MP3, WAV, M4A or other audio file to play instead. This doesn’t change your scheduled alerts.';
+  $('#session-sound-test').hidden = $('#session-sound-reset').hidden = !sound;
+}
+$('#session-sound-pick').onclick = () => act(async () => {
+  if (!api.pickAlertMedia) throw Error('Choosing a sound is available in the Windows app.');
+  const sound = await api.pickAlertMedia('sound'); if (!sound) return;
+  stopSessionSound(); prefs.sessionSound = sound; showSessionSound(); save();
+}, $('#session-sound-pick'));
+$('#session-sound-test').onclick = () => {
+  if ($('#session-sound-test').textContent === 'Stop') return stopSessionSound();
+  $('#session-sound-test').textContent = 'Stop'; playSessionSound(prefs.sessionSound);
+};
+$('#session-sound-reset').onclick = () => { stopSessionSound(); prefs.sessionSound = null; showSessionSound(); save(); };
+api.onSessionEnded?.(playSessionSound);
+
 $('#text-size').onchange = () => { prefs.textSize = Number($('#text-size').value); applyLook(); save(); };
+$('#animation-fps').onchange = () => { prefs.animationFps = Number($('#animation-fps').value); holdAnimations(); updateFocusRing(); save(); };
 $('#accessibility-reset').onclick = () => {
   Object.assign(prefs, { textSize: 100, highContrast: false, readableFont: false, strongFocus: false, reducedMotion: false });
   showAccessibility(); applyLook(); save(); toast('Accessibility options are back to their defaults.');
@@ -965,7 +1032,7 @@ async function init() {
     if (initial.version) $('#app-version').textContent = `STILL ${initial.version}`;
     $('#notifications').checked = prefs.notifications; $('#launch-at-login').checked = prefs.launchAtLogin; $('#alerts-after-quit').checked = prefs.alertsAfterQuit; $('#count-alarm-focus').checked = prefs.countAlarmFocus;
 
-    showAccessibility(); applyLook();
+    showAccessibility(); applyLook(); showSessionSound(); showAnimationFps(); holdAnimations();
 
     $$('[data-duration]').forEach(button => button.classList.toggle('selected', Number(button.dataset.duration) === prefs.duration));
 
@@ -979,11 +1046,11 @@ async function init() {
 
     initWebsites(); initTodos(); initNewThings(); applyStatus(initial); renderApps(); renderStats(); await initAlerts();
     api.onStatus(value => { if (!busy) applyStatus(value); });
-    api.onPresentation?.(setPresentationVisible);
+    api.onPresentation?.(setPresentationVisible); api.onCovered?.(setPresentationCovered);
     timerLoop(); setInterval(renderStats, 30000);
 
   } catch (error) { toast('Still could not load: ' + error.message, true); }
-  finally { await api.showWindow?.(); }
+  finally { await api.showWindow?.(); refreshRate(); }
   // Artwork is cosmetic: Windows discovery must never hold up the usable UI.
   api.appIcons?.().then(enriched => {
     const icons = new Map(enriched.map(target => [target.path, target]));

@@ -85,7 +85,7 @@
 @media(max-height:680px) and (max-width:850px){.sidebar nav{margin-top:22px}}
 @media(max-width:1150px) and (min-width:851px){.sidebar-bottom .nav-item{gap:9px;padding-left:12px;padding-right:12px;white-space:nowrap}}
 /* Accessibility (Settings > Made to fit you). Text size is page zoom set in accessibility.js, so the width breakpoints above reflow the layout. */
-.accessibility-settings select{background:#f8faf4;border:1px solid #d5dec8;border-radius:8px;padding:9px;color:#405333;font:inherit;max-width:190px}
+.settings-panel select{background:#f8faf4;border:1px solid #d5dec8;border-radius:8px;padding:9px;color:#405333;font:inherit;max-width:190px}
 .setting-row h3 label{cursor:pointer}
 body.readable-font{--font:'Atkinson Hyperlegible Next',Verdana,'Segoe UI',sans-serif}
 body.strong-focus :is(button,a,input,select,textarea,[tabindex]):focus-visible,body.strong-focus dialog:focus-visible{outline:3px solid #000;outline-offset:3px;box-shadow:0 0 0 6px #fff}
@@ -125,3 +125,9 @@ body.high-contrast .new-day{border-color:#000}
 .ring-sweep { color: #9fbd62; }
 .ring-sweep path { stroke-width: 3; stroke-linecap: butt; }
 .ring-sweep circle { fill: currentColor; stroke: none; }
+
+/* Stepped at the frame rate chosen in Settings: the slow ambient animations hold still and renderer.js moves them on. */
+.animations-stepped .tiny-dot, .animations-stepped .floating-leaf, .animations-stepped .timer-scene::before { animation-play-state: paused !important; }
+/* Out of sight (hidden, minimized or covered): the endless animations hold still, so nothing is drawn; they carry on from the same frame. */
+.presentation-paused .tiny-dot, .presentation-paused .floating-leaf, .presentation-paused .timer-scene::before, .presentation-paused .spinner, .presentation-paused .busy svg,
+.presentation-paused .website-extension-status::before, .presentation-paused #website-setup, .presentation-paused #website-setup::after, .presentation-paused #website-setup span { animation-play-state: paused !important; }

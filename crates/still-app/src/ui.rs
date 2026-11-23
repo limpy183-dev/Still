@@ -9,6 +9,7 @@ use std::{
     io::{Read, Seek, SeekFrom},
     path::{Path, PathBuf},
     sync::{Arc, atomic::{AtomicBool, Ordering}},
+    time::{Duration, Instant},
 };
 use still_core::{alerts::MEDIA_FILE, domain::same_page_url};
 use tao::{
@@ -148,13 +149,13 @@ const BRIDGE: &str = r#"(() => {
 
 const MAIN_API: &str = r#"window.still = Object.freeze({
     websiteTarget: invoke('websiteTarget'), websiteIcons: invoke('websiteIcons'), websiteImage: invoke('websiteImage'), websiteSetup: invoke('websiteSetup'), websiteStore: invoke('websiteStore'), websiteExtension: invoke('websiteExtension'),
-    setZoom,
+    setZoom, displayRate: invoke('displayRate'),
     bootstrap: invoke('bootstrap'), appIcons: invoke('appIcons'), showWindow: invoke('showWindow'), status: invoke('status'), savePreferences: invoke('savePreferences'),
     install: invoke('install'), uninstall: invoke('uninstall'), discover: invoke('discover'), browse: invoke('browse'),
     start: invoke('start'), requestUnlock: invoke('requestUnlock'), cancelUnlock: invoke('cancelUnlock'), end: invoke('end'),
     window: invoke('window'), exportHistory: invoke('exportHistory'), exportBackup: invoke('exportBackup'), importBackup: invoke('importBackup'), checkForUpdates: invoke('checkForUpdates'), downloadUpdate: invoke('downloadUpdate'), updateHistory: invoke('updateHistory'),
     listAlerts: invoke('alerts:list'), saveAlert: invoke('alerts:save'), deleteAlert: invoke('alerts:delete'), toggleAlert: invoke('alerts:toggle'), previewAlert: invoke('alerts:preview'), pickAlertMedia: invoke('alerts:media'), folderSounds: invoke('alerts:folderSounds'), folderSound: invoke('alerts:folderSound'), openSoundsFolder: invoke('alerts:openSoundsFolder'),
-    onAlerts: on('alerts-changed'), onAlertError: on('alert-error'), onPresentation: on('presentation-visible'), onStatus: on('guard-status')
+    onAlerts: on('alerts-changed'), onAlertError: on('alert-error'), onPresentation: on('presentation-visible'), onCovered: on('presentation-covered'), onSessionEnded: on('session-ended'), onStatus: on('guard-status')
   });"#;
 
 const ALARM_API: &str = r#"window.alarm = Object.freeze({
@@ -397,7 +398,7 @@ pub fn run(mut event_loop: EventLoop<UiEvent>, cfg: UiConfig, proxy: Ui) -> i32 
     let mut ui = Ui_ { cfg: &cfg, proxy: proxy.clone(), web_context: WebContext::new(Some(cfg.web_data.clone())), main_placement: None, show_maximized: false };
     let mut entries: HashMap<WindowId, Entry> = HashMap::new();
     let mut by_key: HashMap<WindowKey, WindowId> = HashMap::new();
-    let mut presentation = true;
+    let (mut presentation, mut covered, mut next_look) = (true, false, Instant::now());
     let mut quitting = false;
 
     match create_main(&event_loop, &mut ui) {
@@ -437,6 +438,7 @@ pub fn run(mut event_loop: EventLoop<UiEvent>, cfg: UiConfig, proxy: Ui) -> i32 
     let (mut in_tray, mut epoch) = (false, 0u64);
     let exit_code = event_loop.run_return(|event, target, flow| {
         *flow = ControlFlow::Wait;
+        let focus_moved = matches!(event, Event::WindowEvent { event: WindowEvent::Focused(_), .. });
         match event {
             Event::UserEvent(UiEvent::ReleaseMain(token)) => {
                 let main = by_key.get(&WindowKey::Main).copied();
@@ -484,9 +486,24 @@ pub fn run(mut event_loop: EventLoop<UiEvent>, cfg: UiConfig, proxy: Ui) -> i32 
         // Tell the page whether it is on screen so it can pause work while hidden or minimized.
         if let Some(main) = by_key.get(&WindowKey::Main).and_then(|id| entries.get(id)) {
             let visible = main.window.is_visible() && !main.window.is_minimized();
-            if visible != presentation {
+            let changed = visible != presentation;
+            if changed {
                 presentation = visible;
                 let _ = main.webview.evaluate_script(&emit_script("presentation-visible", &Value::Bool(visible)));
+            }
+            // ...and whether, though shown, it is out of sight behind other windows. WebView2 can't tell, so the page's
+            // endless animations would keep it drawing every frame. Looked at when focus moves and on a timer: every 100 ms
+            // while covered, so the page hears as soon as it can be seen again.
+            if changed || focus_moved || (visible && Instant::now() >= next_look) {
+                let now = visible && win::is_covered(main.window.hwnd());
+                if now != covered {
+                    covered = now;
+                    let _ = main.webview.evaluate_script(&emit_script("presentation-covered", &Value::Bool(now)));
+                }
+                next_look = Instant::now() + Duration::from_millis(if covered { 100 } else { 1000 });
+            }
+            if visible && *flow == ControlFlow::Wait {
+                *flow = ControlFlow::WaitUntil(next_look);
             }
         }
     });
@@ -601,6 +618,8 @@ fn handle_call(from: WindowKey, uri: &str, call: Call, ui: &Ui_, entries: &HashM
                 let _ = entry.webview.zoom(factor.clamp(1.0, 1.75));
             }
         }
+        // The refresh rate of the display the window is on, for Settings > Animation frame rate.
+        "displayRate" => answer(Ok(Value::from(win::refresh_rate(window.hwnd())))),
         "window" if from == WindowKey::Main => {
             match call.args.first().and_then(Value::as_str) {
                 Some("minimize") => window.set_minimized(true),

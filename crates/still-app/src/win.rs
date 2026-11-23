@@ -44,6 +44,22 @@ fn display(monitor: HMONITOR) -> Display {
     Display { bounds: area(info.rcMonitor), work: area(info.rcWork), scale: f64::from(dpi_x.max(96)) / 96.0 }
 }
 
+/// The refresh rate the window's display runs at (in Hz, as Windows rounds it), or 0 if Windows doesn't say.
+pub fn refresh_rate(hwnd: isize) -> u32 {
+    use windows::Win32::{
+        Foundation::HWND,
+        Graphics::Gdi::{DEVMODEW, ENUM_CURRENT_SETTINGS, EnumDisplaySettingsW, MONITORINFOEXW, MonitorFromWindow},
+    };
+    let mut info = MONITORINFOEXW::default();
+    info.monitorInfo.cbSize = std::mem::size_of::<MONITORINFOEXW>() as u32;
+    let mut mode = DEVMODEW { dmSize: std::mem::size_of::<DEVMODEW>() as u16, ..Default::default() };
+    unsafe {
+        let known = GetMonitorInfoW(MonitorFromWindow(HWND(hwnd as _), MONITOR_DEFAULTTONEAREST), (&raw mut info).cast()).as_bool()
+            && EnumDisplaySettingsW(PCWSTR(info.szDevice.as_ptr()), ENUM_CURRENT_SETTINGS, &mut mode).as_bool();
+        if known && mode.dmDisplayFrequency > 1 { mode.dmDisplayFrequency } else { 0 }
+    }
+}
+
 pub fn primary_display() -> Display {
     display(unsafe { MonitorFromPoint(POINT::default(), MONITOR_DEFAULTTOPRIMARY) })
 }
@@ -246,6 +262,102 @@ impl wry::raw_window_handle::HasDisplayHandle for Parent {
 
 pub fn main_parent() -> Parent {
     Parent(MAIN_HWND.load(Ordering::SeqCst))
+}
+
+/// Whether a shown window is still out of sight: the screen is locked, or the window is cloaked (another virtual desktop) or
+/// covered by opaque windows above it, and Windows isn't showing window previews (taskbar thumbnails, Alt+Tab, Task View),
+/// which show covered windows too. A window that might be see-through counts as see-through, so a window that can be seen
+/// is never reported covered. The rules are Chromium's for its own windows (native window occlusion), with DWM's visible bounds.
+pub fn is_covered(hwnd: isize) -> bool {
+    use windows::{
+        Win32::{
+            Foundation::HWND,
+            Graphics::{
+                Dwm::{DWMWA_CLOAKED, DWMWA_EXTENDED_FRAME_BOUNDS, DwmGetWindowAttribute},
+                Gdi::{COMPLEXREGION, CombineRgn, CreateRectRgn, CreateRectRgnIndirect, DeleteObject, GetWindowRgn, NULLREGION, RGN_AND, RGN_DIFF},
+            },
+            System::StationsAndDesktops::{CloseDesktop, DESKTOP_CONTROL_FLAGS, DESKTOP_SWITCHDESKTOP, OpenInputDesktop},
+            UI::WindowsAndMessaging::{
+                FindWindowExW, GW_HWNDPREV, GWL_EXSTYLE, GWL_STYLE, GetLayeredWindowAttributes, GetSystemMetrics, GetWindow, GetWindowLongW, IsIconic, IsWindowVisible,
+                LAYERED_WINDOW_ATTRIBUTES_FLAGS, LWA_ALPHA, LWA_COLORKEY, SM_CXVIRTUALSCREEN, SM_CYVIRTUALSCREEN, SM_XVIRTUALSCREEN, SM_YVIRTUALSCREEN, WS_EX_LAYERED,
+                WS_EX_TOOLWINDOW, WS_EX_TRANSPARENT, WS_POPUP,
+            },
+        },
+        core::{PCWSTR, w},
+    };
+    unsafe {
+        // Locked, or a UAC prompt up: the input desktop is then the secure one, which this process can't open.
+        match OpenInputDesktop(DESKTOP_CONTROL_FLAGS(0), false, DESKTOP_SWITCHDESKTOP) {
+            Ok(desktop) => {
+                let _ = CloseDesktop(desktop);
+            }
+            Err(_) => return true,
+        }
+        let cloaked = |w: HWND| {
+            let mut value = 0u32;
+            DwmGetWindowAttribute(w, DWMWA_CLOAKED, (&raw mut value).cast(), 4).is_ok() && value != 0
+        };
+        let bounds = |w: HWND| {
+            let mut rect = RECT::default();
+            DwmGetWindowAttribute(w, DWMWA_EXTENDED_FRAME_BOUNDS, (&raw mut rect).cast(), std::mem::size_of::<RECT>() as u32).ok().map(|()| rect)
+        };
+        let opaque = |w: HWND| {
+            let (style, ex) = (GetWindowLongW(w, GWL_STYLE) as u32, GetWindowLongW(w, GWL_EXSTYLE) as u32);
+            // Popups (menus, tooltips, overlays) and tool windows can be larger than what they draw; click-through windows are see-through.
+            if !IsWindowVisible(w).as_bool() || IsIconic(w).as_bool() || style & WS_POPUP.0 != 0 || ex & (WS_EX_TOOLWINDOW.0 | WS_EX_TRANSPARENT.0) != 0 || cloaked(w) {
+                return false;
+            }
+            if ex & WS_EX_LAYERED.0 != 0 {
+                let (mut alpha, mut flags) = (0u8, LAYERED_WINDOW_ATTRIBUTES_FLAGS(0));
+                // This fails for windows drawn with UpdateLayeredWindow, which can be see-through anywhere.
+                if GetLayeredWindowAttributes(w, None, Some(&raw mut alpha), Some(&raw mut flags)).is_err() || flags.0 & LWA_COLORKEY.0 != 0 || (flags.0 & LWA_ALPHA.0 != 0 && alpha < 255) {
+                    return false;
+                }
+            }
+            let shape = CreateRectRgn(0, 0, 0, 0);
+            let shaped = GetWindowRgn(w, shape) == COMPLEXREGION;
+            let _ = DeleteObject(shape.into());
+            !shaped
+        };
+        // A taskbar thumbnail, Alt+Tab or Task View is up (Chromium's window classes, and Windows 11's switcher host).
+        let previewing = || {
+            [w!("TaskListThumbnailWnd"), w!("MultitaskingViewFrame"), w!("XamlExplorerHostIslandWindow")].into_iter().any(|class| {
+                let mut after = None;
+                while let Ok(found) = FindWindowExW(None, after, class, PCWSTR::null()) {
+                    if IsWindowVisible(found).as_bool() && !cloaked(found) {
+                        return true;
+                    }
+                    after = Some(found);
+                }
+                false
+            })
+        };
+        let me = HWND(hwnd as _);
+        if cloaked(me) {
+            return !previewing();
+        }
+        let Some(rect) = bounds(me) else { return false };
+        let left = CreateRectRgnIndirect(&rect);
+        let (x, y) = (GetSystemMetrics(SM_XVIRTUALSCREEN), GetSystemMetrics(SM_YVIRTUALSCREEN));
+        let screens = CreateRectRgn(x, y, x + GetSystemMetrics(SM_CXVIRTUALSCREEN), y + GetSystemMetrics(SM_CYVIRTUALSCREEN));
+        let mut kind = CombineRgn(Some(left), Some(left), Some(screens), RGN_AND);
+        let _ = DeleteObject(screens.into());
+        let mut above = GetWindow(me, GW_HWNDPREV);
+        while let Ok(w) = above
+            && kind != NULLREGION
+        {
+            if opaque(w)
+                && let Some(r) = bounds(w)
+            {
+                let other = CreateRectRgnIndirect(&r);
+                kind = CombineRgn(Some(left), Some(left), Some(other), RGN_DIFF);
+                let _ = DeleteObject(other.into());
+            }
+            above = GetWindow(w, GW_HWNDPREV);
+        }
+        let _ = DeleteObject(left.into());
+        kind == NULLREGION && !previewing()
+    }
 }
 
 /// The current user's Start menu Programs folder (it can be redirected, so it is asked for, not assumed).

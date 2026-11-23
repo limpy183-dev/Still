@@ -169,7 +169,15 @@ pub fn validate_preferences(value: &Value) -> R<Value> {
     o.insert("intentionColors".into(), Value::Object(intention_colors));
     o.insert("intention".into(), json!(slice16(&string_or(v("intention"), ""), 120)));
     o.insert("notifications".into(), json!(not_false(v("notifications"))));
+    // A custom end-of-session sound: a file already imported into alert-media, else null (the Windows default).
+    let sound = v("sessionSound");
+    o.insert("sessionSound".into(), match (sound.and_then(|m| str_of(prop(m, "file"))).filter(|f| crate::alerts::MEDIA_FILE.is_match(f)), sound.and_then(|m| str_of(prop(m, "name")))) {
+        (Some(file), Some(name)) => json!({ "file": file, "name": slice16(name, 200) }),
+        _ => Value::Null,
+    });
     o.insert("reducedMotion".into(), json!(is_true(v("reducedMotion"))));
+    // Frames a second for the slow ambient animations; 0 is the display's own rate.
+    o.insert("animationFps".into(), if is_one_of(v("animationFps"), &[0.0, 30.0, 60.0]) { v("animationFps").cloned().unwrap_or_default() } else { json!(0) });
     o.insert("textSize".into(), if is_one_of(v("textSize"), &[100.0, 115.0, 130.0, 150.0, 175.0]) { v("textSize").cloned().unwrap_or_default() } else { json!(100) });
     for key in ["highContrast", "readableFont", "strongFocus", "launchAtLogin", "alertsAfterQuit", "countAlarmFocus"] {
         o.insert(key.into(), json!(is_true(v(key))));
@@ -279,6 +287,15 @@ mod tests {
             assert_eq!(validate_preferences(&json!({ "textSize": size })).unwrap()["textSize"], 100);
         }
         assert_eq!(validate_preferences(&json!({ "highContrast": "yes", "readableFont": 1, "strongFocus": "true" })).unwrap()["highContrast"], false);
+    }
+
+    #[test]
+    fn session_sound_must_be_an_imported_media_file() {
+        let file = "0123456789abcdef0123456789abcdef0123.mp3";
+        assert_eq!(validate_preferences(&json!({ "sessionSound": { "file": file, "name": "ding.mp3", "extra": 1 } })).unwrap()["sessionSound"], json!({ "file": file, "name": "ding.mp3" }));
+        for bad in [json!(null), json!({ "file": "../../evil.mp3", "name": "x" }), json!({ "file": file }), json!("ding.mp3")] {
+            assert_eq!(validate_preferences(&json!({ "sessionSound": bad })).unwrap()["sessionSound"], Value::Null);
+        }
     }
 
     #[test]

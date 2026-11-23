@@ -9,7 +9,7 @@ window.alarm.onData(item => {
   get('alarm-title').textContent = alert.title; get('alarm-note').textContent = alert.note;
   get('alarm-message').textContent = item.message;
   get('alarm-time').textContent = item.occurrence.end <= Date.now() ? 'This focus window has ended' : 'Until ' + new Date(item.occurrence.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  if (!item.preview && item.occurrence.end <= Date.now() + 5 * 60000) get('alarm-footnote').textContent = 'The focus window ends before the 5-minute snooze returns. That reminder will not restart or extend app blocking.';
+  if (!item.preview && item.occurrence.end <= Date.now() + 5 * 60000) get('alarm-footnote').textContent = 'The focus window ends before the 5-minute snooze returns, so that reminder can’t start app blocking.';
   if (item.preview) { get('alarm-eyebrow').textContent = 'YOUR ALARM · PREVIEW'; get('alarm-snooze').hidden = true; }
   if (alert.banner && alert.style !== 'notification') {
     const video = /\.(mp4|mov|webm)$/i.test(alert.banner.file), media = document.createElement(video ? 'video' : 'img');

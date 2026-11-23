@@ -400,10 +400,15 @@ impl App {
         let current = self.status(false).await;
         if current.get("unavailable") != Some(&Value::Bool(true)) {
             let ended = !self.last_session.borrow().is_null() && current["session"].is_null();
+            let custom = self.prefs()["sessionSound"].clone();
             if ended && self.prefs()["notifications"] != false {
-                if let Err(error) = win::show_toast("A little more space. Well done.", "Your focus session has ended. Your apps and websites are available again.", false, |_| {}) {
+                // The toast goes silent when the page is about to play the user's own sound.
+                if let Err(error) = win::show_toast("A little more space. Well done.", "Your focus session has ended. Your apps and websites are available again.", !custom.is_null(), |_| {}) {
                     eprintln!("Session notification: {error}");
                 }
+            }
+            if ended && !custom.is_null() {
+                self.emit("session-ended", &custom);
             }
             *self.last_session.borrow_mut() = current["session"].clone();
         }

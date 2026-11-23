@@ -113,13 +113,13 @@ async function run() {
       return (await window.still.saveAlert({ title: 'Scheduled focus', note: '', date: alertDateString(now), time: alertTimeString(now), repeat: 'once', lengthMode: 'duration', durationMinutes: 2, endTime: '23:59', style: 'card', blockMode: 'current', apps: [], unlockDelayMinutes: 0, sound: 'silent', volume: 65, enabled: true, snoozeLimit: 1, showDismiss: false }))[0];
     });
     await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find(w => w.webContents.getURL().endsWith('/index.html')).hide());
-    await window.waitForFunction(() => state.session?.intention === 'Scheduled focus', null, { polling: 100, timeout: 15000 });
-    const session = await window.evaluate(() => window.still.status());
+    await window.waitForFunction(() => alerts[0]?.ringing, null, { polling: 100, timeout: 15000 });
     const expected = new Date(record.date + 'T' + record.time + ':00').getTime() + 120000;
-    assert.equal(session.session.endsAt, expected, 'exact deadline retained, including for short remaining windows');
-    assert.equal(session.session.apps.length, 3, 'dynamic selection uses persisted Focus space apps');
+    saved = await window.evaluate(() => window.still.listAlerts());
+    assert.equal(saved[0].occurrenceApps.length, 3, 'dynamic selection uses persisted Focus space apps');
+    await window.waitForTimeout(4500); // Two scheduler passes.
+    assert.equal((await window.evaluate(() => window.still.status())).session, null, 'a ringing alarm blocks nothing before Let’s focus');
     const alarm = application.windows().find(w => w !== window && w.url().endsWith('/alarm.html'));
-    await window.waitForFunction(() => alerts[0]?.ringing, null, { polling: 100 });
     await alarm.waitForSelector('#alarm-snooze');
     assert.equal(await alarm.locator('#alarm-dismiss').isHidden(), true);
     assert.equal(await alarm.locator('#alarm-dismiss-top').isHidden(), true);
@@ -136,9 +136,13 @@ async function run() {
     await window.waitForFunction(() => typeof alerts !== 'undefined' && alerts[0]?.snoozeAt);
     await window.locator('[data-page="alerts"]').click();
     assert.match(await window.locator('.alert-status').innerText(), /Snoozed/);
-    assert.equal((await window.evaluate(() => window.still.status())).session, null, 'snoozing unblocks apps');
+    assert.equal((await window.evaluate(() => window.still.status())).session, null, 'snoozing blocks nothing');
     await window.evaluate(() => window.still.start({ apps: [{ name: 'Game', path: 'C:\\StillPreview\\Game.exe' }], intention: 'Scheduled focus', durationMinutes: 2, unlockDelayMinutes: 0 }));
     await window.evaluate(async () => { const first = alerts[0]; await window.still.saveAlert({ ...first, id: undefined, title: 'Overlapping focus', blockMode: 'custom', apps: [{ name: 'Minecraft', path: 'C:\\StillPreview\\Minecraft.exe' }] }); });
+    await window.waitForFunction(() => alerts.some(a => a.title === 'Overlapping focus' && a.ringing), null, { polling: 100, timeout: 15000 });
+    const overlapAlarm = application.windows().find(w => w !== window && w.url().endsWith('/alarm.html'));
+    await overlapAlarm.waitForSelector('#alarm-title:has-text("Overlapping focus")');
+    await overlapAlarm.locator('#alarm-open').click();
     await window.waitForFunction(() => alerts.some(a => a.title === 'Overlapping focus' && a.lastResult.includes('Another focus session')), null, { polling: 100 });
     assert.equal((await window.evaluate(() => window.still.status())).session.intention, 'Scheduled focus');
     await window.evaluate(() => window.still.end());

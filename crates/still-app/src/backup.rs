@@ -51,7 +51,8 @@ fn build_zip(path: &Path, media_dir: &Path, snapshot: &Snapshot) -> Result<(), S
         zip.start_file(name, SimpleFileOptions::default()).map_err(|x| e(&x))?;
         zip.write_all(serde_json::to_string_pretty(value).map_err(|x| e(&x))?.as_bytes()).map_err(|x| e(&x))?;
     }
-    for name in media_names(&snapshot.alerts) {
+    let session_sound = snapshot.prefs["sessionSound"]["file"].as_str().filter(|f| MEDIA_FILE.is_match(f)).map(String::from);
+    for name in media_names(&snapshot.alerts).into_iter().chain(session_sound) {
         // A sound that went missing is skipped; its alert falls back to the chime, as it does here.
         let Ok(mut source) = File::open(media_dir.join(&name)) else { continue };
         zip.start_file(format!("alert-media/{name}"), SimpleFileOptions::default().compression_method(CompressionMethod::Stored)).map_err(|x| e(&x))?;
@@ -122,7 +123,8 @@ fn read_backup(file: &Path, media_dir: &Path) -> Result<Loaded, String> {
     let alerts = parse_alerts(read_list(&mut zip, "alerts.json")?)?;
     let history = read_list(&mut zip, "history.json")?.iter().take(500).filter_map(session_record).collect();
     std::fs::create_dir_all(media_dir).map_err(|e| e.to_string())?;
-    let wanted: BTreeSet<&str> = alerts.iter().flat_map(|a| [&a.sound_file, &a.banner]).flatten().map(|m| m.file.as_str()).collect();
+    let session_sound = prefs["sessionSound"]["file"].as_str().filter(|f| MEDIA_FILE.is_match(f));
+    let wanted: BTreeSet<&str> = alerts.iter().flat_map(|a| [&a.sound_file, &a.banner]).flatten().map(|m| m.file.as_str()).chain(session_sound).collect();
     for name in wanted {
         if media_dir.join(name).exists() {
             continue;
