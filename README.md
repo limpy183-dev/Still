@@ -19,9 +19,11 @@
 
 *The real Still interface in demo mode. Screenshots use sample data; preview mode never blocks apps or websites. Click any screenshot to open it at full size.*
 
-## New in Still 2.1.1
+## New in Still 2.1.2
 
-Still stays quiet in the background: its animations hold still while the window is minimized, in the tray or covered, and Settings gets an **Animation frame rate** choice. Pick your own sound for the end of a focus session. An alarm now blocks apps only when you press **Let’s focus**. [See the 2.1.1 release](https://github.com/limpy183-dev/Still/releases/tag/v2.1.1).
+Still Guard releases every app block if antivirus deletes its script, instead of leaving apps blocked. [See the 2.1.2 release](https://github.com/limpy183-dev/Still/releases/tag/v2.1.2).
+
+Earlier, in 2.1.1: quieter in the background, an Animation frame rate setting, your own end-of-session sound, and alarms that block only when you press **Let’s focus**. [See the 2.1.1 release](https://github.com/limpy183-dev/Still/releases/tag/v2.1.1).
 
 Earlier, in 2.1.0: backup export and import, weekly alerts, Enter to act on a focus session, a smoother focus ring, independent scrolling panes and Windows notifications with Still’s name and logo. [See the 2.1.0 release](https://github.com/limpy183-dev/Still/releases/tag/v2.1.0).
 

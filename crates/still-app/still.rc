@@ -5,8 +5,8 @@ BEGIN
   101 "Still"
 END
 1 VERSIONINFO
- FILEVERSION 2,1,1,0
- PRODUCTVERSION 2,1,1,0
+ FILEVERSION 2,1,2,0
+ PRODUCTVERSION 2,1,2,0
  FILEOS 0x40004
  FILETYPE 0x1
 BEGIN
@@ -16,11 +16,11 @@ BEGIN
     BEGIN
       VALUE "CompanyName", "Still"
       VALUE "FileDescription", "Still"
-      VALUE "FileVersion", "2.1.1"
+      VALUE "FileVersion", "2.1.2"
       VALUE "InternalName", "Still"
       VALUE "OriginalFilename", "Still.exe"
       VALUE "ProductName", "Still"
-      VALUE "ProductVersion", "2.1.1"
+      VALUE "ProductVersion", "2.1.2"
     END
   END
   BLOCK "VarFileInfo"

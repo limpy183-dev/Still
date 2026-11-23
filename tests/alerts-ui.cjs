@@ -140,7 +140,8 @@ async function run() {
     await window.evaluate(() => window.still.start({ apps: [{ name: 'Game', path: 'C:\\StillPreview\\Game.exe' }], intention: 'Scheduled focus', durationMinutes: 2, unlockDelayMinutes: 0 }));
     await window.evaluate(async () => { const first = alerts[0]; await window.still.saveAlert({ ...first, id: undefined, title: 'Overlapping focus', blockMode: 'custom', apps: [{ name: 'Minecraft', path: 'C:\\StillPreview\\Minecraft.exe' }] }); });
     await window.waitForFunction(() => alerts.some(a => a.title === 'Overlapping focus' && a.ringing), null, { polling: 100, timeout: 15000 });
-    const overlapAlarm = application.windows().find(w => w !== window && w.url().endsWith('/alarm.html'));
+    let overlapAlarm;
+    for (let i = 0; i < 100 && !overlapAlarm; i++) { overlapAlarm = application.windows().find(w => w !== window && w.url().endsWith('/alarm.html')); if (!overlapAlarm) await window.waitForTimeout(100); } // The window opens just after the alarm starts ringing.
     await overlapAlarm.waitForSelector('#alarm-title:has-text("Overlapping focus")');
     await overlapAlarm.locator('#alarm-open').click();
     await window.waitForFunction(() => alerts.some(a => a.title === 'Overlapping focus' && a.lastResult.includes('Another focus session')), null, { polling: 100 });

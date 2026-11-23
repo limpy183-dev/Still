@@ -1,9 +1,8 @@
-## What's new in v2.1.1
+## What's new in v2.1.2
 
-- **Lighter in the background.** Still holds its animations still while the window is minimized, in the tray or covered by other windows, so its web engine uses about 1 to 5% of a core instead of 15 to 80%. Nothing looks different when you look at it again.
-- **Animation frame rate.** A new Settings option: use your display's rate (the default), 60 or 30 frames a second for the slow ambient animations.
-- **Your own sound when a focus session ends.** Choose an audio file in Settings; it is included in backups, and scheduled alerts keep their own sounds.
-- **Alarms block only when you ask.** A ringing alarm now starts blocking, and counts toward Your progress, only when you press **Let's focus**. Dismiss and Snooze leave your apps open.
+- **No stuck blocks if antivirus deletes Still's script.** Still Guard now releases every app block at once when `policy.ps1` goes missing, and tells you why. Starting a new session puts the script back.
+- **Release without the script.** Uninstalling or repairing Still Guard, and ending a session, release app blocks with a copy of the release code built into the guard.
+- **Interrupted sessions keep their time.** In Your progress, a session that was interrupted counts the focus time up to the interruption.
 
 ## Install or update
 
